@@ -1,0 +1,26 @@
+{
+  "name": "localcockpit-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "format:check": "prettier --check src tests"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.2.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "jsdom": "^26.0.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.7.0",
+    "vite": "^6.1.0",
+    "vitest": "^5.0.5"
+  }
+}

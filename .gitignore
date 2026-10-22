@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+frontend/dist/
+*.pyc
+
+# Local tooling and private configuration
+.agents/
+.codex/
+.aws/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store

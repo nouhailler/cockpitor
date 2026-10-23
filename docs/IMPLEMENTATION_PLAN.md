@@ -29,3 +29,9 @@ Pas de déclaration de fin du MVP avant validation de tous les P0 et du paquet.
 23 octobre 2026 : SQLite et alertes livrés, 97 tests backend et 13 frontend. La seule mutation autorisée porte sur les réglages applicatifs ; les actions système restent absentes. Prochaine étape : diagnostic local expurgé.
 
 23 octobre 2026 : diagnostic et français/anglais livrés, 109 tests backend et 18 frontend. Prochaine étape : sessions expirables et limitation des tentatives.
+
+## Extension proposée à partir de Linux Made Sane
+
+Voir [la feuille de route détaillée](ROADMAP_LINUX_MADE_SANE.md) : inventaire
+fonctionnel, douze lots et socle préalable aux opérations sensibles. Ce plan est
+proposé, sans modification de code ni activation des fonctions administratives.

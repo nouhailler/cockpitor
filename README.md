@@ -38,7 +38,7 @@ la machine et de l’instant de collecte ; aucune donnée de démonstration n’
 | 📈 **Historique** | Courbe CPU, environ 15 minutes conservées en mémoire |
 | 🧠 **Ollama** | Disponibilité, modèles installés et modèles chargés si exposés |
 | 🌐 **OpenWebUI** | État HTTP et lien vers une URL locale configurée |
-| 📦 **Docker / Podman** | Inventaire, état, image et ports publiés, avec accès explicite au socket |
+| 📦 **Docker / Podman** | Inventaire filtrable, détails, CPU/RAM et journaux bornés, avec accès explicite au socket |
 | 🎨 **Interface** | Navigation responsive et thèmes clair/sombre |
 
 ### 🔐 Principes
@@ -115,6 +115,24 @@ LOCALCOCKPIT_PODMAN_SOCKET="/run/user/$(id -u)/podman/podman.sock" \
 
 Les variables d’environnement des conteneurs ne sont pas transmises à l’interface.
 
+Les moteurs annoncent leur version d’API de compatibilité ; Cockpitor négocie une
+version comprise entre `1.24` et `1.47`. Une version incompatible est signalée.
+Cliquer sur un conteneur ouvre son état, son image, ses dates, son CPU et sa mémoire
+brute (cache inclus). Les informations absentes restent indiquées indisponibles.
+Les journaux sont limités à 50, 100 ou 200 lignes par flux sur une heure ou 24 heures,
+sans suivi continu. stdout/stderr sont regroupés séparément, sans ordre global reconstruit.
+Les variables d’environnement, commandes de lancement, labels et montages restent exclus.
+
+<details>
+<summary>📦 État réel lorsque les moteurs sont absents</summary>
+
+![Page Conteneurs sans socket Docker ou Podman détecté](docs/images/containers.jpg)
+
+Les cas avec conteneurs sont testés avec des réponses contrôlées et un socket
+Unix de test ; aucun moteur réel n’est installé/configuré dans l’environnement de validation.
+
+</details>
+
 ## 🏗️ Architecture
 
 ```mermaid
@@ -151,7 +169,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **41 tests backend et 6 tests frontend
+Validation locale de cette version : **75 tests backend et 9 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -161,7 +179,7 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 - [x] Surveillance système et interface locale.
 - [x] Surveillance Ollama et état HTTP OpenWebUI.
 - [x] Inventaire optionnel Docker/Podman en lecture seule.
-- [ ] Détails, statistiques et journaux des conteneurs.
+- [x] Détails, statistiques et journaux bornés des conteneurs (qualification sur moteurs réels à réaliser).
 - [x] Services systemd chargés et lecture bornée des journaux par service.
 - [ ] Sessions avec expiration et limitation des tentatives.
 - [ ] Préférences persistantes, alertes et diagnostic expurgé.

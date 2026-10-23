@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
+import { bytes } from "./format";
+export { bytes } from "./format";
+import { ContainersView } from "./containers";
 import { api } from "./api";
 export { api } from "./api";
 import { ServicesView } from "./services";
@@ -66,14 +69,6 @@ type Module = {
     }[];
   }[];
 };
-export const bytes = (n: number | null | undefined) =>
-  n == null
-    ? "Indisponible"
-    : n >= 1073741824
-      ? `${(n / 1073741824).toFixed(1)} Gio`
-      : n >= 1048576
-        ? `${(n / 1048576).toFixed(1)} Mio`
-        : `${(n / 1024).toFixed(1)} Kio`;
 const pct = (n: number | null | undefined) =>
   n == null ? "Indisponible" : `${n.toFixed(1)} %`;
 const statusLabel = (status: string) =>
@@ -523,41 +518,11 @@ export function App() {
                 {page === "IA locale" ? (
                   <AIView data={module} />
                 ) : (
-                  module.engines?.map((engine) => (
-                    <section className="panel" key={engine.name}>
-                      <h2>
-                        {engine.name}{" "}
-                        <span className="badge">
-                          {statusLabel(engine.status)}
-                        </span>
-                      </h2>
-                      <p>{engine.message || `Version ${engine.version}`}</p>
-                      <div className="table-scroll">
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>Nom</th>
-                              <th>Image</th>
-                              <th>État</th>
-                              <th>Ports publiés</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {engine.containers.map((c) => (
-                              <tr key={c.id}>
-                                <td>{c.name}</td>
-                                <td>{c.image}</td>
-                                <td>{c.status || c.state}</td>
-                                <td>{c.ports.join(", ") || "—"}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      {engine.status === "available" &&
-                        !engine.containers.length && <p>Aucun conteneur.</p>}
-                    </section>
-                  ))
+                  <ContainersView
+                    engines={module.engines || []}
+                    token={token}
+                    refresh={refresh}
+                  />
                 )}
               </>
             )}

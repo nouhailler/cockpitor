@@ -119,3 +119,36 @@ def test_services_filters_validation_auth_and_read_only(client, monkeypatch):
     response = client.get("/api/v1/services/ssh.service")
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "PERMISSION_DENIED"
+
+
+def test_container_detail_routes_validate_and_refuse_mutations(client, monkeypatch):
+    cid = "a" * 64
+    path = f"/api/v1/containers/docker/{cid}"
+    monkeypatch.delenv("LOCALCOCKPIT_DOCKER_SOCKET", raising=False)
+    assert client.get(path).json()["error"]["code"] == "ENGINE_DISABLED"
+    assert client.get("/api/v1/containers/docker/not-an-id").status_code == 422
+    assert client.get(f"/api/v1/containers/shell/{cid}").status_code == 422
+    assert client.get(path + "/logs?tail=201").status_code == 422
+    assert client.get(path + "/logs?tail=0").status_code == 422
+    assert client.get(path + "/logs?period=week").status_code == 422
+    assert client.get(path + "/stats", headers={"authorization": ""}).status_code == 401
+    assert client.post(path + "/restart").status_code == 405
+
+    async def detail(self, engine, container_id):
+        return {"id": container_id, "engine": engine, "name": "test"}
+
+    async def stats(self, engine, container_id):
+        return {"cpu_percent": None, "memory_usage_bytes": 1234}
+
+    async def logs(self, engine, container_id, tail, period):
+        assert tail == 50 and period == 86400
+        return {"items": [{"stream": "stdout", "message": "<img src=x>"}]}
+
+    monkeypatch.setattr(main.Containers, "detail", detail)
+    monkeypatch.setattr(main.Containers, "stats", stats)
+    monkeypatch.setattr(main.Containers, "logs", logs)
+    assert client.get(path).json()["id"] == cid
+    assert client.get(path + "/stats").json()["memory_usage_bytes"] == 1234
+    assert (
+        client.get(path + "/logs?tail=50&period=day").json()["items"][0]["message"] == "<img src=x>"
+    )

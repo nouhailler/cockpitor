@@ -10,7 +10,7 @@ endpoint de mutation n'est livré dans cette itération.
 | Socle API et interface | IMPLÉMENTÉ | accès par jeton, même origine, thèmes, navigation, build et tests |
 | Surveillance système | IMPLÉMENTÉ | collecte partagée, historique mémoire, processus paginés, interface connectée |
 | IA locale | IMPLÉMENTÉ | Ollama modèles/chargement et état HTTP OpenWebUI ; tests erreurs/absence |
-| Conteneurs | PARTIEL | détection et inventaire Docker/Podman ; détails, statistiques et logs à ajouter |
+| Conteneurs | PARTIEL | inventaire, détails, statistiques et logs reliés et testés ; qualification Docker/Podman réels NON TESTÉE |
 | Services et journaux | PARTIEL | services chargés, détails et journaux par unité reliés et testés ; vue des journaux applicatifs et inventaire des fichiers non chargés à compléter |
 | SQLite, alertes, diagnostic | ABSENT | lot ultérieur |
 | Actions sensibles | ABSENT | volontairement bloquées ; conception, autorisation, confirmation et tests requis |
@@ -21,3 +21,5 @@ endpoint de mutation n'est livré dans cette itération.
 Pas de déclaration de fin du MVP avant validation de tous les P0 et du paquet.
 
 23 octobre 2026 : lot Services en lecture seule livré, 41 tests backend et 6 tests frontend. Prochaine étape fonctionnelle : détails/statistiques/journaux des conteneurs avant la persistance.
+
+23 octobre 2026 : complément Conteneurs en lecture seule livré, 75 tests backend et 9 tests frontend. Prochaine étape : préférences SQLite et alertes locales ; actions sensibles toujours absentes.

@@ -35,3 +35,22 @@ les curseurs pour remonter dans le temps. La recherche de texte s’effectue sur
 page bornée sans passer d’expression régulière utilisateur au système.
 Références : [systemctl](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html)
 et [journalctl](https://www.freedesktop.org/software/systemd/man/latest/journalctl.html).
+
+## Conteneurs — détails et journaux
+
+L’inventaire reste une collecte périodique partagée. L’inspecteur sélectionné lit
+les détails à la demande, les statistiques toutes les cinq secondes après réponse,
+et les journaux sur sélection/actualisation/changement de filtre. Un échec des
+statistiques n’efface pas les journaux ou le détail. L’accès au socket reste explicite.
+
+Le backend négocie la version de compatibilité, valide l’identité d’inspection et
+ne transmet qu’une liste de champs utiles. Les journaux Docker non TTY utilisent
+un en-tête de huit octets par trame ; les fragments sont assemblés par flux avant
+masquage. Le format brut TTY est traité sans démultiplexage. Aucun flux continu n’est ouvert.
+Les fonctions de masquage sont partagées dans redaction.py.
+
+Références vérifiées : [spécification Moby API 1.47](https://github.com/moby/moby/blob/v27.5.1/docs/api/v1.47.yaml),
+[formats des journaux Moby](https://github.com/moby/moby/blob/master/client/container_logs.go),
+[versionnement Docker](https://docs.docker.com/reference/api/engine/),
+[API Podman et compatibilité](https://docs.podman.io/en/latest/_static/api.html).
+La qualification des moteurs réels et de leurs différences de versions reste à réaliser.

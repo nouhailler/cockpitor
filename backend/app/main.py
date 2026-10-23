@@ -13,6 +13,7 @@ from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from .containers import ContainerError, Containers
 from .integrations import ai_status, container_status
 from .services import ServiceError, Services
 from .system import Collector
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
                 logging.getLogger("localcockpit").warning("Collecte système indisponible")
             await asyncio.sleep(2)
 
+    app.state.container_adapter = Containers()
     app.state.services_adapter = Services()
     app.state.services = None
     app.state.ai = None
@@ -125,6 +127,7 @@ async def security(request: Request, call_next):
     return response
 
 
+@app.exception_handler(ContainerError)
 @app.exception_handler(ServiceError)
 async def service_error(request: Request, exc: ServiceError):
     return error(exc.status, exc.code, exc.message)
@@ -222,6 +225,28 @@ async def service_logs(
 ):
     return await app.state.services_adapter.logs(
         unit, limit, 3600 if period == "hour" else 86400, priority, q, cursor
+    )
+
+
+@app.get("/api/v1/containers/{engine}/{container_id}")
+async def container_detail(engine: Literal["docker", "podman"], container_id: str):
+    return await app.state.container_adapter.detail(engine, container_id)
+
+
+@app.get("/api/v1/containers/{engine}/{container_id}/stats")
+async def container_stats(engine: Literal["docker", "podman"], container_id: str):
+    return await app.state.container_adapter.stats(engine, container_id)
+
+
+@app.get("/api/v1/containers/{engine}/{container_id}/logs")
+async def container_logs(
+    engine: Literal["docker", "podman"],
+    container_id: str,
+    tail: int = Query(100, ge=1, le=200),
+    period: Literal["hour", "day"] = "hour",
+):
+    return await app.state.container_adapter.logs(
+        engine, container_id, tail, 3600 if period == "hour" else 86400
     )
 
 

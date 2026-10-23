@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Conteneurs — 23 octobre 2026
+
+- Inventaire filtrable par nom/image et état, sélection d’un moteur et d’un conteneur.
+- Détails filtrés excluant environnement, commandes, labels et montages.
+- Statistiques CPU calculées sur les compteurs fournis et mémoire brute avec limites.
+- Journaux TTY/multiplexés bornés, périodes et nombre de lignes configurables.
+- Négociation d’API Docker/Podman et erreurs explicites de version, état et permissions.
+- Masquage des secrets commun aux journaux services et conteneurs.
+- 75 tests backend et 9 tests frontend, dont un test de transport sur socket Unix réel contrôlé.
+- Aucune opération sensible ajoutée ; moteurs réels encore non qualifiés.
+
 ### Fonctionnalités — 23 octobre 2026
 
 - Page Services : recherche, pagination et filtres des unités système chargées.

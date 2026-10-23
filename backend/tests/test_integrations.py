@@ -85,7 +85,7 @@ def test_containers_opt_in_and_field_allowlist(monkeypatch):
     def handler(request):
         calls.append((request.method, request.url.path))
         if request.url.path == "/version":
-            return httpx.Response(200, json={"Version": "test"})
+            return httpx.Response(200, json={"Version": "test", "ApiVersion": "1.47"})
         return httpx.Response(
             200,
             json=[

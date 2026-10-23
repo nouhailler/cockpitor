@@ -14,6 +14,12 @@ Prototype local en lecture seule, pas une version validée pour exposition rése
 - IP loopback numériques seulement pour les intégrations, sans redirection, proxy
   d'environnement ou identifiant intégré à l'URL. HTTPS conserve sa validation TLS.
 - Lectures HTTP bornées en taille et temps ; inventaire filtré par liste de champs.
+- Détails conteneurs : moteurs en liste blanche, identifiants complets validés,
+  identité d’inspection vérifiée, uniquement GET sur le socket explicitement configuré.
+- Inspect filtré sans environnement, commandes, labels ou montages ; deux opérations
+  détaillées simultanées, délai total six secondes, 2 Mio par réponse.
+- Journaux conteneurs non continus, tail borné, validation des trames multiplexées,
+  masquage des secrets connus et rendu textuel. Aucun terminal ni action de contrôle.
 - React échappe le texte ; aucun rendu HTML de données externes.
 - Aucun appel shell, aucune élévation de droits, aucun changement de groupe.
 - Lectures systemctl/journalctl avec chemins absolus, arguments séparés, unités

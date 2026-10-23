@@ -26,7 +26,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 | Système | CPU, RAM, swap, uptime, charge, réseau, stockage, processus et capteurs accessibles |
 | Historique | Jusqu’à 450 points en mémoire, environ 15 minutes |
 | IA | Modèles Ollama, modèles chargés si disponibles, état HTTP/lien OpenWebUI |
-| Conteneurs | Inventaire Docker/Podman via socket explicitement configuré |
+| Conteneurs | Inventaire, filtres, détails, CPU/RAM et journaux bornés via socket explicitement configuré |
 | Services et journaux | Inventaire des services chargés, détails, journaux bornés/paginés et permissions explicites |
 | Mutations | Absentes ; méthodes d’écriture refusées par le middleware |
 | Persistance et packaging | SQLite, alertes, diagnostic et paquet Debian absents |
@@ -58,7 +58,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 41 tests backend et 6 tests frontend réussis localement.
+- 75 tests backend et 9 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -74,7 +74,7 @@ de dépréciation Starlette/TestClient concernant httpx reste présent.
 - Choisir et tester la version Debian cible dans une VM propre.
 - Remplacer le jeton de développement par des sessions expirables, avec limitation des tentatives.
 - Compléter les schémas de sortie API, l’enveloppe d’erreur et le contrat de modules.
-- Ajouter détails/statistiques/logs conteneurs et une vue de journaux applicatifs.
+- Qualifier le module Conteneurs sur Docker et Podman réels ; ajouter une vue de journaux applicatifs.
 - Étendre éventuellement l’inventaire aux fichiers de services installés mais non chargés.
 - Tester Docker, Podman et OpenWebUI sur des instances réelles configurées.
 - Ajouter audit des dépendances Python, tests de charge et revue d’accessibilité.
@@ -108,3 +108,23 @@ journal refusé faute de permissions. Aucun changement de droits n’a été eff
 Les journaux lisibles et leur pagination sont validés par tests simulés ; un compte
 réel ayant accès au journal reste à tester. Le masquage couvre les secrets courants,
 sans garantir de détecter tous les secrets propres aux applications.
+
+## Complément Conteneurs — 23 octobre 2026
+
+`backend/app/containers.py` et `frontend/src/containers.tsx` relient les détails,
+statistiques et journaux à l’inventaire. Les identifiants acceptés sont exactement
+64 caractères hexadécimaux minuscules ; aucun nom, préfixe, chemin ou commande libre.
+L’API est négociée depuis `/version`, bornée aux versions de compatibilité 1.24–1.47.
+Les routes de détail incluent le moteur pour éviter une ambiguïté Docker/Podman.
+
+Inspect est filtré : pas d’environnement, commande, label ou montage. Le CPU est
+calculé seulement avec deux compteurs valides, et peut dépasser 100 % sur plusieurs
+cœurs. La mémoire est la valeur brute déclarée, cache inclus. Les statistiques
+manquantes restent null. Les flux de logs TTY et multiplexés sont traités séparément,
+avec reconstitution des trames par flux et masquage commun dans redaction.py.
+Les lectures détaillées ont un budget de six secondes et deux opérations simultanées.
+
+Le navigateur vérifie l’absence de moteurs sur ce poste. Les scénarios disponibles,
+arrêtés, refusés et incompatibles sont couverts par tests, dont un vrai serveur Unix
+HTTP contrôlé (ce n’est pas un moteur réel). Aucun accès moteur ni privilège activé.
+Prochaine étape : préférences persistantes et alertes locales, toujours sans actions sensibles.

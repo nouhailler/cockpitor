@@ -39,3 +39,19 @@ Les tests de l’API utilisent un inventaire simulé et n’interrogent pas l’
 Dans le navigateur réel : 132 services détectés, détail de dbus.service affiché,
 refus du journal explicitement visible. Un journal réel lisible n’a pas été testé
 avec les permissions actuelles. Capture : docs/images/services.jpg.
+
+## Complément Conteneurs — 23 octobre 2026
+
+75 tests backend et 9 tests frontend. Cas ajoutés : identité et liste blanche
+d’inspection, moteurs Docker/Podman, versions négociées/incompatibles, unités CPU/RAM,
+absence de référence CPU, formats de logs TTY et multiplexés avec fragments, limites
+et erreurs 403/404/409/501, réponses invalides/volumineuses/lentes, absence de socket,
+saturation et libération des opérations, validation des routes et refus des mutations.
+Un vrai serveur HTTP sur socket Unix de test valide le transport de bout en bout.
+Les tests jsdom vérifient sélection, filtres, ressources, rendu sûr des logs et
+indépendance d’une panne des statistiques.
+
+Vérification navigateur : états Docker/Podman absents et filtres accessibles,
+sans invention de conteneur ni activation de socket. Capture docs/images/containers.jpg.
+Les moteurs réels, pilotes de logs, contextes rootless et versions distribuées restent
+NON TESTÉS sur cette machine. Les doubles de test sont confinés aux tests.

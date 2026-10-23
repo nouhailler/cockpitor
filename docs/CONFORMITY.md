@@ -13,23 +13,23 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 | 6. Isolation des erreurs de module | PARTIEL | modules optionnels tolèrent les erreurs HTTP attendues ; protocole de module général encore absent |
 | 7. Ollama et modèles | IMPLÉMENTÉ | integrations.py, vue IA, tests d'intégration et service Ollama local observé |
 | 8. OpenWebUI | PARTIEL | état HTTP et lien implémentés ; instance réelle configurée NON TESTÉE |
-| 9. Conteneurs en lecture seule | PARTIEL | inventaire avec opt-in ; tests simulés Docker, socket Podman ; moteurs réels NON TESTÉS |
-| 10. Journaux bornés et rendus sûrs | PARTIEL | journaux systemd par service reliés de bout en bout, bornés et testés ; journal applicatif dédié absent, lecture réelle réussie NON TESTÉE faute de droits |
+| 9. Conteneurs en lecture seule | PARTIEL | inventaire, détails, statistiques et logs avec opt-in ; tests simulés et transport Unix contrôlé ; moteurs réels NON TESTÉS |
+| 10. Journaux bornés et rendus sûrs | PARTIEL | journaux systemd et conteneurs reliés de bout en bout, bornés et testés ; journal applicatif dédié absent, lecture réelle réussie NON TESTÉE faute de droits |
 | 11. Pas de shell arbitraire | IMPLÉMENTÉ | sous-processus systemctl/journalctl avec arguments fixes et unités validées ; aucun endpoint de commande libre |
 | 12. Mutations désactivées | IMPLÉMENTÉ | middleware refuse POST/PUT/PATCH/DELETE ; test_api.py |
 | 13. Secrets et diagnostic | PARTIEL | champs conteneur en liste blanche, erreurs expurgées ; export ABSENT, revue exhaustive NON TESTÉE |
 | 14. Hors ligne après installation | PARTIEL | assets locaux et IP loopback seules ; essai avec réseau coupé NON TESTÉ |
-| 15. Tests et build CI | PARTIEL | contrôles locaux passants ; workflow fourni, exécution distante NON TESTÉE |
+| 15. Tests et build CI | PARTIEL | contrôles locaux passants ; CI initiale et Services réussies, lot Conteneurs à vérifier après publication |
 
 ## Validations exécutées
 
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 41 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 75 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
-- `npm test --prefix frontend` : 6 tests réussis.
+- `npm test --prefix frontend` : 9 tests réussis.
 - `npm run build --prefix frontend` : réussi.
 - `npm audit --prefix frontend` : zéro vulnérabilité après mise à jour de Vitest.
 
@@ -85,3 +85,22 @@ Validation réelle : 132 unités trouvées, propriétés de dbus.service affich�
 refus de lecture journald expliqué dans l’interface sans modification des droits.
 La CI du commit initial était réussie avant ce lot ; les résultats de ce lot
 sont vérifiés localement puis soumis au workflow à la publication.
+
+## Complément Conteneurs — 23 octobre 2026
+
+Fichiers ajoutés : backend/app/containers.py, backend/app/redaction.py,
+backend/tests/test_containers.py, frontend/src/containers.tsx, frontend/src/format.ts,
+frontend/tests/containers.test.tsx et docs/images/containers.jpg. Adaptateur d’inventaire,
+routes API, masquage services, vues principales, tests et documentation mis à jour.
+
+IMPLÉMENTÉ : détails en liste blanche, calcul CPU/RAM documenté, logs TTY/multiplexés,
+limites de volume/temps/concurrence, identifiants et version négociée, interface et
+refus des mutations. PARTIEL : compatibilité des moteurs selon leurs versions et
+pilotes de logs, masquage arbitraire. ABSENT : actions, terminal, pagination des logs
+conteneurs (dernières lignes bornées uniquement). NON TESTÉ : Docker/Podman réels.
+
+Les 75 tests backend et 9 frontend passent localement, avec lint, types, format et
+build. L’avertissement TestClient/httpx préexistant reste présent. Le transport Unix
+est vérifié contre un serveur contrôlé ; aucun droit système ou socket moteur réel
+n’a été activé. Le navigateur affiche honnêtement « Socket non détecté » pour les
+deux moteurs. La prochaine étape du plan concerne la persistance et les alertes.

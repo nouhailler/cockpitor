@@ -2,11 +2,11 @@
 
 import asyncio
 import json
-import os
 import re
 import time
 from typing import Any
 
+from .redaction import redact
 from .system import timestamp
 
 MAX_OUTPUT = 2 * 1024 * 1024
@@ -39,25 +39,6 @@ def validate_unit(unit: str) -> str:
     if len(unit) > 200 or not re.fullmatch(UNIT_PATTERN, unit):
         raise ServiceError("INVALID_UNIT", "Nom de service invalide", 422)
     return unit
-
-
-def redact(text: str) -> str:
-    # Best effort: do not claim to discover all application-specific secrets.
-    token = os.environ.get("LOCALCOCKPIT_TOKEN")
-    if token:
-        text = text.replace(token, "[MASQUÉ]")
-    text = re.sub(
-        r"-----BEGIN [^-]*PRIVATE KEY-----.*?(?:-----END [^-]*PRIVATE KEY-----|$)",
-        "[CLÉ PRIVÉE MASQUÉE]",
-        text,
-        flags=re.DOTALL,
-    )
-    text = re.sub(r"(?i)\b(bearer\s+)[A-Za-z0-9._~+/=\-]+", r"\1[MASQUÉ]", text)
-    return re.sub(
-        r"""(?ix)(["']?(?:password|passwd|token|api[_-]?key|secret)["']?\s*[:=]\s*)(?:"[^"\n]*"|'[^'\n]*'|[^\s,;]+)""",
-        r"\1[MASQUÉ]",
-        text,
-    )
 
 
 class Services:

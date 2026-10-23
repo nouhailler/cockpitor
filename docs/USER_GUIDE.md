@@ -36,3 +36,21 @@ L’application n’élargit aucun droit. Un accès partiel signalé par journal
 également refusé comme lecture complète. Si le curseur n’existe plus après une
 rotation, actualiser les journaux. Une collecte réussie vide signifie uniquement
 qu’aucune entrée visible ne correspond à cette unité et à cette période.
+
+## Détails d’un conteneur
+
+Dans Conteneurs, filtrer le nom/image et l’état puis sélectionner un conteneur.
+La sélection distingue Docker et Podman. Les dates et l’état proviennent du moteur,
+avec horodatage de lecture ; actualiser pour relire l’état et les journaux.
+
+Le CPU est un instantané calculé à partir des compteurs du moteur ; 200 % correspond
+à deux cœurs occupés. Une référence manquante donne « Indisponible ». La mémoire
+brute inclut le cache : elle ne reproduit donc pas nécessairement le chiffre de la
+CLI Docker. La limite déclarée n’est pas une mesure de la RAM libre de l’hôte.
+Un conteneur arrêté peut avoir des journaux lisibles et des statistiques indisponibles.
+
+Les journaux sont limités aux dernières 50/100/200 lignes par flux sur une heure
+ou 24 heures. stdout et stderr sont regroupés séparément, sans ordre global garanti.
+En mode TTY, les deux flux sont déjà fusionnés. Un moteur/driver ne permettant pas
+la lecture des logs affiche une erreur explicite. Le masquage vise les secrets
+courants ; ne pas publier les journaux sans vérification humaine.

@@ -4,6 +4,7 @@ import asyncio
 import ipaddress
 import json
 import os
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -58,7 +59,9 @@ def local_url(value: str) -> str:
     return value.rstrip("/")
 
 
-async def read(client: httpx.AsyncClient, url: str, *, as_json: bool = True) -> Any:
+async def read(
+    client: httpx.AsyncClient, url: str, *, as_json: bool = True, raw: bool = False
+) -> Any:
     async with asyncio.timeout(4):
         async with client.stream("GET", url) as response:
             response.raise_for_status()
@@ -69,6 +72,8 @@ async def read(client: httpx.AsyncClient, url: str, *, as_json: bool = True) -> 
                 body.extend(chunk)
                 if len(body) > MAX_RESPONSE:
                     raise ValueError("Response too large")
+            if raw:
+                return bytes(body)
             return json.loads(body) if as_json else None
 
 
@@ -129,16 +134,14 @@ async def container_status() -> dict[str, Any]:
         try:
             transport = httpx.AsyncHTTPTransport(uds=configured)
             async with httpx.AsyncClient(transport=transport, timeout=2, trust_env=False) as client:
-                version = await read(client, "http://localhost/version")
-                if not isinstance(version, dict) or not isinstance(version.get("Version"), str):
-                    raise ValueError("Invalid version")  # noqa: TRY004 — protocol validation
-                rows = await read(client, "http://localhost/containers/json?all=true")
+                prefix, version = await api_prefix(client)
+                rows = await read(client, f"http://localhost{prefix}/containers/json?all=true")
                 if not isinstance(rows, list) or len(rows) > 10000:
                     raise ValueError("Invalid container list")
                 containers = [Container.model_validate(row) for row in rows]
                 result.update(
                     status="available",
-                    version=version["Version"],
+                    version=version,
                     containers=[
                         {
                             "id": c.Id,
@@ -156,7 +159,7 @@ async def container_status() -> dict[str, Any]:
                         for c in containers
                     ],
                 )
-        except (httpx.HTTPError, ValueError, OSError, TimeoutError):
+        except (httpx.HTTPError, ValueError, TypeError, OSError, TimeoutError):
             result.update(
                 status="unavailable",
                 message="Socket inaccessible, permissions insuffisantes ou API incompatible",
@@ -168,3 +171,21 @@ async def container_status() -> dict[str, Any]:
         engine("podman", f"/run/user/{os.getuid()}/podman/podman.sock"),
     )
     return {"collected_at": timestamp(), "status": "ok", "engines": [docker, podman]}
+
+
+async def api_prefix(client: httpx.AsyncClient) -> tuple[str, str]:
+    version = await read(client, "http://localhost/version")
+    if not isinstance(version, dict):
+        raise TypeError("Invalid version response")
+    advertised = version.get("ApiVersion", "")
+    minimum = version.get("MinAPIVersion", "1.24")
+    if not isinstance(advertised, str) or not re.fullmatch(r"1\.[0-9]{1,3}", advertised):
+        raise ValueError("Missing compatibility API version")
+    if not isinstance(minimum, str) or not re.fullmatch(r"1\.[0-9]{1,3}", minimum):
+        raise ValueError("Invalid minimum version")
+    minor = min(int(advertised.split(".")[1]), 47)
+    if minor < max(24, int(minimum.split(".")[1])):
+        raise ValueError("Unsupported API version")
+    if not isinstance(version.get("Version"), str):
+        raise TypeError("Missing engine version")
+    return f"/v1.{minor}", version["Version"]

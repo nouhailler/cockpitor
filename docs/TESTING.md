@@ -72,3 +72,12 @@ Vérification navigateur : lecture et enregistrement des réglages réels confir
 page Alertes sans événement inventé, observabilité des quatre règles initiales sur
 les mesures du poste. Captures docs/images/settings.jpg et docs/images/alerts.jpg.
 Les scénarios d’activation/résolution forcés sont limités aux tests contrôlés.
+
+## Diagnostic et multilingue
+
+Validation actuelle : 109 tests backend et 18 frontend. La suite couvre liste
+blanche et exclusion des marqueurs sensibles, sources absentes, panne SQLite,
+confirmation stricte, CSRF/origine/jeton, limites et cadence, paramètres fr/en,
+compatibilité des anciennes préférences, parité des catalogues et unités locales.
+Dans le navigateur : anglais restauré après rechargement, export téléchargé après
+confirmation et audit affiché. Les moteurs réels restent à qualifier séparément.

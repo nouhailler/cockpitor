@@ -10,6 +10,7 @@ import {
 } from "@testing-library/react";
 import { AlertsView, SettingsView, type Preferences } from "../src/preferences";
 const prefs: Preferences = {
+  language: "fr",
   theme: "system",
   refresh_seconds: 3,
   retention_days: 7,
@@ -63,6 +64,7 @@ it("saves validated application settings with auth, JSON and CSRF headers", asyn
   expect(save.url).toBe("/api/v1/settings");
   expect(save.options.headers).toEqual({
     Authorization: "Bearer auth-private",
+    "Accept-Language": "fr",
     "Content-Type": "application/json",
     "X-LocalCockpit-CSRF": "csrf-private",
   });

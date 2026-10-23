@@ -77,8 +77,8 @@ it("loads details, stats and safe logs from the selected engine", async () => {
   );
   render(<ContainersView engines={engines} token="test" refresh={0} />);
   fireEvent.click(screen.getByRole("button", { name: "local-container" }));
-  expect(await screen.findByText("150.0 %")).toBeTruthy();
-  expect(await screen.findByText("1.0 Gio")).toBeTruthy();
+  expect(await screen.findByText("150,0 %")).toBeTruthy();
+  expect(await screen.findByText("1,0 Gio")).toBeTruthy();
   expect(await screen.findByText("<img src=x onerror=alert(1)>")).toBeTruthy();
   expect(document.querySelector("img")).toBeNull();
   expect(

@@ -58,6 +58,7 @@ def default_rules() -> list[Rule]:
 
 class Preferences(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    language: Literal["fr", "en"] = "fr"
     theme: Literal["dark", "light", "system"] = "system"
     refresh_seconds: int = Field(default=3, ge=3, le=60)
     retention_days: int = Field(default=7, ge=1, le=90)

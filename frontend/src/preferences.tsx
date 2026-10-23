@@ -1,3 +1,4 @@
+import { t, useLanguage, getLocale, formatNumber } from "./i18n";
 import React, { useEffect, useState } from "react";
 import { api, saveSettings } from "./api";
 
@@ -12,6 +13,7 @@ export type Rule = {
   engine: "docker" | "podman" | null;
 };
 export type Preferences = {
+  language: "fr" | "en";
   theme: "dark" | "light" | "system";
   refresh_seconds: number;
   retention_days: number;
@@ -19,21 +21,21 @@ export type Preferences = {
 };
 type Envelope = { settings: Preferences; csrf_token: string };
 const metrics: Record<string, string> = {
-  cpu_percent: "CPU élevé",
-  memory_percent: "RAM élevée",
-  swap_percent: "Swap élevé",
-  disk_free_percent: "Espace disque libre bas",
-  ollama_unavailable: "Ollama indisponible",
-  service_failed: "Service en échec",
-  container_stopped: "Conteneur arrêté",
+  cpu_percent: t("CPU élevé"),
+  memory_percent: t("RAM élevée"),
+  swap_percent: t("Swap élevé"),
+  disk_free_percent: t("Espace disque libre bas"),
+  ollama_unavailable: t("Ollama indisponible"),
+  service_failed: t("Service en échec"),
+  container_stopped: t("Conteneur arrêté"),
 };
 const states: Record<string, string> = {
-  active: "Active",
-  resolved: "Résolue",
-  pending: "Seuil en attente",
-  healthy: "Normal",
-  unavailable: "Source indisponible",
-  disabled: "Désactivée",
+  active: t("Active"),
+  resolved: t("Résolue"),
+  pending: t("Seuil en attente"),
+  healthy: t("Normal"),
+  unavailable: t("Source indisponible"),
+  disabled: t("Désactivée"),
 };
 
 export function SettingsView({
@@ -43,6 +45,7 @@ export function SettingsView({
   token: string;
   onSaved: (settings: Preferences) => void;
 }) {
+  useLanguage();
   const [draft, setDraft] = useState<Preferences | null>(null);
   const [csrf, setCsrf] = useState("");
   const [error, setError] = useState("");
@@ -76,7 +79,9 @@ export function SettingsView({
       }>(draft, token, csrf);
       setDraft(result.settings);
       onSaved(result.settings);
-      setSaved(`Réglages enregistrés · opération ${result.operation_id}`);
+      setSaved(
+        t("Réglages enregistrés · opération {0}", { 0: result.operation_id }),
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -94,14 +99,15 @@ export function SettingsView({
   }
   return (
     <section className="panel">
-      <h2>Préférences persistantes</h2>
+      <h2>{t("Préférences persistantes")}</h2>
       <p>
-        Ces réglages concernent Cockpitor uniquement. Ils ne modifient aucun
-        service, conteneur ou droit système.
+        {t(
+          "Ces réglages concernent Cockpitor uniquement. Ils ne modifient aucun service, conteneur ou droit système.",
+        )}{" "}
       </p>
       {error && (
         <p className="error" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
       {error && !draft && (
@@ -111,16 +117,33 @@ export function SettingsView({
             setReload((v) => v + 1);
           }}
         >
-          Réessayer les paramètres
+          {t("Réessayer les paramètres")}{" "}
         </button>
       )}
-      {saved && <p role="status">{saved}</p>}
-      {!draft && !error && <p role="status">Chargement des paramètres…</p>}
+      {saved && <p role="status">{t(saved)}</p>}
+      {!draft && !error && (
+        <p role="status">{t("Chargement des paramètres…")}</p>
+      )}
       {draft && (
         <form onSubmit={save}>
           <div className="filters">
             <label>
-              Thème
+              {t("Langue")}
+              <select
+                value={draft.language ?? "fr"}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    language: e.target.value as Preferences["language"],
+                  })
+                }
+              >
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <label>
+              {t("Thème")}{" "}
               <select
                 value={draft.theme}
                 onChange={(e) =>
@@ -130,13 +153,13 @@ export function SettingsView({
                   })
                 }
               >
-                <option value="system">Suivre le système</option>
-                <option value="dark">Sombre</option>
-                <option value="light">Clair</option>
+                <option value="system">{t("Suivre le système")}</option>
+                <option value="dark">{t("Sombre")}</option>
+                <option value="light">{t("Clair")}</option>
               </select>
             </label>
             <label>
-              Actualisation système (secondes)
+              {t("Actualisation système (secondes)")}{" "}
               <input
                 type="number"
                 min={3}
@@ -152,7 +175,7 @@ export function SettingsView({
               />
             </label>
             <label>
-              Rétention des alertes résolues (jours)
+              {t("Rétention des alertes résolues (jours)")}{" "}
               <input
                 type="number"
                 min={1}
@@ -165,11 +188,11 @@ export function SettingsView({
               />
             </label>
           </div>
-          <h3>Règles d’alerte</h3>
+          <h3>{t("Règles d’alerte")}</h3>
           <p>
-            Un seuil doit rester franchi pendant la durée choisie, avec de
-            nouveaux échantillons. Les sources absentes ne sont pas considérées
-            saines. Modifier ou supprimer une règle résout son événement actif.
+            {t(
+              "Un seuil doit rester franchi pendant la durée choisie, avec de nouveaux échantillons. Les sources absentes ne sont pas considérées saines. Modifier ou supprimer une règle résout son événement actif.",
+            )}{" "}
           </p>
           {draft.rules.map((rule, index) => (
             <fieldset className="rule-editor" key={rule.id}>
@@ -183,10 +206,10 @@ export function SettingsView({
                       change(index, { enabled: e.target.checked })
                     }
                   />{" "}
-                  Activer {rule.id}
+                  {t("Activer")} {rule.id}
                 </label>
                 <label>
-                  Mesure {rule.id}
+                  {t("Mesure")} {rule.id}
                   <select
                     value={rule.metric}
                     onChange={(e) => {
@@ -208,7 +231,7 @@ export function SettingsView({
                   >
                     {Object.entries(metrics).map(([key, label]) => (
                       <option key={key} value={key}>
-                        {label}
+                        {t(label)}
                       </option>
                     ))}
                   </select>
@@ -220,7 +243,7 @@ export function SettingsView({
                   "disk_free_percent",
                 ].includes(rule.metric) && (
                   <label>
-                    Seuil (%) {rule.id}
+                    {t("Seuil (%)")} {rule.id}
                     <input
                       type="number"
                       min={0}
@@ -235,7 +258,7 @@ export function SettingsView({
                   </label>
                 )}
                 <label>
-                  Durée (secondes) {rule.id}
+                  {t("Durée (secondes)")} {rule.id}
                   <input
                     type="number"
                     min={0}
@@ -250,7 +273,7 @@ export function SettingsView({
                   />
                 </label>
                 <label>
-                  Gravité {rule.id}
+                  {t("Gravité")} {rule.id}
                   <select
                     value={rule.severity}
                     onChange={(e) =>
@@ -259,13 +282,13 @@ export function SettingsView({
                       })
                     }
                   >
-                    <option value="warning">Avertissement</option>
-                    <option value="critical">Critique</option>
+                    <option value="warning">{t("Avertissement")}</option>
+                    <option value="critical">{t("Critique")}</option>
                   </select>
                 </label>
                 {rule.target !== null && (
                   <label>
-                    Cible exacte {rule.id}
+                    {t("Cible exacte")} {rule.id}
                     <input
                       maxLength={200}
                       value={rule.target}
@@ -278,7 +301,7 @@ export function SettingsView({
                 )}
                 {rule.metric === "container_stopped" && (
                   <label>
-                    Moteur {rule.id}
+                    {t("Moteur")} {rule.id}
                     <select
                       value={rule.engine || "docker"}
                       onChange={(e) =>
@@ -301,7 +324,7 @@ export function SettingsView({
                     })
                   }
                 >
-                  Supprimer la règle {rule.id}
+                  {t("Supprimer la règle")} {rule.id}
                 </button>
               </div>
             </fieldset>
@@ -329,16 +352,16 @@ export function SettingsView({
                 })
               }
             >
-              Ajouter une règle
+              {t("Ajouter une règle")}{" "}
             </button>
             <button type="submit" disabled={saving}>
-              {saving ? "Enregistrement…" : "Enregistrer les réglages"}
+              {saving ? t("Enregistrement…") : t("Enregistrer les réglages")}
             </button>
           </div>
           <p>
-            Pas de notification externe ni de commande automatique. Les valeurs
-            CPU/RAM sont en %, la règle disque porte sur le pourcentage libre.
-            Un conteneur exige son identifiant complet de 64 caractères.
+            {t(
+              "Pas de notification externe ni de commande automatique. Les valeurs CPU/RAM sont en %, la règle disque porte sur le pourcentage libre. Un conteneur exige son identifiant complet de 64 caractères.",
+            )}{" "}
           </p>
         </form>
       )}
@@ -374,6 +397,7 @@ export function AlertsView({
   token: string;
   refresh: number;
 }) {
+  useLanguage();
   const [data, setData] = useState<AlertData | null>(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("all");
@@ -409,15 +433,15 @@ export function AlertsView({
   return (
     <>
       <section className="panel">
-        <h2>Alertes locales</h2>
+        <h2>{t("Alertes locales")}</h2>
         <p>
-          Les règles observent uniquement les sources disponibles. Une alerte
-          active est conservée si sa source devient indisponible ; aucune action
-          système n’est exécutée.
+          {t(
+            "Les règles observent uniquement les sources disponibles. Une alerte active est conservée si sa source devient indisponible ; aucune action système n’est exécutée.",
+          )}{" "}
         </p>
         <div className="filters">
           <label>
-            État des alertes
+            {t("État des alertes")}{" "}
             <select
               value={status}
               onChange={(e) => {
@@ -425,43 +449,51 @@ export function AlertsView({
                 setOffset(0);
               }}
             >
-              <option value="all">Toutes</option>
-              <option value="active">Actives</option>
-              <option value="resolved">Résolues</option>
+              <option value="all">{t("Toutes")}</option>
+              <option value="active">{t("Actives")}</option>
+              <option value="resolved">{t("Résolues")}</option>
             </select>
           </label>
         </div>
         {error && (
           <p className="error" role="alert">
-            {error}
-            {data ? " · les données précédentes sont anciennes" : ""}
+            {t(error)}
+            {data ? t(" · les données précédentes sont anciennes") : ""}
           </p>
         )}
-        {!data && !error && <p role="status">Chargement des alertes…</p>}
+        {!data && !error && <p role="status">{t("Chargement des alertes…")}</p>}
         {data && (
           <>
             <small>
-              Évaluation :{" "}
+              {t("Évaluation :")}{" "}
               {data.evaluated_at
-                ? new Date(data.evaluated_at).toLocaleTimeString()
-                : "En attente"}
+                ? new Date(data.evaluated_at).toLocaleTimeString(getLocale())
+                : t("En attente")}
             </small>
-            {!data.items.length && <p>Aucune alerte pour ce filtre.</p>}
+            {!data.items.length && <p>{t("Aucune alerte pour ce filtre.")}</p>}
             {data.items.map((event) => (
               <article className="log-entry" key={event.id}>
                 <strong>
-                  {event.rule_id} · {states[event.status] || event.status} ·{" "}
-                  {event.severity === "critical" ? "Critique" : "Avertissement"}
+                  {event.rule_id} · {t(states[event.status] || event.status)} ·{" "}
+                  {event.severity === "critical"
+                    ? t("Critique")
+                    : t("Avertissement")}
                 </strong>
-                <p>{event.message}</p>
+                <p>{t(event.message)}</p>
                 <p>
-                  À vérifier : consulter les métriques ou journaux de la source
-                  concernée.
+                  {t(
+                    "À vérifier : consulter les métriques ou journaux de la source concernée.",
+                  )}{" "}
                 </p>
                 <small>
-                  Début : {new Date(event.created_at).toLocaleString()}
+                  {t("Début :")}{" "}
+                  {new Date(event.created_at).toLocaleString(getLocale())}
                   {event.resolved_at
-                    ? ` · Résolution : ${new Date(event.resolved_at).toLocaleString()}`
+                    ? t(" · Résolution : {0}", {
+                        0: new Date(event.resolved_at).toLocaleString(
+                          getLocale(),
+                        ),
+                      })
                     : ""}
                 </small>
               </article>
@@ -471,14 +503,16 @@ export function AlertsView({
                 disabled={!offset}
                 onClick={() => setOffset((v) => Math.max(0, v - 50))}
               >
-                Alertes précédentes
+                {t("Alertes précédentes")}{" "}
               </button>
-              <span>{data.total} événements</span>
+              <span>
+                {data.total} {t("événements")}
+              </span>
               <button
                 disabled={offset + 50 >= data.total}
                 onClick={() => setOffset((v) => v + 50)}
               >
-                Alertes suivantes
+                {t("Alertes suivantes")}{" "}
               </button>
             </div>
           </>
@@ -486,42 +520,42 @@ export function AlertsView({
       </section>
       {data && (
         <section className="panel">
-          <h2>Observabilité des règles</h2>
+          <h2>{t("Observabilité des règles")}</h2>
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>Règle</th>
-                  <th>Mesure</th>
-                  <th>État</th>
-                  <th>Valeur</th>
+                  <th>{t("Règle")}</th>
+                  <th>{t("Mesure")}</th>
+                  <th>{t("État")}</th>
+                  <th>{t("Valeur")}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.rules.map((rule) => (
                   <tr key={rule.rule_id}>
                     <td>{rule.rule_id}</td>
-                    <td>{metrics[rule.metric] || rule.metric}</td>
+                    <td>{t(metrics[rule.metric] || rule.metric)}</td>
                     <td>
-                      {states[rule.status] || rule.status}
+                      {t(states[rule.status] || rule.status)}
                       {rule.active && rule.status === "unavailable"
-                        ? " · alerte active conservée"
+                        ? t(" · alerte active conservée")
                         : ""}
-                      {rule.message ? ` · ${rule.message}` : ""}
+                      {rule.message ? ` · ${t(rule.message)}` : ""}
                     </td>
                     <td>
                       {rule.value == null
-                        ? "Indisponible"
+                        ? t("Indisponible")
                         : [
                               "cpu_percent",
                               "memory_percent",
                               "swap_percent",
                               "disk_free_percent",
                             ].includes(rule.metric)
-                          ? `${rule.value.toFixed(1)} %`
+                          ? `${formatNumber(rule.value)} %`
                           : rule.value === 1
-                            ? "Détectée"
-                            : "Non détectée"}
+                            ? t("Détectée")
+                            : t("Non détectée")}
                     </td>
                   </tr>
                 ))}

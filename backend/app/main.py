@@ -1,8 +1,10 @@
 import asyncio
 import hmac
+import json
 import logging
 import os
 import secrets
+import time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -11,12 +13,14 @@ from typing import Literal
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 
 from .alerts import AlertEngine
 from .containers import ContainerError, Containers
+from .diagnostics import build_report
+from .i18n import language, select_language, translate
 from .integrations import ai_status, container_status
 from .preferences import Preferences
 from .services import ServiceError, Services
@@ -40,6 +44,8 @@ async def lifespan(app: FastAPI):
     app.state.storage_ready = False
     app.state.storage_error = "Initialisation du stockage en cours"
     app.state.csrf = secrets.token_urlsafe(32)
+    app.state.diagnostic_lock = asyncio.Lock()
+    app.state.last_diagnostic = -10.0
     app.state.preferences_lock = asyncio.Lock()
     app.state.alert_engine = AlertEngine(store)
     collector = Collector()
@@ -137,13 +143,31 @@ app = FastAPI(
 
 def error(status: int, code: str, message: str) -> JSONResponse:
     return JSONResponse(
-        {"error": {"code": code, "message": message, "correlation_id": secrets.token_hex(8)}},
+        {
+            "error": {
+                "code": code,
+                "message": translate(message),
+                "correlation_id": secrets.token_hex(8),
+            }
+        },
         status_code=status,
     )
 
 
 @app.middleware("http")
 async def security(request: Request, call_next):
+    selected = select_language(request.headers.get("accept-language", "fr"))
+    reset_token = language.set(selected)
+    try:
+        response = await secure_response(request, call_next)
+        response.headers["Content-Language"] = selected
+        response.headers["Vary"] = "Accept-Language"
+        return response
+    finally:
+        language.reset(reset_token)
+
+
+async def secure_response(request: Request, call_next):
     try:
         host = urlsplit("http://" + request.headers.get("host", "")).hostname
     except ValueError:
@@ -154,14 +178,15 @@ async def security(request: Request, call_next):
     elif origin and origin != str(request.base_url).rstrip("/"):
         response = error(403, "ORIGIN_REJECTED", "Origine non autorisée")
     elif request.method not in {"GET", "HEAD"} and not (
-        request.method == "PUT" and request.url.path == "/api/v1/settings"
+        (request.method == "PUT" and request.url.path == "/api/v1/settings")
+        or (request.method == "POST" and request.url.path == "/api/v1/diagnostics")
     ):
         response = error(405, "READ_ONLY", "Cette version est en lecture seule")
     elif request.url.path.startswith("/api/") and not hmac.compare_digest(
         request.headers.get("authorization", "").encode(), ("Bearer " + TOKEN).encode()
     ):
         response = error(401, "AUTH_REQUIRED", "Jeton local requis")
-    elif request.method == "PUT" and (
+    elif request.method in {"PUT", "POST"} and (
         origin != str(request.base_url).rstrip("/")
         or not hmac.compare_digest(
             request.headers.get("x-localcockpit-csrf", "").encode(), request.app.state.csrf.encode()
@@ -169,7 +194,7 @@ async def security(request: Request, call_next):
     ):
         response = error(403, "CSRF_REJECTED", "Origine locale et protection CSRF requises")
     elif (
-        request.method == "PUT"
+        request.method in {"PUT", "POST"}
         and request.headers.get("content-type", "").split(";")[0].strip().lower()
         != "application/json"
     ):
@@ -369,6 +394,67 @@ async def alerts(
         "rules": app.state.alert_engine.states,
         "evaluated_at": getattr(app.state.alert_engine, "evaluated_at", None),
     }
+
+
+@app.get("/api/v1/diagnostics/options")
+def diagnostic_options():
+    return {
+        "csrf_token": app.state.csrf,
+        "schema_version": 1,
+        "includes": ["aggregate_metrics", "module_status_counts", "safe_preferences"],
+        "excludes": [
+            "identity",
+            "paths",
+            "addresses",
+            "names_ids",
+            "logs",
+            "environment",
+            "tokens",
+        ],
+    }
+
+
+@app.post("/api/v1/diagnostics")
+async def diagnostics(request: Request):
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > 1024:
+            return error(413, "BODY_LIMIT", "Requête de diagnostic limitée à 1 Kio")
+    try:
+        payload = json.loads(body)
+        if (
+            not isinstance(payload, dict)
+            or set(payload) != {"confirmed"}
+            or payload["confirmed"] is not True
+        ):
+            return error(422, "CONFIRMATION_REQUIRED", "Confirmation explicite requise")
+    except (ValueError, UnicodeError):
+        return error(422, "CONFIRMATION_REQUIRED", "Confirmation explicite requise")
+    if app.state.diagnostic_lock.locked() or time.monotonic() - app.state.last_diagnostic < 5:
+        return error(429, "DIAGNOSTIC_BUSY", "Attendez cinq secondes avant un nouvel export")
+    async with app.state.diagnostic_lock:
+        app.state.last_diagnostic = time.monotonic()
+        report = await asyncio.to_thread(
+            build_report,
+            app.state.snapshot,
+            app.state.ai,
+            app.state.services,
+            app.state.containers,
+            app.state.store,
+            app.state.storage_ready,
+        )
+        content = json.dumps(report, ensure_ascii=False, allow_nan=False, indent=2).encode()
+        if len(content) > 65536:
+            return error(503, "DIAGNOSTIC_LIMIT", "Diagnostic trop volumineux")
+        return Response(
+            content,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": 'attachment; filename="cockpitor-diagnostic.json"',
+                "X-Diagnostic-Audit": "recorded" if report["audit_recorded"] else "unavailable",
+            },
+        )
 
 
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"

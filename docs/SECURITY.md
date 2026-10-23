@@ -9,7 +9,7 @@ Prototype local en lecture seule, pas une version validée pour exposition rése
 - Hôtes loopback autorisés uniquement ; origine étrangère refusée ; aucun CORS global.
 - Aucun cookie d'authentification ; une page étrangère ne peut pas attacher le jeton
   détenu uniquement en mémoire par l'interface. Aucun jeton dans les URL.
-- Méthodes d’écriture refusées sauf PUT exact sur /api/v1/settings ; aucun endpoint d’action système.
+- Méthodes d’écriture refusées sauf PUT exact sur /api/v1/settings et POST exact sur /api/v1/diagnostics ; aucun endpoint d’action système.
 - Réglages : authentification, origine locale obligatoire, jeton CSRF en mémoire,
   JSON borné et schéma strict sans adresse réseau, chemin de socket ni commande.
 - SQLite : dossier dédié 0700/base 0600 possédés par le compte, refus des liens
@@ -62,3 +62,13 @@ Conception et revue de sécurité, actions typées, liste blanche des cibles,
 permissions minimales, confirmation, audit expurgé, revalidation côté agent,
 limites de concurrence et tests d'abus. Tant que ces conditions ne sont pas
 validées, aucune mutation système ne doit être ajoutée ou activée.
+
+## Export diagnostic
+
+Liste blanche de scalaires et agrégats, sans journaux, identités ni configuration
+brute. Confirmation explicite, authentification, origine et CSRF obligatoires ;
+corps 1 Kio, sortie 64 Kio, génération limitée à une toutes les cinq secondes.
+Aucune collecte supplémentaire, aucun fichier serveur ni transmission externe.
+L’audit SQLite enregistre seulement l’opération, sans corps exporté. Si SQLite est
+indisponible, l’export indique l’absence d’audit. Les agrégats et versions restent
+des informations sur la machine : examiner le téléchargement avant partage.

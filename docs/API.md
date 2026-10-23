@@ -2,8 +2,8 @@
 
 Toutes les routes API exigent `Authorization: Bearer <jeton>`.
 Les routes de supervision acceptent GET et, lorsqu’il est pris en charge, HEAD.
-La seule écriture autorisée est PUT /api/v1/settings, limitée aux réglages de
-l’application. Aucune mutation système n’est disponible.
+Les écritures autorisées sont PUT /api/v1/settings (réglages) et
+POST /api/v1/diagnostics (export confirmé). Aucune mutation système n’est disponible.
 
 | GET | Résultat |
 | --- | --- |
@@ -114,3 +114,17 @@ règle, gravité, message, état, début et résolution. Pas d’acquittement ni
 
 La santé conserve read_only=true au sens des ressources système et annonce
 settings_writable=true. Une base indisponible ne rend pas /health ou les métriques inaccessibles.
+
+## Diagnostic et langue
+
+GET /diagnostics/options retourne les informations de confidentialité et le jeton
+CSRF, même si SQLite est indisponible. POST /diagnostics exige Bearer, origine
+locale exacte, application/json, X-LocalCockpit-CSRF et exactement
+`{"confirmed": true}`. Corps limité à 1024 octets ; délai global de cinq secondes
+entre générations (429). Réponse JSON pièce jointe, 64 Kio maximum, sans logs ni
+identités, construite à partir des instantanés existants. X-Diagnostic-Audit vaut
+recorded ou unavailable. Le schéma du rapport reste stable et indépendant de la langue.
+
+Preferences.language accepte fr/en (fr par défaut pour les anciennes données).
+Accept-Language choisit les messages d’erreur structurés, avec repli fr ;
+Content-Language et Vary sont renvoyés. Codes d’erreur et états restent stables.

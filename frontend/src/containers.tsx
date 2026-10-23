@@ -1,3 +1,4 @@
+import { t, useLanguage, getLocale, formatNumber } from "./i18n";
 import React, { useEffect, useState } from "react";
 import { api } from "./api";
 import { bytes } from "./format";
@@ -49,9 +50,9 @@ type Logs = {
 };
 const statusLabel = (s: string) =>
   ({
-    available: "Disponible",
-    unavailable: "Indisponible",
-    disabled: "Désactivé",
+    available: t("Disponible"),
+    unavailable: t("Indisponible"),
+    disabled: t("Désactivé"),
   })[s] || s;
 
 export function ContainersView({
@@ -63,6 +64,7 @@ export function ContainersView({
   token: string;
   refresh: number;
 }) {
+  useLanguage();
   const [selected, setSelected] = useState<{
     engine: string;
     id: string;
@@ -72,10 +74,10 @@ export function ContainersView({
   return (
     <>
       <section className="panel">
-        <h2>Inventaire des conteneurs</h2>
+        <h2>{t("Inventaire des conteneurs")}</h2>
         <div className="filters">
           <label>
-            Rechercher un conteneur
+            {t("Rechercher un conteneur")}{" "}
             <input
               value={query}
               maxLength={100}
@@ -83,18 +85,19 @@ export function ContainersView({
             />
           </label>
           <label>
-            État des conteneurs
-            <select value={state} onChange={(e) => setState(e.target.value)}>
-              <option value="all">Tous</option>
-              <option value="running">En cours</option>
-              <option value="stopped">Arrêtés</option>
-              <option value="error">En erreur</option>
+            {t("État des conteneurs")}{" "}
+            <select value={t(state)} onChange={(e) => setState(e.target.value)}>
+              <option value="all">{t("Tous")}</option>
+              <option value="running">{t("En cours")}</option>
+              <option value="stopped">{t("Arrêtés")}</option>
+              <option value="error">{t("En erreur")}</option>
             </select>
           </label>
         </div>
         <p>
-          Lecture seule. Sélectionnez un conteneur pour consulter ses détails,
-          statistiques et journaux.
+          {t(
+            "Lecture seule. Sélectionnez un conteneur pour consulter ses détails, statistiques et journaux.",
+          )}{" "}
         </p>
       </section>
       {engines.map((engine) => {
@@ -116,15 +119,18 @@ export function ContainersView({
               {engine.name}{" "}
               <span className="badge">{statusLabel(engine.status)}</span>
             </h2>
-            <p>{engine.message || `Version ${engine.version}`}</p>
+            <p>
+              {(engine.message ? t(engine.message) : null) ||
+                t("Version {0}", { 0: engine.version })}
+            </p>
             <div className="table-scroll">
               <table>
                 <thead>
                   <tr>
-                    <th>Nom</th>
-                    <th>Image</th>
-                    <th>État</th>
-                    <th>Ports publiés</th>
+                    <th>{t("Nom")}</th>
+                    <th>{t("Image")}</th>
+                    <th>{t("État")}</th>
+                    <th>{t("Ports publiés")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -144,7 +150,7 @@ export function ContainersView({
                         </button>
                       </td>
                       <td>{c.image}</td>
-                      <td>{c.status || c.state}</td>
+                      <td>{c.status || t(c.state)}</td>
                       <td>{c.ports.join(", ") || "—"}</td>
                     </tr>
                   ))}
@@ -152,7 +158,7 @@ export function ContainersView({
               </table>
             </div>
             {engine.status === "available" && !rows.length && (
-              <p>Aucun conteneur correspondant.</p>
+              <p>{t("Aucun conteneur correspondant.")}</p>
             )}
           </section>
         );
@@ -256,87 +262,97 @@ function ContainerInspector({
   }, [base, token, detail, tail, period]);
   return (
     <section className="panel">
-      <h2>Détails du conteneur · {engine}</h2>
+      <h2>
+        {t("Détails du conteneur ·")} {engine}
+      </h2>
       <button onClick={() => setReload((v) => v + 1)}>
-        Actualiser ce conteneur
+        {t("Actualiser ce conteneur")}{" "}
       </button>
       {detailError && (
         <p className="error" role="alert">
-          {detailError}
+          {t(detailError)}
         </p>
       )}
-      {!detail && !detailError && <p role="status">Lecture du conteneur…</p>}
+      {!detail && !detailError && (
+        <p role="status">{t("Lecture du conteneur…")}</p>
+      )}
       {detail && (
         <>
           <h3>{detail.name}</h3>
           <small>
-            État collecté à {new Date(detail.collected_at).toLocaleTimeString()}
+            {t("État collecté à")}{" "}
+            {new Date(detail.collected_at).toLocaleTimeString(getLocale())}
           </small>
           <dl className="properties">
-            <dt>Identifiant</dt>
+            <dt>{t("Identifiant")}</dt>
             <dd>{detail.id}</dd>
-            <dt>Image</dt>
+            <dt>{t("Image")}</dt>
             <dd>{detail.image}</dd>
-            <dt>État</dt>
-            <dd>{detail.state.Status}</dd>
-            <dt>Créé</dt>
-            <dd>{detail.created || "Indisponible"}</dd>
-            <dt>Démarré</dt>
-            <dd>{detail.state.StartedAt || "Indisponible"}</dd>
-            <dt>Code de sortie</dt>
+            <dt>{t("État")}</dt>
+            <dd>{t(detail.state.Status)}</dd>
+            <dt>{t("Créé")}</dt>
+            <dd>{detail.created || t("Indisponible")}</dd>
+            <dt>{t("Démarré")}</dt>
+            <dd>{detail.state.StartedAt || t("Indisponible")}</dd>
+            <dt>{t("Code de sortie")}</dt>
             <dd>
               {detail.state.Running
-                ? "Sans objet"
-                : (detail.state.ExitCode ?? "Indisponible")}
+                ? t("Sans objet")
+                : (detail.state.ExitCode ?? t("Indisponible"))}
             </dd>
-            <dt>Arrêt par manque de mémoire</dt>
+            <dt>{t("Arrêt par manque de mémoire")}</dt>
             <dd>
               {detail.state.OOMKilled == null
-                ? "Indisponible"
+                ? t("Indisponible")
                 : detail.state.OOMKilled
-                  ? "Oui"
-                  : "Non"}
+                  ? t("Oui")
+                  : t("Non")}
             </dd>
           </dl>
-          <h3>Statistiques</h3>
+          <h3>{t("Statistiques")}</h3>
           {statsError && (
             <p className="error" role="alert">
-              Statistiques : {statsError}
+              {t("Statistiques :")} {t(statsError)}
             </p>
           )}
-          {!stats && !statsError && <p role="status">Mesure des ressources…</p>}
+          {!stats && !statsError && (
+            <p role="status">{t("Mesure des ressources…")}</p>
+          )}
           {stats && (
             <>
               <small>
-                Collecté à {new Date(stats.collected_at).toLocaleTimeString()}
+                {t("Collecté à")}{" "}
+                {new Date(stats.collected_at).toLocaleTimeString(getLocale())}
               </small>
               <div className="cards">
                 <article className="card">
                   <p>CPU</p>
                   <strong>
                     {stats.cpu_percent == null
-                      ? "Indisponible"
-                      : `${stats.cpu_percent.toFixed(1)} %`}
+                      ? t("Indisponible")
+                      : `${formatNumber(stats.cpu_percent)} %`}
                   </strong>
                 </article>
                 <article className="card">
-                  <p>MÉMOIRE BRUTE</p>
+                  <p>{t("MÉMOIRE BRUTE")}</p>
                   <strong>{bytes(stats.memory_usage_bytes)}</strong>
-                  <small>Limite : {bytes(stats.memory_limit_bytes)}</small>
+                  <small>
+                    {t("Limite :")} {bytes(stats.memory_limit_bytes)}
+                  </small>
                 </article>
               </div>
-              <p>{stats.note}</p>
+              <p>{t(stats.note)}</p>
             </>
           )}
-          <h3>Journaux récents</h3>
+          <h3>{t("Journaux récents")}</h3>
           <p>
-            Lecture bornée, sans suivi continu. Flux stdout et stderr regroupés
-            séparément ; ordre global non reconstruit. Les secrets connus sont
-            masqués, sans garantie exhaustive.
+            {t(
+              "Lecture bornée, sans suivi continu. Flux stdout et stderr regroupés séparément ; ordre global non reconstruit. Les secrets connus sont masqués, sans garantie exhaustive.",
+            )}{" "}
           </p>
           <div className="filters">
             <label>
-              Lignes par flux
+              {t("Lignes par flux")}{" "}
               <select value={tail} onChange={(e) => setTail(e.target.value)}>
                 <option value="50">50</option>
                 <option value="100">100</option>
@@ -344,32 +360,33 @@ function ContainerInspector({
               </select>
             </label>
             <label>
-              Période des conteneurs
+              {t("Période des conteneurs")}{" "}
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
               >
-                <option value="hour">Dernière heure</option>
-                <option value="day">Dernières 24 heures</option>
+                <option value="hour">{t("Dernière heure")}</option>
+                <option value="day">{t("Dernières 24 heures")}</option>
               </select>
             </label>
           </div>
           {logError && (
             <p className="error" role="alert">
-              Journaux : {logError}
+              {t("Journaux :")} {t(logError)}
             </p>
           )}
           {!logs && !logError && (
-            <p role="status">Lecture des journaux du conteneur…</p>
+            <p role="status">{t("Lecture des journaux du conteneur…")}</p>
           )}
           {logs && (
             <>
               <small>
-                Lu à {new Date(logs.collected_at).toLocaleTimeString()}
-                {logs.tty ? " · TTY : flux fusionné" : ""}
+                {t("Lu à")}{" "}
+                {new Date(logs.collected_at).toLocaleTimeString(getLocale())}
+                {logs.tty ? t(" · TTY : flux fusionné") : ""}
               </small>
               {!logs.items.length && (
-                <p>Aucune entrée visible sur cette période.</p>
+                <p>{t("Aucune entrée visible sur cette période.")}</p>
               )}
               <div className="log-list">
                 {logs.items.map((line, i) => (

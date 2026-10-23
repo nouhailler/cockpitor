@@ -1,8 +1,9 @@
+import { t, formatNumber } from "./i18n";
 export const bytes = (n: number | null | undefined) =>
   n == null
-    ? "Indisponible"
+    ? t("Indisponible")
     : n >= 1073741824
-      ? `${(n / 1073741824).toFixed(1)} Gio`
+      ? `${formatNumber(n / 1073741824)} ${t("Gio")}`
       : n >= 1048576
-        ? `${(n / 1048576).toFixed(1)} Mio`
-        : `${(n / 1024).toFixed(1)} Kio`;
+        ? `${formatNumber(n / 1048576)} ${t("Mio")}`
+        : `${formatNumber(n / 1024)} ${t("Kio")}`;

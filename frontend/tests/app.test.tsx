@@ -9,7 +9,7 @@ afterEach(() => {
 });
 it("formats unavailable metrics and binary units", () => {
   expect(bytes(null)).toBe("Indisponible");
-  expect(bytes(1073741824)).toBe("1.0 Gio");
+  expect(bytes(1073741824)).toBe("1,0 Gio");
 });
 it("requires an explicit token and does not put it in URL", async () => {
   const fetcher = vi

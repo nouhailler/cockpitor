@@ -177,3 +177,27 @@ class Store:
             db.execute(
                 "DELETE FROM alert_events WHERE status='resolved' AND id NOT IN (SELECT id FROM alert_events WHERE status='resolved' ORDER BY rowid DESC LIMIT 1000)"
             )
+
+    def diagnostic_summary(self):
+        with self.connection() as db:
+            rows = db.execute(
+                "SELECT status, count(*) AS count FROM alert_events GROUP BY status"
+            ).fetchall()
+            return {
+                "alerts": {
+                    row["status"]: row["count"]
+                    for row in rows
+                    if row["status"] in {"active", "resolved"}
+                }
+            }
+
+    def audit(self, operation_id: str, action: str):
+        if action != "diagnostics.export":
+            raise StorageError("Action audit non autorisée")
+        with self.connection() as db:
+            db.execute(
+                "INSERT INTO audit_events VALUES (?, ?, ?)", (operation_id, action, timestamp())
+            )
+            db.execute(
+                "DELETE FROM audit_events WHERE id NOT IN (SELECT id FROM audit_events ORDER BY rowid DESC LIMIT 1000)"
+            )

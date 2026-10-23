@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Diagnostic et français/anglais — 23 octobre 2026
+
+- Export JSON local confirmé, borné et audité, construit par liste blanche.
+- Exclusion des identités, chemins, adresses, logs, variables et jetons.
+- Export disponible sans SQLite, avec audit indisponible explicitement signalé.
+- Catalogues français/anglais partagés, choix immédiat et préférence persistante.
+- Dates, nombres, unités et erreurs API localisés ; données externes conservées.
+- 109 tests backend et 18 frontend ; téléchargement et langue vérifiés en navigateur.
+- README anglais et captures réelles ajoutés. Aucune action système ajoutée.
+
+
 ### Préférences et alertes — 23 octobre 2026
 
 - SQLite v1 privé, initialisation/migration avec sauvegarde, préférences et audit borné.

@@ -74,4 +74,13 @@ résout. Modifier, désactiver ou supprimer une règle résout ses événements 
 changer uniquement le thème ne les résout pas. Les durées en attente repartent au
 redémarrage, les événements persistent sans doublon. Les résolus sont conservés
 pendant 1–90 jours à compter de leur résolution, avec un maximum de 1000 résolus.
-Aucun envoi externe ou action automatique. Le diagnostic exportable reste absent.
+Aucun envoi externe ou action automatique. Le diagnostic expurgé est disponible dans Diagnostic.
+
+## Langue et diagnostic
+
+Choisir Français ou English dans la barre latérale pour la session ; enregistrer
+la langue dans Paramètres pour les prochaines connexions. Les nombres et dates
+suivent ce choix ; les journaux et noms externes restent inchangés.
+Dans Diagnostic, lire les exclusions, cocher la confirmation puis télécharger.
+Le JSON ne contient que les agrégats autorisés. Vérifier son contenu avant partage.
+Aucun envoi externe automatique. L’audit est signalé indisponible si SQLite ne répond pas.

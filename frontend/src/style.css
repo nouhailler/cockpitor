@@ -463,3 +463,21 @@ select:focus-visible {
 .rule-editor input[type="number"] {
   width: 145px;
 }
+
+.language-picker {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  margin: 16px 0;
+}
+.confirmation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0;
+}
+.confirmation input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}

@@ -1,5 +1,14 @@
+import {
+  t,
+  useLanguage,
+  getLocale,
+  formatNumber,
+  LanguagePicker,
+  setLanguage,
+} from "./i18n";
 import React, { useEffect, useState } from "react";
 import "./style.css";
+import { DiagnosticView } from "./diagnostics";
 import { SettingsView, AlertsView, type Preferences } from "./preferences";
 import { bytes } from "./format";
 export { bytes } from "./format";
@@ -71,12 +80,12 @@ type Module = {
   }[];
 };
 const pct = (n: number | null | undefined) =>
-  n == null ? "Indisponible" : `${n.toFixed(1)} %`;
+  n == null ? t("Indisponible") : `${formatNumber(n)} %`;
 const statusLabel = (status: string) =>
   ({
-    available: "Disponible",
-    unavailable: "Indisponible",
-    disabled: "Désactivé",
+    available: t("Disponible"),
+    unavailable: t("Indisponible"),
+    disabled: t("Désactivé"),
   })[status] || status;
 function Card({
   label,
@@ -99,12 +108,13 @@ function Graph({ history }: { history: History }) {
   return (
     <section className="panel">
       <h2>
-        Activité CPU <small>15 min maximum · mémoire vive uniquement</small>
+        {t("Activité CPU")}{" "}
+        <small>{t("15 min maximum · mémoire vive uniquement")}</small>
       </h2>
       <svg
         viewBox="0 0 800 150"
         role="img"
-        aria-label="Utilisation CPU, de 0 à 100 pour cent"
+        aria-label={t("Utilisation CPU, de 0 à 100 pour cent")}
       >
         <path d="M0 1H800 M0 75H800 M0 149H800" className="grid" />
         <polyline
@@ -124,15 +134,16 @@ function Graph({ history }: { history: History }) {
         <span>0–100 %</span>
         <span>
           {history.length
-            ? new Date(history[0].collected_at).toLocaleTimeString()
-            : "En attente"}{" "}
-          → maintenant
+            ? new Date(history[0].collected_at).toLocaleTimeString(getLocale())
+            : t("En attente")}{" "}
+          {t("→ maintenant")}{" "}
         </span>
       </div>
     </section>
   );
 }
 export function App() {
+  useLanguage();
   const [token, setToken] = useState("");
   const [input, setInput] = useState("");
   const [page, setPage] = useState("Vue d’ensemble");
@@ -151,6 +162,7 @@ export function App() {
   const [preferencesError, setPreferencesError] = useState("");
   function applyPreferences(settings: Preferences) {
     setTheme(settings.theme);
+    setLanguage(settings.language ?? "fr");
     setRefreshSeconds(settings.refresh_seconds);
   }
   useEffect(() => {
@@ -170,7 +182,7 @@ export function App() {
         }
       } catch {
         if (!controller.signal.aborted) {
-          setPreferencesError("Réglages persistants indisponibles");
+          setPreferencesError(t("Réglages persistants indisponibles"));
           timer = setTimeout(load, 3000);
         }
       }
@@ -281,8 +293,9 @@ export function App() {
     return (
       <main className="login">
         <div className="brand">◈ LocalCockpit</div>
-        <h1>Votre machine, en clair.</h1>
-        <p>Supervision locale · lecture seule · aucune télémétrie</p>
+        <LanguagePicker />
+        <h1>{t("Votre machine, en clair.")}</h1>
+        <p>{t("Supervision locale · lecture seule · aucune télémétrie")}</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -290,7 +303,9 @@ export function App() {
             setInput("");
           }}
         >
-          <label htmlFor="token">Jeton affiché par le lanceur local</label>
+          <label htmlFor="token">
+            {t("Jeton affiché par le lanceur local")}
+          </label>
           <input
             id="token"
             type="password"
@@ -299,9 +314,11 @@ export function App() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <button>Ouvrir le cockpit →</button>
+          <button>{t("Ouvrir le cockpit →")}</button>
         </form>
-        <small>Le jeton reste uniquement en mémoire dans cet onglet.</small>
+        <small>
+          {t("Le jeton reste uniquement en mémoire dans cet onglet.")}
+        </small>
       </main>
     );
   const stale = metrics
@@ -311,8 +328,9 @@ export function App() {
     <div className="layout">
       <aside>
         <div className="brand">◈ LocalCockpit</div>
-        <span className="eyebrow">ESPACE PERSONNEL</span>
-        <nav aria-label="Navigation principale">
+        <LanguagePicker />
+        <span className="eyebrow">{t("ESPACE PERSONNEL")}</span>
+        <nav aria-label={t("Navigation principale")}>
           {[
             "Vue d’ensemble",
             "Système",
@@ -322,6 +340,7 @@ export function App() {
             "Conteneurs",
             "Alertes",
             "Paramètres",
+            "Diagnostic",
           ].map((p, i) => (
             <button
               key={p}
@@ -329,14 +348,14 @@ export function App() {
               aria-current={page === p ? "page" : undefined}
               onClick={() => setPage(p)}
             >
-              <span>{["▦", "◉", "≋", "⚙", "✧", "▣", "⚑", "☷"][i]}</span>
-              {p}
+              <span>{["▦", "◉", "≋", "⚙", "✧", "▣", "⚑", "☷", "⇩"][i]}</span>
+              {t(p)}
             </button>
           ))}
         </nav>
         <div className="aside-bottom">
-          <p>● Système en lecture seule</p>
-          <small>Aucune action système autorisée</small>
+          <p>{t("● Système en lecture seule")}</p>
+          <small>{t("Aucune action système autorisée")}</small>
           <button
             onClick={() => {
               setToken("");
@@ -344,93 +363,102 @@ export function App() {
               setProcesses([]);
             }}
           >
-            Déconnexion
+            {t("Déconnexion")}{" "}
           </button>
         </div>
       </aside>
       <main>
         <header>
           <span>
-            POSTE LOCAL / {metrics?.hostname || "Connexion"}
-            {preferencesError && <small> · {preferencesError}</small>}
+            {t("POSTE LOCAL /")} {metrics?.hostname || t("Connexion")}
+            {preferencesError && <small> · {t(preferencesError)}</small>}
           </span>
           <div>
-            <span className={error || stale ? "badge warning" : "badge"}>
-              {error || stale
-                ? "● Données indisponibles ou anciennes"
-                : "● Connecté en local"}
+            <span className={t(error) || stale ? "badge warning" : "badge"}>
+              {t(error) || stale
+                ? t("● Données indisponibles ou anciennes")
+                : t("● Connecté en local")}
             </span>
-            <button onClick={() => setRefresh((v) => v + 1)}>Actualiser</button>
+            <button onClick={() => setRefresh((v) => v + 1)}>
+              {t("Actualiser")}
+            </button>
           </div>
         </header>
         <div className="heading">
           <div>
-            <span className="eyebrow">LOCALCOCKPIT / SUPERVISION</span>
-            <h1>{page}</h1>
+            <span className="eyebrow">{t("LOCALCOCKPIT / SUPERVISION")}</span>
+            <h1>{t(page)}</h1>
             <p>
               {page === "Vue d’ensemble"
-                ? "L’essentiel de votre machine, en un coup d’œil."
-                : "Données locales observées, sans modification du système."}
+                ? t("L’essentiel de votre machine, en un coup d’œil.")
+                : t("Données locales observées, sans modification du système.")}
             </p>
           </div>
           <small>
-            Dernière collecte système
-            <br />
+            {t("Dernière collecte système")} <br />
             {metrics
-              ? new Date(metrics.collected_at).toLocaleTimeString()
-              : "En attente"}
+              ? new Date(metrics.collected_at).toLocaleTimeString(getLocale())
+              : t("En attente")}
           </small>
         </div>
         {(error || stale) && (
           <div className="error" role="alert">
-            {error ||
-              "La collecte est interrompue. Les dernières valeurs ci-dessous sont anciennes."}
+            {t(error) ||
+              t(
+                "La collecte est interrompue. Les dernières valeurs ci-dessous sont anciennes.",
+              )}
           </div>
         )}
         {["Vue d’ensemble", "Système"].includes(page) && (
           <>
             {!metrics ? (
-              <p role="status">Collecte des métriques en cours…</p>
+              <p role="status">{t("Collecte des métriques en cours…")}</p>
             ) : (
               <>
                 <div className="cards">
                   <Card
-                    label="PROCESSEUR"
+                    label={t("PROCESSEUR")}
                     value={pct(metrics.cpu_percent)}
-                    detail={`${metrics.cpu_cores.length || "—"} cœurs logiques`}
+                    detail={t("{0} cœurs logiques", {
+                      0: metrics.cpu_cores.length || "—",
+                    })}
                   />
                   <Card
-                    label="MÉMOIRE"
+                    label={t("MÉMOIRE")}
                     value={pct(metrics.memory.percent)}
                     detail={`${bytes(metrics.memory.used)} / ${bytes(metrics.memory.total)}`}
                   />
                   <Card
-                    label="STOCKAGE PRINCIPAL"
+                    label={t("STOCKAGE PRINCIPAL")}
                     value={pct(
                       (
                         metrics.disks.find((d) => d.mount === "/") ||
                         metrics.disks[0]
                       )?.percent,
                     )}
-                    detail="Système de fichiers /"
+                    detail={t("Système de fichiers /")}
                   />
                   <Card
-                    label="TEMPS DE FONCTIONNEMENT"
+                    label={t("TEMPS DE FONCTIONNEMENT")}
                     value={`${Math.floor(metrics.uptime_seconds / 3600)} h`}
-                    detail={`Charge : ${metrics.load.map((v) => v.toFixed(2)).join(" · ")}`}
+                    detail={t("Charge : {0}", {
+                      0: metrics.load
+                        .map((v) => formatNumber(v, 2))
+                        .join(" · "),
+                    })}
                   />
                 </div>
                 <div className="split">
                   <Graph history={history} />
                   <section className="panel">
-                    <h2>Réseau</h2>
+                    <h2>{t("Réseau")}</h2>
                     <p className="network">
                       ↓ {bytes(metrics.network.received_bps)}/s
                     </p>
                     <p className="network">
                       ↑ {bytes(metrics.network.sent_bps)}/s
                     </p>
-                    <small>Débit agrégé des interfaces · octets/s</small>
+                    <small>{t("Débit agrégé des interfaces · octets/s")}</small>
                     <h2>Swap</h2>
                     <p>
                       {bytes(metrics.swap.used)} / {bytes(metrics.swap.total)}
@@ -438,15 +466,15 @@ export function App() {
                   </section>
                 </div>
                 <section className="panel">
-                  <h2>Systèmes de fichiers</h2>
+                  <h2>{t("Systèmes de fichiers")}</h2>
                   <div className="table-scroll">
                     <table>
                       <thead>
                         <tr>
-                          <th>Point de montage</th>
-                          <th>Utilisé</th>
-                          <th>Capacité</th>
-                          <th>Occupation</th>
+                          <th>{t("Point de montage")}</th>
+                          <th>{t("Utilisé")}</th>
+                          <th>{t("Capacité")}</th>
+                          <th>{t("Occupation")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -455,7 +483,9 @@ export function App() {
                             <td>{d.mount}</td>
                             <td>{bytes(d.used)}</td>
                             <td>{bytes(d.total)}</td>
-                            <td>{d.error || pct(d.percent)}</td>
+                            <td>
+                              {(d.error ? t(d.error) : null) || pct(d.percent)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -464,20 +494,22 @@ export function App() {
                 </section>
                 {page === "Système" && (
                   <section className="panel">
-                    <h2>Informations et capteurs</h2>
+                    <h2>{t("Informations et capteurs")}</h2>
                     <p>{metrics.os}</p>
                     {metrics.temperatures.length ? (
                       metrics.temperatures.map((t, i) => (
                         <p key={i}>
-                          {t.name} : {t.celsius.toFixed(1)} °C
+                          {t.name} : {formatNumber(t.celsius)} °C
                         </p>
                       ))
                     ) : (
                       <p>
-                        Températures indisponibles : aucun capteur accessible.
+                        {t(
+                          "Températures indisponibles : aucun capteur accessible.",
+                        )}{" "}
                       </p>
                     )}
-                    <p>GPU : collecte non implémentée.</p>
+                    <p>{t("GPU : collecte non implémentée.")}</p>
                   </section>
                 )}
               </>
@@ -487,14 +519,16 @@ export function App() {
         {page === "Processus" && (
           <section className="panel">
             <h2>
-              Processus{" "}
+              {t("Processus")}{" "}
               <small>
-                Triés par mémoire · CPU par cœur, peut dépasser 100 %
+                {t(
+                  "Triés par mémoire · CPU par cœur, peut dépasser 100 %",
+                )}{" "}
               </small>
             </h2>
             <input
-              aria-label="Rechercher un processus"
-              placeholder="Rechercher par nom…"
+              aria-label={t("Rechercher un processus")}
+              placeholder={t("Rechercher par nom…")}
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -506,11 +540,11 @@ export function App() {
                 <thead>
                   <tr>
                     <th>PID</th>
-                    <th>Nom</th>
-                    <th>Utilisateur</th>
+                    <th>{t("Nom")}</th>
+                    <th>{t("Utilisateur")}</th>
                     <th>CPU</th>
                     <th>RAM</th>
-                    <th>État</th>
+                    <th>{t("État")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -521,26 +555,28 @@ export function App() {
                       <td>{p.user}</td>
                       <td>{pct(p.cpu_percent)}</td>
                       <td>{pct(p.memory_percent)}</td>
-                      <td>{p.status}</td>
+                      <td>{t(p.status)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {!processes.length && <p>Aucun résultat disponible.</p>}
+            {!processes.length && <p>{t("Aucun résultat disponible.")}</p>}
             <div className="pagination">
               <button
                 disabled={!offset}
                 onClick={() => setOffset((v) => Math.max(0, v - 50))}
               >
-                Précédent
+                {t("Précédent")}{" "}
               </button>
-              <span>{total} processus</span>
+              <span>
+                {total} {t("processus")}
+              </span>
               <button
                 disabled={offset + 50 >= total}
                 onClick={() => setOffset((v) => v + 50)}
               >
-                Suivant
+                {t("Suivant")}{" "}
               </button>
             </div>
           </section>
@@ -549,17 +585,20 @@ export function App() {
           <>
             {moduleError && (
               <p className="error" role="alert">
-                {moduleError} — les données précédentes sont anciennes.
+                {t(moduleError)}{" "}
+                {t("— les données précédentes sont anciennes.")}{" "}
               </p>
             )}
             {!module && !moduleError && (
-              <p role="status">Vérification des intégrations…</p>
+              <p role="status">{t("Vérification des intégrations…")}</p>
             )}
             {module && (
               <>
                 <p className="module-time">
-                  Vérification :{" "}
-                  {new Date(module.collected_at).toLocaleTimeString()}
+                  {t("Vérification :")}{" "}
+                  {new Date(module.collected_at).toLocaleTimeString(
+                    getLocale(),
+                  )}
                 </p>
                 {page === "IA locale" ? (
                   <AIView data={module} />
@@ -587,8 +626,11 @@ export function App() {
           />
         )}
         {page === "Alertes" && <AlertsView token={token} refresh={refresh} />}
+        {page === "Diagnostic" && <DiagnosticView token={token} />}
         <footer>
-          Lecture seule · Données conservées localement · Aucun service cloud
+          {t(
+            "Lecture seule · Données conservées localement · Aucun service cloud",
+          )}{" "}
         </footer>
       </main>
     </div>
@@ -606,24 +648,27 @@ function AIView({ data }: { data: AIStatus }) {
                 {i === 0 ? "Ollama" : "OpenWebUI"}{" "}
                 <span className="badge">{statusLabel(m.status)}</span>
               </h2>
-              <p>{m.message || `${m.latency_ms?.toFixed(0)} ms`}</p>
+              <p>
+                {(m.message ? t(m.message) : null) ||
+                  `${m.latency_ms == null ? t("Indisponible") : formatNumber(m.latency_ms, 0)} ms`}
+              </p>
               {m.url && (
                 <a href={m.url} target="_blank" rel="noreferrer">
-                  Ouvrir {m.url} ↗
+                  {t("Ouvrir")} {m.url} ↗
                 </a>
               )}
               {m.models && (
                 <>
-                  <h3>Modèles installés</h3>
-                  {!m.models.length && <p>Aucun modèle installé.</p>}
+                  <h3>{t("Modèles installés")}</h3>
+                  {!m.models.length && <p>{t("Aucun modèle installé.")}</p>}
                   <div className="table-scroll">
                     <table>
                       <thead>
                         <tr>
-                          <th>Nom</th>
-                          <th>Taille</th>
-                          <th>Famille</th>
-                          <th>Quantification</th>
+                          <th>{t("Nom")}</th>
+                          <th>{t("Taille")}</th>
+                          <th>{t("Famille")}</th>
+                          <th>{t("Quantification")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -631,8 +676,8 @@ function AIView({ data }: { data: AIStatus }) {
                           <tr key={model.name}>
                             <td>{model.name}</td>
                             <td>{bytes(model.size)}</td>
-                            <td>{model.family || "Indisponible"}</td>
-                            <td>{model.quantization || "Indisponible"}</td>
+                            <td>{model.family || t("Indisponible")}</td>
+                            <td>{model.quantization || t("Indisponible")}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -642,8 +687,8 @@ function AIView({ data }: { data: AIStatus }) {
               )}
               {m.loaded && (
                 <p>
-                  Modèles chargés :{" "}
-                  {m.loaded.map((model) => model.name).join(", ") || "aucun"}
+                  {t("Modèles chargés :")}{" "}
+                  {m.loaded.map((model) => model.name).join(", ") || t("aucun")}
                 </p>
               )}
             </section>

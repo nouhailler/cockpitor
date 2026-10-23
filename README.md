@@ -1,5 +1,7 @@
 # ◈ Cockpitor
 
+[🇬🇧 English](README.en.md) · 🇫🇷 Français
+
 **Votre poste Linux, en un coup d’œil.**
 
 Un cockpit personnel de supervision locale pour Debian : ressources système,
@@ -155,9 +157,12 @@ un autre dossier dédié au lancement. Ne pas choisir un répertoire partagé.
 Conserver/sauvegarder ce dossier avant de supprimer le checkout. Aucun jeton ou
 mot de passe n’est stocké dans la base. Une panne SQLite laisse la supervision disponible.
 
-> La seule écriture API autorisée est **PUT /api/v1/settings**, pour les réglages
+> Les écritures API autorisées sont **PUT /api/v1/settings**, pour les réglages,
+> et **POST /api/v1/diagnostics**, pour un export confirmé. Les protections
 > de l’application : jeton d’accès, origine locale exacte, en-tête CSRF et JSON
-> limité à 16 Kio sont requis. Les mutations système restent interdites.
+> borné sont requises. Les mutations système restent interdites.
+
+
 
 <details>
 <summary>⚑ Captures réelles des alertes et des réglages</summary>
@@ -165,6 +170,30 @@ mot de passe n’est stocké dans la base. Une panne SQLite laisse la supervisio
 ![Observabilité des règles sur les métriques réelles](docs/images/alerts.jpg)
 
 ![Préférences persistantes enregistrées dans SQLite](docs/images/settings.jpg)
+
+</details>
+
+## 🌍 Français / English et diagnostic
+
+Le sélecteur **Langue de la session** change immédiatement l’interface. Dans
+**Paramètres → Langue**, enregistrer la langue pour les prochaines connexions.
+La préférence persistante est appliquée après authentification ; les anciennes
+bases adoptent le français. Dates, nombres et unités suivent la langue choisie.
+Les noms externes et les journaux conservent leur texte d’origine.
+
+Dans **Diagnostic**, confirmer puis télécharger un JSON limité à 64 Kio : métriques
+agrégées, états des modules, réglages non sensibles et compteurs d’alertes.
+Une liste blanche exclut noms, identifiants, chemins, adresses, journaux,
+environnement et jetons. Aucun fichier n’est conservé sur le serveur ni envoyé
+à un tiers. Vérifier le fichier avant partage : les agrégats décrivent encore la machine.
+L’export reste disponible si SQLite tombe en panne, avec audit signalé indisponible.
+
+![Interface anglaise](docs/images/dashboard-en.jpg)
+
+<details>
+<summary>⇩ Diagnostic confirmé et audité</summary>
+
+![Diagnostic local en anglais](docs/images/diagnostics-en.jpg)
 
 </details>
 
@@ -204,7 +233,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **97 tests backend et 13 tests frontend
+Validation locale de cette version : **109 tests backend et 18 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -218,7 +247,7 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 - [x] Services systemd chargés et lecture bornée des journaux par service.
 - [ ] Sessions avec expiration et limitation des tentatives.
 - [x] Préférences SQLite et alertes locales.
-- [ ] Diagnostic expurgé.
+- [x] Diagnostic expurgé et interface français/anglais.
 - [ ] Paquet `.deb`, durcissement systemd et validation Debian.
 - [ ] Actions sensibles, **uniquement après validation des protections et tests dédiés**.
 

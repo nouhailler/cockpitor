@@ -28,9 +28,9 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 | IA | Modèles Ollama, modèles chargés si disponibles, état HTTP/lien OpenWebUI |
 | Conteneurs | Inventaire, filtres, détails, CPU/RAM et journaux bornés via socket explicitement configuré |
 | Services et journaux | Inventaire des services chargés, détails, journaux bornés/paginés et permissions explicites |
-| Mutations | Aucune action système ; PUT /api/v1/settings protège les seuls réglages applicatifs |
+| Mutations | Aucune action système ; PUT settings et POST diagnostics protégés |
 | Persistance | SQLite v1 privé : préférences, événements d’alerte et audit borné des réglages |
-| Distribution | Diagnostic et paquet Debian absents |
+| Distribution | Diagnostic expurgé disponible ; paquet Debian absent |
 
 ## Décisions à préserver
 
@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 97 tests backend et 13 tests frontend réussis localement.
+- 109 tests backend et 18 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -154,3 +154,18 @@ Le répertoire privé par défaut est `.localcockpit/` à la racine ; il est ign
 Git et ne doit pas être commité. Le nom peut être remplacé au lancement par
 LOCALCOCKPIT_DATA_DIR. Une panne de base est signalée et réessayée en arrière-plan,
 sans bloquer les autres modules. Le diagnostic expurgé reste la prochaine étape.
+
+## Diagnostic et multilingue — 23 octobre 2026
+
+Diagnostic livré dans diagnostics.py et diagnostics.tsx, liste blanche stricte,
+confirmation, CSRF, origine exacte, plafond 64 Kio et délai de cinq secondes entre
+exports. GET diagnostics/options fournit le CSRF indépendamment de SQLite.
+Un export sans stockage fonctionne mais annonce l’absence d’audit.
+Les catalogues partagés locales/fr.json et locales/en.json doivent accompagner
+le backend. Préférence language additive, défaut fr, sans migration physique de
+SQLite v1. Le sélecteur de session est immédiat ; Paramètres persiste le choix.
+Erreurs API localisées via Accept-Language, codes et identifiants stables.
+109 tests backend et 18 frontend passent. Connexion, restauration de l’anglais
+et téléchargement réel confirmés dans le navigateur ; captures anglaises versionnées.
+Prochaine étape : sessions expirables et limitation des tentatives, avant packaging.
+Les opérations sensibles restent absentes.

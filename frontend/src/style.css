@@ -481,3 +481,72 @@ select:focus-visible {
   height: 18px;
   flex: 0 0 auto;
 }
+
+.nav-group {
+  display: block;
+  margin: 14px 12px 6px;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+nav {
+  max-height: calc(100vh - 390px);
+  overflow-y: auto;
+}
+textarea {
+  width: 100%;
+  min-height: 110px;
+  background: var(--panel);
+  color: inherit;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 6px;
+}
+.chat-messages pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.core-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 800px) {
+  nav {
+    max-height: none;
+  }
+}
+
+.memory-line {
+  fill: none;
+  stroke: #a8bafa;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+aside {
+  min-width: 0;
+}
+pre {
+  max-width: 100%;
+  overflow: auto;
+}
+.filters label {
+  max-width: 100%;
+}
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  nav {
+    max-width: 100%;
+    min-width: 0;
+  }
+  nav button,
+  .nav-group {
+    flex-shrink: 0;
+  }
+  .panel {
+    overflow-wrap: anywhere;
+  }
+}

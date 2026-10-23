@@ -37,17 +37,20 @@ la machine et de l’instant de collecte ; aucune donnée de démonstration n’
 | 💽 **Système** | Systèmes de fichiers, capacité et capteurs accessibles |
 | ⚙️ **Services et journaux** | Services système chargés, détails, journaux paginés et erreurs de permissions explicites |
 | 🔎 **Processus** | Recherche, pagination, utilisateur, CPU et mémoire |
-| 📈 **Historique** | Courbe CPU, environ 15 minutes conservées en mémoire |
+| 📈 **Historique** | Courbe CPU en mémoire et tendances CPU/RAM persistantes : une mesure/minute, sept jours |
 | 🧠 **Ollama** | Disponibilité, modèles installés et modèles chargés si exposés |
 | 🌐 **OpenWebUI** | État HTTP et lien vers une URL locale configurée |
 | 📦 **Docker / Podman** | Inventaire filtrable, détails, CPU/RAM et journaux bornés, avec accès explicite au socket |
 | ⚑ **Alertes locales** | Règles temporisées CPU/RAM/swap/disque, Ollama, services et conteneurs ; historique actif/résolu |
 | ☷ **Paramètres** | Thème clair/sombre/système, fréquence d’affichage, règles et rétention persistants dans SQLite |
-| 🎨 **Interface** | Navigation responsive et préférences restaurées après redémarrage |
+| 🎨 **Interface** | Navigation regroupée par domaine, FR/EN et préférences persistantes |
+| ◴ **Supervision** | Réseau/DNS/routes IPv4/écoutes IPv4–IPv6, disques/SMART, services installés, cache APT, heure, alimentation/NUT local et GPU NVIDIA selon outils/droits disponibles |
+| ✦ **Assistant IA** | Chat Ollama local, contexte numérique prévisualisé et facultatif, conversations enregistrables et annulation ; aucune exécution |
+| ☰ **Audit** | Historique applicatif paginé, sans corps ni jeton |
 
 ### 🔐 Principes
 
-- Écoute sur `127.0.0.1`, accès par jeton local, vérification des hôtes et origines.
+- Écoute sur `127.0.0.1`, accès par session locale, vérification des hôtes et origines.
 - Aucun arrêt de service, redémarrage de conteneur, shell ou agent privilégié.
 - Aucun cloud, compte externe, CDN ou télémétrie en fonctionnement normal.
 - Les intégrations absentes ne bloquent pas la surveillance système.
@@ -76,8 +79,10 @@ npm run build --prefix frontend
 2. Saisir le **jeton affiché dans le terminal** du lanceur.
 3. Consulter les métriques ; les premières mesures CPU et réseau nécessitent deux collectes.
 
-> Ne pas lancer en root. Le jeton reste en mémoire dans l’onglet et change au
-> redémarrage, sauf configuration explicite. Ne jamais le placer dans une URL.
+> Ne pas lancer en root. Le jeton du lanceur ouvre une session conservée en mémoire,
+> limitée à 15 minutes sans interaction et huit heures au total. Les lectures
+> automatiques ne prolongent pas la session. La déconnexion la révoque côté serveur.
+> Ne jamais placer un jeton dans une URL.
 > Arrêter l’application avec `Ctrl+C`.
 
 ## 🔌 Intégrations optionnelles
@@ -154,11 +159,11 @@ commande automatique n’est déclenchée.
 La base est privée : `.localcockpit/cockpitor.sqlite3` dans le projet, dossier
 `0700`, fichier `0600`, exclus de Git. `LOCALCOCKPIT_DATA_DIR` permet de choisir
 un autre dossier dédié au lancement. Ne pas choisir un répertoire partagé.
-Conserver/sauvegarder ce dossier avant de supprimer le checkout. Aucun jeton ou
-mot de passe n’est stocké dans la base. Une panne SQLite laisse la supervision disponible.
+Conserver/sauvegarder ce dossier avant de supprimer le checkout. Aucun jeton d’authentification n’est enregistré automatiquement dans la base.
+Les conversations facultatives restent du contenu utilisateur : ne pas y saisir de secrets. Une panne SQLite laisse la supervision disponible.
 
-> Les écritures API autorisées sont **PUT /api/v1/settings**, pour les réglages,
-> et **POST /api/v1/diagnostics**, pour un export confirmé. Les protections
+> Les écritures API sont limitées aux réglages, sessions, export diagnostic et
+> échanges avec l’assistant local. Les protections
 > de l’application : jeton d’accès, origine locale exacte, en-tête CSRF et JSON
 > borné sont requises. Les mutations système restent interdites.
 
@@ -197,6 +202,30 @@ L’export reste disponible si SQLite tombe en panne, avec audit signalé indisp
 
 </details>
 
+## ◴ Supervision enrichie et assistant local
+
+**Supervision** lit des instantanés en arrière-plan : outils absents et accès refusés
+restent explicites. Aucun paquet, pilote ou service n’est installé. Les mises à jour
+proviennent du cache APT existant ; il peut être ancien. Une adresse d’écoute ne
+suffit pas à prouver l’exposition Internet. Le GPU concerne NVIDIA ; SMART est
+limité à quatre disques, NUT à quatre onduleurs déjà déclarés sur le serveur local.
+
+**Assistant IA** utilise un modèle Ollama déjà installé. Préparer l’aperçu, puis
+cocher l’inclusion pour joindre uniquement CPU/RAM/swap et leur source horodatée.
+Les questions et jusqu’à huit messages précédents sont envoyés au modèle local.
+Le bouton Annuler interrompt la requête ; cela ne garantit pas le déchargement du
+modèle dans Ollama. Les réponses sont des suggestions à vérifier, sans outils ni
+commande exécutée. Les fournisseurs cloud restent absents.
+
+L’enregistrement est désactivé par défaut : au maximum 20 conversations et
+40 messages par conversation, huit derniers messages utilisés comme contexte.
+Le masquage des secrets est partiel : ne saisir aucun secret. Les conversations
+sauvegardées sont communes au compte local Cockpitor, pas des comptes multi-utilisateurs.
+SQLite passe en version 2 avec une sauvegarde privée préalable de l’ancienne base.
+Le diagnostic exclut aussi les conversations et les nouvelles informations réseau.
+
+![Assistant IA local en anglais](docs/images/assistant-en.jpg)
+
 ## 🏗️ Architecture
 
 ```mermaid
@@ -233,7 +262,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **109 tests backend et 18 tests frontend
+Validation locale de cette version : **138 tests backend et 22 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -245,9 +274,10 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 - [x] Inventaire optionnel Docker/Podman en lecture seule.
 - [x] Détails, statistiques et journaux bornés des conteneurs (qualification sur moteurs réels à réaliser).
 - [x] Services systemd chargés et lecture bornée des journaux par service.
-- [ ] Sessions avec expiration et limitation des tentatives.
+- [x] Sessions avec expiration, révocation et limitation des connexions.
 - [x] Préférences SQLite et alertes locales.
 - [x] Diagnostic expurgé et interface français/anglais.
+- [x] Architecture modulaire, supervision enrichie et assistant IA local sans exécution.
 - [ ] Paquet `.deb`, durcissement systemd et validation Debian.
 - [ ] Actions sensibles, **uniquement après validation des protections et tests dédiés**.
 

@@ -133,7 +133,7 @@ def build_report(metrics, ai, services, containers, store: Store, storage_ready:
             settings = store.preferences()
             summary = store.diagnostic_summary()
             store.audit(operation, "diagnostics.export")
-            report["storage"] = {"status": "available", "schema_version": 1, **summary}
+            report["storage"] = {"status": "available", "schema_version": 2, **summary}
             report["preferences"] = {
                 key: getattr(settings, key)
                 for key in ("theme", "language", "refresh_seconds", "retention_days")

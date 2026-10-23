@@ -18,7 +18,7 @@ et validées. Seules les informations utiles sont transmises à React. Aucun acc
 à l'environnement d'un conteneur ou à une base OpenWebUI.
 
 Cette version utilise SQLite pour les préférences et événements ; elle n’a ni
-système de plugins chargeables ni agent privilégié. Les interfaces de modules versionnées restent à formaliser.
+système de plugins chargeables ni agent privilégié. Les capacités sont annoncées par un manifeste ; aucun plugin chargeable.
 Les données de la machine de développement ne prouvent pas la compatibilité
 avec une installation Debian propre.
 
@@ -61,7 +61,7 @@ Le stockage est indépendant des collecteurs. Une connexion SQLite courte est ou
 par opération, sans fichier temporaire disque ; les transactions protègent réglages,
 résolutions associées et audit. Un verrou applicatif sérialise l’évaluation des
 règles et les enregistrements. La base garde les préférences JSON, événements et
-un audit minimal, aucune métrique haute fréquence ni secret.
+un audit minimal, aucune métrique haute fréquence ni secret de session. Les tendances minute et conversations facultatives sont décrites ci-dessous.
 
 L’évaluation toutes les deux secondes utilise les instantanés déjà partagés. Les
 métriques système ont une fraîcheur maximale de 15 s, les modules optionnels de 40 s.
@@ -73,3 +73,33 @@ les doublons. Modifier/supprimer une règle clôt son événement actif.
 Références : [sqlite3 Python](https://docs.python.org/3/library/sqlite3.html),
 [validation Pydantic](https://docs.pydantic.dev/latest/concepts/validators/) et
 [protection CSRF OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
+
+## Architecture modulaire et sessions
+
+main.py conserve le cycle de vie et l’assemblage, routes/ sépare système, intégrations,
+réglages, diagnostic, sessions et assistant. security.py centralise les contrôles
+HTTP et errors.py l’enveloppe localisée. modules.py expose les capacités explicites,
+toutes sans actions système. Les erreurs d’une intégration ne stoppent pas les autres.
+Le frontend sépare connexion, types, graphiques, navigation, supervision et assistant.
+
+L’échange du secret d’amorçage ouvre une session opaque hachée en mémoire. L’activité
+utilisateur est signalée séparément du polling. Les conversations enregistrées ne
+représentent pas des comptes : cette version reste mono-utilisateur local.
+
+## Supervision et persistance v2
+
+monitoring.py inspecte en arrière-plan outils fixes et interfaces psutil/sysfs,
+avec limites de temps et sortie. Les requêtes API ne lancent aucune sonde.
+SQLite v2 ajoute metric_history, ai_threads et ai_messages, après sauvegarde de la
+base antérieure. Rétention CPU/RAM : une mesure/minute, sept jours, 10080 points.
+Conversations : vingt fils de quarante messages maximum, uniquement sur choix explicite.
+Les graphiques CPU/RAM respectent les dates et interrompent les courbes dans les trous.
+
+## Assistant sans exécution
+
+assistant.py limite Ollama à une génération et à un modèle déjà annoncé. Le contexte
+est un instantané minimal, prévisualisé et lié à la session ; les messages du modèle
+ne deviennent jamais des opérations. Une vérification locale POST /api/show exclut les modèles distants avant l’envoi
+du prompt ; POST /api/chat est ensuite effectué seulement après action utilisateur. Une interruption de session ferme
+l’attente de génération ; le modèle peut rester chargé dans Ollama.
+Référence : [API Chat Ollama](https://docs.ollama.com/api/chat).

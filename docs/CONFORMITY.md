@@ -16,20 +16,20 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 | 9. Conteneurs en lecture seule | PARTIEL | inventaire, détails, statistiques et logs avec opt-in ; tests simulés et transport Unix contrôlé ; moteurs réels NON TESTÉS |
 | 10. Journaux bornés et rendus sûrs | PARTIEL | journaux systemd et conteneurs reliés de bout en bout, bornés et testés ; journal applicatif dédié absent, lecture réelle réussie NON TESTÉE faute de droits |
 | 11. Pas de shell arbitraire | IMPLÉMENTÉ | sous-processus systemctl/journalctl avec arguments fixes et unités validées ; aucun endpoint de commande libre |
-| 12. Mutations désactivées | IMPLÉMENTÉ | middleware refuse les mutations système ; PUT settings et POST diagnostics protégés ; test_api.py |
+| 12. Mutations désactivées | IMPLÉMENTÉ | middleware refuse les mutations système ; réglages, sessions, diagnostic et IA protégés ; test_api.py |
 | 13. Secrets et diagnostic | PARTIEL | champs conteneur en liste blanche, erreurs expurgées ; export confirmé par liste blanche implémenté et testé ; revue exhaustive NON TESTÉE |
 | 14. Hors ligne après installation | PARTIEL | assets locaux et IP loopback seules ; essai avec réseau coupé NON TESTÉ |
-| 15. Tests et build CI | PARTIEL | contrôles locaux passants ; CI précédente SQLite/alertes réussie ; lot diagnostic/langues à vérifier après publication |
+| 15. Tests et build CI | PARTIEL | contrôles locaux passants ; CI précédente documentation réussie ; tranche L0–L3 à vérifier après publication |
 
 ## Validations exécutées
 
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 109 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 138 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
-- `npm test --prefix frontend` : 18 tests réussis.
+- `npm test --prefix frontend` : 22 tests réussis.
 - `npm run build --prefix frontend` : réussi.
 - `npm audit --prefix frontend` : zéro vulnérabilité après mise à jour de Vitest.
 
@@ -133,3 +133,14 @@ CSRF, tailles, cadence, liste blanche avec marqueurs sensibles, panne SQLite,
 rétrocompatibilité des préférences, parité des catalogues et formats régionaux.
 Téléchargement réel et restauration de la langue anglaise vérifiés dans le navigateur.
 Les noms et journaux externes restent dans leur langue source.
+
+## Tranche L0–L3 livrée
+
+Architecture par domaine, erreurs HTTP unifiées, sessions révocables/expirables et
+limites de connexions, manifeste sans actions système et audit consultable.
+Supervision complémentaire selon outils/droits, historique minute/sept jours et
+assistant Ollama sans outils/exécution, contexte consenti et conservation facultative.
+138 tests backend et 22 frontend passants ; échange et réponse IA réels observés.
+SMART/NVIDIA/NUT non qualifiés sur matériel réel ; routes IPv4, écoutes IPv4/IPv6.
+Le diagnostic conserve sa liste blanche et exclut conversations et informations réseau.
+MFA, multi-utilisateurs, accès distant, exécution d’actions et packaging restent absents.

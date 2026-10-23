@@ -28,10 +28,22 @@ Pas de déclaration de fin du MVP avant validation de tous les P0 et du paquet.
 
 23 octobre 2026 : SQLite et alertes livrés, 97 tests backend et 13 frontend. La seule mutation autorisée porte sur les réglages applicatifs ; les actions système restent absentes. Prochaine étape : diagnostic local expurgé.
 
-23 octobre 2026 : diagnostic et français/anglais livrés, 109 tests backend et 18 frontend. Prochaine étape : sessions expirables et limitation des tentatives.
+23 octobre 2026 : diagnostic et français/anglais livrés, 109 tests backend et 18 frontend. Sessions traitées dans la tranche suivante.
 
 ## Extension proposée à partir de Linux Made Sane
 
 Voir [la feuille de route détaillée](ROADMAP_LINUX_MADE_SANE.md) : inventaire
 fonctionnel, douze lots et socle préalable aux opérations sensibles. Ce plan est
 proposé, sans modification de code ni activation des fonctions administratives.
+
+## Tranche validée et réalisée — L0 à L3
+
+- Architecture : routeurs API, erreurs, capacités et composants React séparés.
+- Sessions : expiration, révocation, limites et récupération par redémarrage local.
+- Supervision : historique persistant et sondes complémentaires, selon droits/outils disponibles.
+- Assistant IA : chat Ollama local, aperçu/consentement, conservation facultative et aucune action.
+
+138 tests backend et 22 frontend, contrôles/build passants. Réponse du modèle local
+et supervision vérifiées en navigateur. GPU NVIDIA seulement ; routes IPv4 ;
+qualification SMART/GPU/NUT sur matériels réels à poursuivre. L4 et toutes les actions
+administratives restent À FAIRE, soumis à leur barrière de sécurité dédiée.

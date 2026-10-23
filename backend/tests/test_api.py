@@ -38,12 +38,26 @@ def client(monkeypatch, tmp_path):
             ],
         }
 
+    async def offline_inspect():
+        return {"collected_at": "2026-10-23T00:00:00Z"}
+
+    monkeypatch.setattr(main, "inspect", offline_inspect)
     monkeypatch.setattr(main.Services, "inventory", offline_services)
     monkeypatch.setattr(main, "ai_status", offline_ai)
     monkeypatch.setattr(main, "container_status", offline_containers)
     with TestClient(
         app, base_url="http://127.0.0.1:8765", headers={"Authorization": "Bearer " + TOKEN}
     ) as client:
+        options = client.get("/api/v1/auth/options").json()
+        session = client.post(
+            "/api/v1/auth/sessions",
+            json={"token": TOKEN},
+            headers={
+                "origin": "http://127.0.0.1:8765",
+                "x-localcockpit-csrf": options["csrf_token"],
+            },
+        ).json()
+        client.headers["Authorization"] = "Bearer " + session["token"]
         yield client
 
 

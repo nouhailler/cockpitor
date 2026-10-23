@@ -2,6 +2,20 @@
 
 ## Non publié
 
+### Architecture, sessions, supervision et assistant — 23 octobre 2026
+
+- API répartie en routeurs, erreurs unifiées et capacités explicites sans action système.
+- Composants React extraits, navigation par domaines et traductions FR/EN complétées.
+- Sessions expirables/révocables hachées en mémoire, échanges initiaux protégés,
+  limitation des connexions et activité utilisateur distincte des lectures automatiques.
+- SQLite v2 avec sauvegarde de migration, tendances CPU/RAM et conversations facultatives bornées.
+- Sondes réseau/disques/SMART/NVIDIA/services/APT/heure/alimentation/NUT en lecture seule.
+- Assistant Ollama local avec aperçu de contexte, consentement, annulation, limites
+  de génération et aucune exécution ; audit applicatif consultable.
+- 138 tests backend et 22 frontend, parcours navigateur et modèle local réel vérifiés.
+- Les opérations sensibles restent absentes ; aucun outil ni droit système installé.
+
+
 ### Diagnostic et français/anglais — 23 octobre 2026
 
 - Export JSON local confirmé, borné et audité, construit par liste blanche.

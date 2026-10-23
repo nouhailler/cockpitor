@@ -44,8 +44,11 @@ it("switches login and every navigation label without changing route identifiers
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => ({
-      ok: false,
-      json: async () => ({ error: { message: "Jeton local requis" } }),
+      ok: url.includes("auth/"),
+      json: async () =>
+        url.includes("auth/")
+          ? { token: "session", csrf_token: "csrf" }
+          : { error: { message: "Jeton local requis" } },
     })),
   );
   render(<App />);

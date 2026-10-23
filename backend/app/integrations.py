@@ -25,6 +25,8 @@ class Details(BaseModel):
 
 
 class Model(BaseModel):
+    remote_model: str | None = None
+    remote_host: str | None = None
     model_config = ConfigDict(extra="ignore")
     name: str = Field(max_length=512)
     size: int | None = Field(default=None, ge=0)
@@ -93,6 +95,7 @@ async def ai_status() -> dict[str, Any]:
                     result["models"] = [
                         {
                             "name": m.name,
+                            "local": not bool(m.remote_model or m.remote_host),
                             "size": m.size,
                             "family": m.details.family,
                             "quantization": m.details.quantization_level,

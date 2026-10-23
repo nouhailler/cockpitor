@@ -1,6 +1,7 @@
 # Évolution de Cockpitor inspirée de Linux Made Sane
 
-Plan proposé le 23 octobre 2026. Ce document ne déclenche aucune implémentation
+Plan proposé le 23 octobre 2026 ; tranche L0–L3 ensuite autorisée et réalisée.
+Les lots L4–L12 ne déclenchent aucune implémentation
 ni activation de privilèges. Il complète le plan existant ; les lots ci-dessous
 restent À FAIRE sauf les capacités explicitement signalées comme acquises.
 
@@ -270,3 +271,12 @@ des chantiers distincts. L’inventaire par famille pourra évoluer avec la réf
 - [Services d’infrastructure](https://github.com/lmsowner/linuxmadesanerelease/tree/main/src/LinuxMadeSane.Infrastructure/Services).
 - [Modèle de sécurité](https://github.com/lmsowner/linuxmadesanerelease/blob/main/docs/SECURITY.md).
 - [Architecture RDP/VNC](https://github.com/lmsowner/linuxmadesanerelease/blob/main/docs/remote-desktop.md).
+
+## Avancement après autorisation de la première tranche
+
+L0–L3 : implémentations reliées à l’interface et testées (138 backend, 22 frontend).
+Sessions, sondes et assistant décrits dans CONTEXT et guides. Les extensions matérielles
+restent bornées : NVIDIA, NUT local, quatre disques SMART ; qualification réelle
+sur ces équipements non effectuée. Contrat des modules explicite mais sans plugins
+chargeables, multi-utilisateurs, permissions distantes ou privilèges. L4–L12 restent
+à concevoir/implémenter, sans activation implicite des opérations sensibles.

@@ -13,139 +13,22 @@ import { SettingsView, AlertsView, type Preferences } from "./preferences";
 import { bytes } from "./format";
 export { bytes } from "./format";
 import { ContainersView } from "./containers";
-import { api } from "./api";
+import { api, post } from "./api";
+import { LoginView } from "./login";
+import { MonitoringView, AuditView } from "./monitoring";
+import { AssistantView } from "./assistant";
+import { navigation } from "./navigation";
 export { api } from "./api";
 import { ServicesView } from "./services";
 
-type Metrics = {
-  collected_at: string;
-  hostname: string;
-  os: string;
-  uptime_seconds: number;
-  cpu_percent: number | null;
-  cpu_cores: number[];
-  load: number[];
-  memory: { total: number; used: number; available: number; percent: number };
-  swap: { total: number; used: number; percent: number };
-  network: { received_bps: number | null; sent_bps: number | null };
-  disks: {
-    mount: string;
-    device?: string;
-    total?: number;
-    used?: number;
-    percent?: number;
-    error: string | null;
-  }[];
-  temperatures: { name: string; celsius: number }[];
-};
-type Process = {
-  pid: number;
-  name: string;
-  user: string;
-  cpu_percent: number | null;
-  memory_percent: number;
-  status: string;
-};
-type History = {
-  cpu_percent: number | null;
-  memory_percent: number;
-  collected_at: string;
-}[];
-type Module = {
-  status: string;
-  message?: string;
-  collected_at: string;
-  latency_ms?: number;
-  url?: string;
-  models?: {
-    name: string;
-    size?: number;
-    family?: string;
-    quantization?: string;
-  }[];
-  loaded?: { name: string; size_vram?: number }[];
-  engines?: {
-    name: string;
-    status: string;
-    message?: string;
-    version?: string;
-    containers: {
-      id: string;
-      name: string;
-      image: string;
-      state: string;
-      status: string;
-      ports: string[];
-    }[];
-  }[];
-};
-const pct = (n: number | null | undefined) =>
-  n == null ? t("Indisponible") : `${formatNumber(n)} %`;
-const statusLabel = (status: string) =>
-  ({
-    available: t("Disponible"),
-    unavailable: t("Indisponible"),
-    disabled: t("Désactivé"),
-  })[status] || status;
-function Card({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail?: string;
-}) {
-  return (
-    <article className="card">
-      <p>{label}</p>
-      <strong>{value}</strong>
-      {detail && <small>{detail}</small>}
-    </article>
-  );
-}
-function Graph({ history }: { history: History }) {
-  return (
-    <section className="panel">
-      <h2>
-        {t("Activité CPU")}{" "}
-        <small>{t("15 min maximum · mémoire vive uniquement")}</small>
-      </h2>
-      <svg
-        viewBox="0 0 800 150"
-        role="img"
-        aria-label={t("Utilisation CPU, de 0 à 100 pour cent")}
-      >
-        <path d="M0 1H800 M0 75H800 M0 149H800" className="grid" />
-        <polyline
-          className="line"
-          points={history
-            .flatMap((p, i) =>
-              p.cpu_percent == null
-                ? []
-                : [
-                    `${history.length > 1 ? (i / (history.length - 1)) * 800 : 0},${150 - p.cpu_percent * 1.5}`,
-                  ],
-            )
-            .join(" ")}
-        />
-      </svg>
-      <div className="graph-label">
-        <span>0–100 %</span>
-        <span>
-          {history.length
-            ? new Date(history[0].collected_at).toLocaleTimeString(getLocale())
-            : t("En attente")}{" "}
-          {t("→ maintenant")}{" "}
-        </span>
-      </div>
-    </section>
-  );
-}
+import type { Metrics, Process, History, Module } from "./types";
+import { Card, Graph, pct } from "./components";
+import { AIView } from "./ai-status";
 export function App() {
   useLanguage();
   const [token, setToken] = useState("");
-  const [input, setInput] = useState("");
+  const [csrf, setCsrf] = useState("");
+  const [sessionNotice, setSessionNotice] = useState("");
   const [page, setPage] = useState("Vue d’ensemble");
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [history, setHistory] = useState<History>([]);
@@ -289,37 +172,45 @@ export function App() {
       clearTimeout(timer);
     };
   }, [token, page, refresh]);
+  useEffect(() => {
+    function expired() {
+      setToken("");
+      setCsrf("");
+      setMetrics(null);
+      setHistory([]);
+      setProcesses([]);
+      setModule(null);
+      setSessionNotice(t("Session expirée ; reconnectez-vous."));
+    }
+    window.addEventListener("session-expired", expired);
+    return () => window.removeEventListener("session-expired", expired);
+  }, []);
+  useEffect(() => {
+    if (!token) return;
+    let last = 0;
+    function activity() {
+      if (Date.now() - last < 30000) return;
+      last = Date.now();
+      void post("auth/activity", token, csrf).catch(() => {});
+    }
+    window.addEventListener("pointerdown", activity);
+    window.addEventListener("keydown", activity);
+    return () => {
+      window.removeEventListener("pointerdown", activity);
+      window.removeEventListener("keydown", activity);
+    };
+  }, [token, csrf]);
   if (!token)
     return (
-      <main className="login">
-        <div className="brand">◈ LocalCockpit</div>
-        <LanguagePicker />
-        <h1>{t("Votre machine, en clair.")}</h1>
-        <p>{t("Supervision locale · lecture seule · aucune télémétrie")}</p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setToken(input);
-            setInput("");
-          }}
-        >
-          <label htmlFor="token">
-            {t("Jeton affiché par le lanceur local")}
-          </label>
-          <input
-            id="token"
-            type="password"
-            autoComplete="off"
-            required
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button>{t("Ouvrir le cockpit →")}</button>
-        </form>
-        <small>
-          {t("Le jeton reste uniquement en mémoire dans cet onglet.")}
-        </small>
-      </main>
+      <LoginView
+        notice={sessionNotice}
+        onLogin={(value, protection) => {
+          setToken(value);
+          setCsrf(protection);
+          setError("");
+          setSessionNotice("");
+        }}
+      />
     );
   const stale = metrics
     ? Date.now() - Date.parse(metrics.collected_at) > 15000
@@ -331,36 +222,39 @@ export function App() {
         <LanguagePicker />
         <span className="eyebrow">{t("ESPACE PERSONNEL")}</span>
         <nav aria-label={t("Navigation principale")}>
-          {[
-            "Vue d’ensemble",
-            "Système",
-            "Processus",
-            "Services",
-            "IA locale",
-            "Conteneurs",
-            "Alertes",
-            "Paramètres",
-            "Diagnostic",
-          ].map((p, i) => (
-            <button
-              key={p}
-              className={page === p ? "active" : ""}
-              aria-current={page === p ? "page" : undefined}
-              onClick={() => setPage(p)}
-            >
-              <span>{["▦", "◉", "≋", "⚙", "✧", "▣", "⚑", "☷", "⇩"][i]}</span>
-              {t(p)}
-            </button>
+          {navigation.map((group) => (
+            <React.Fragment key={group.group}>
+              <span className="nav-group">{t(group.group)}</span>
+              {group.entries.map(([p, icon]) => (
+                <button
+                  key={p}
+                  className={page === p ? "active" : ""}
+                  aria-current={page === p ? "page" : undefined}
+                  onClick={() => setPage(p)}
+                >
+                  <span>{icon}</span>
+                  {t(p)}
+                </button>
+              ))}
+            </React.Fragment>
           ))}
         </nav>
         <div className="aside-bottom">
           <p>{t("● Système en lecture seule")}</p>
           <small>{t("Aucune action système autorisée")}</small>
           <button
-            onClick={() => {
-              setToken("");
-              setMetrics(null);
-              setProcesses([]);
+            onClick={async () => {
+              try {
+                await post("auth/logout", token, csrf);
+                setToken("");
+                setCsrf("");
+                setMetrics(null);
+                setHistory([]);
+                setProcesses([]);
+                setModule(null);
+              } catch (e) {
+                setError((e as Error).message);
+              }
             }}
           >
             {t("Déconnexion")}{" "}
@@ -509,7 +403,17 @@ export function App() {
                         )}{" "}
                       </p>
                     )}
-                    <p>{t("GPU : collecte non implémentée.")}</p>
+                    <h3>{t("CPU par cœur")}</h3>
+                    <div className="core-grid">
+                      {metrics.cpu_cores.map((value, index) => (
+                        <p key={index}>
+                          {index + 1} · {pct(value)}
+                        </p>
+                      ))}
+                    </div>
+                    <p>
+                      {t("GPU, disques et réseau détaillé : page Supervision.")}
+                    </p>
                   </section>
                 )}
               </>
@@ -626,6 +530,9 @@ export function App() {
           />
         )}
         {page === "Alertes" && <AlertsView token={token} refresh={refresh} />}
+        {page === "Supervision" && <MonitoringView token={token} />}
+        {page === "Audit" && <AuditView token={token} />}
+        {page === "Assistant IA" && <AssistantView token={token} csrf={csrf} />}
         {page === "Diagnostic" && <DiagnosticView token={token} />}
         <footer>
           {t(
@@ -634,66 +541,5 @@ export function App() {
         </footer>
       </main>
     </div>
-  );
-}
-type AIStatus = Module & { ollama?: Module; openwebui?: Module };
-function AIView({ data }: { data: AIStatus }) {
-  return (
-    <>
-      {[data.ollama, data.openwebui].map(
-        (m, i) =>
-          m && (
-            <section className="panel" key={i}>
-              <h2>
-                {i === 0 ? "Ollama" : "OpenWebUI"}{" "}
-                <span className="badge">{statusLabel(m.status)}</span>
-              </h2>
-              <p>
-                {(m.message ? t(m.message) : null) ||
-                  `${m.latency_ms == null ? t("Indisponible") : formatNumber(m.latency_ms, 0)} ms`}
-              </p>
-              {m.url && (
-                <a href={m.url} target="_blank" rel="noreferrer">
-                  {t("Ouvrir")} {m.url} ↗
-                </a>
-              )}
-              {m.models && (
-                <>
-                  <h3>{t("Modèles installés")}</h3>
-                  {!m.models.length && <p>{t("Aucun modèle installé.")}</p>}
-                  <div className="table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>{t("Nom")}</th>
-                          <th>{t("Taille")}</th>
-                          <th>{t("Famille")}</th>
-                          <th>{t("Quantification")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {m.models.map((model) => (
-                          <tr key={model.name}>
-                            <td>{model.name}</td>
-                            <td>{bytes(model.size)}</td>
-                            <td>{model.family || t("Indisponible")}</td>
-                            <td>{model.quantization || t("Indisponible")}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-              {m.loaded && (
-                <p>
-                  {t("Modèles chargés :")}{" "}
-                  {m.loaded.map((model) => model.name).join(", ") || t("aucun")}
-                </p>
-              )}
-            </section>
-          ),
-      )}
-    </>
   );
 }

@@ -21,7 +21,7 @@ La désinstallation depuis les sources consiste à supprimer le checkout et son
 environnement virtuel après arrêt, après avoir sauvegardé les données privées souhaitées. Aucun modèle Ollama, moteur, conteneur ou volume externe n'est supprimé.
 Le thème est une préférence locale du navigateur, effaçable via ses données de site.
 Le paquet .deb et le retour arrière automatisé ne sont pas encore disponibles.
-Le schéma SQLite initial est décrit ci-dessous.
+Le schéma SQLite courant est v2, décrit ci-dessous.
 
 ## Données persistantes
 
@@ -34,8 +34,22 @@ mais les métriques restent accessibles ; la récupération est réessayée.
 
 Sauvegarde manuelle : arrêter l’application puis copier le dossier privé vers un
 emplacement privé. Au redémarrage, conserver son propriétaire et ses permissions.
-Une base non vide sans version est sauvegardée avant l’initialisation du schéma v1 ;
+Une base antérieure (sans version ou v1) est sauvegardée avant la migration vers v2 ;
 une base de version future est refusée. Les sauvegardes backup-*.sqlite3 restent
 privées et doivent être conservées/supprimées explicitement par le propriétaire.
 Ne pas supprimer le checkout sans préserver `.localcockpit/` si l’historique est utile.
-Le diagnostic expurgé et le paquet Debian ne sont pas encore disponibles.
+Le diagnostic expurgé est disponible. Le paquet Debian reste à réaliser.
+
+## Sessions et sondes facultatives
+
+Après saisie du secret du lanceur, une session en mémoire remplace ce secret pour
+les appels API. Elle expire après 15 minutes sans interaction ou huit heures au total.
+Déconnexion et redémarrage la révoquent. Une reconnexion utilise le secret du terminal.
+Le navigateur ne mémorise pas ces secrets. Dix connexions/minute maximum globalement.
+
+Les sondes utilisent les outils déjà présents : lsblk, systemctl, apt, timedatectl,
+smartctl, nvidia-smi et upsc. Rien n’est installé automatiquement. Les chemins sont
+fixes sous /usr/bin et /usr/sbin. Les outils absents, permissions insuffisantes ou
+matériels incompatibles sont signalés ; ne pas lancer l’application en root pour les contourner.
+L’IA exige un modèle déjà installé dans Ollama ; l’application ne télécharge pas de modèle.
+Conserver le dossier locales/ avec le backend pour les messages FR/EN.

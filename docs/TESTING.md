@@ -81,3 +81,24 @@ confirmation stricte, CSRF/origine/jeton, limites et cadence, paramètres fr/en,
 compatibilité des anciennes préférences, parité des catalogues et unités locales.
 Dans le navigateur : anglais restauré après rechargement, export téléchargé après
 confirmation et audit affiché. Les moteurs réels restent à qualifier séparément.
+
+## Tranche L0–L3
+
+138 tests backend et 22 frontend. Nouveaux scénarios : échange du jeton et refus du
+bootstrap pour les données, expiration sans prolongation par polling, durée absolue,
+révocation/rejeu, limites de connexions, CSRF/origine, audit paginé, migration v1/v2
+sauvegardée, rétention bornée, classification IPv4/IPv6/multicast, sondes absentes,
+réponses simulées SMART/NVIDIA/APT, isolement des collecteurs, contexte lié à la
+session et expirant, consentement et conservation IA, annulation/concurrence,
+refus des redirections/sorties trop grandes/réponses incomplètes et HTML échappé.
+
+Navigateur réel : connexion, supervision et réponse qwen2.5:3b depuis Ollama local,
+sans conservation de la conversation de validation. Les scénarios de succès
+SMART/GPU/NUT restent simulés ; matériel réel compatible non disponible sur ce poste.
+Un avertissement Starlette/TestClient reste préexistant, non bloquant.
+
+Validation complémentaire réelle : après redémarrage, l’ancienne session retourne à
+la connexion ; déconnexion confirmée ; assistant FR/EN ; affichage à 390 px sans
+débordement du document, après correction de la grille mobile. Le contrôle /api/show
+précède désormais chaque prompt ; le refus des modèles cloud avant transmission
+du texte est couvert par un test dédié.

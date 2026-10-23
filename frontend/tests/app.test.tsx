@@ -47,6 +47,9 @@ it("connects AI and container views to their read-only endpoints", async () => {
   const fetcher = vi.fn(async (url: string) => ({
     ok: true,
     json: async () => {
+      if (url.endsWith("auth/options")) return { csrf_token: "csrf" };
+      if (url.endsWith("auth/sessions"))
+        return { token: "session", csrf_token: "csrf" };
       if (url.endsWith("ai/status"))
         return {
           collected_at: new Date().toISOString(),
@@ -108,7 +111,7 @@ it("connects AI and container views to their read-only endpoints", async () => {
     { target: { value: "test" } },
   );
   fireEvent.click(screen.getByText("Ouvrir le cockpit →"));
-  fireEvent.click(screen.getByRole("button", { name: "✧ IA locale" }));
+  fireEvent.click(await screen.findByRole("button", { name: "✧ IA locale" }));
   expect(await screen.findByText("model-local")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "▣ Conteneurs" }));
   expect(await screen.findByText("container-local")).toBeTruthy();

@@ -5,11 +5,11 @@ Prototype local en lecture seule, pas une version validée pour exposition rése
 ## Protections implémentées
 
 - Lanceur non root, écoute fixe sur 127.0.0.1, sans proxy de confiance.
-- Jeton aléatoire par démarrage, en-tête Authorization, comparaison en temps constant.
+- Jeton d’amorçage aléatoire par démarrage, échangé contre une session en mémoire.
 - Hôtes loopback autorisés uniquement ; origine étrangère refusée ; aucun CORS global.
 - Aucun cookie d'authentification ; une page étrangère ne peut pas attacher le jeton
   détenu uniquement en mémoire par l'interface. Aucun jeton dans les URL.
-- Méthodes d’écriture refusées sauf PUT exact sur /api/v1/settings et POST exact sur /api/v1/diagnostics ; aucun endpoint d’action système.
+- Méthodes d’écriture en liste blanche : réglages, sessions, diagnostic, assistant ; aucun endpoint d’action système.
 - Réglages : authentification, origine locale obligatoire, jeton CSRF en mémoire,
   JSON borné et schéma strict sans adresse réseau, chemin de socket ni commande.
 - SQLite : dossier dédié 0700/base 0600 possédés par le compte, refus des liens
@@ -39,10 +39,10 @@ Prototype local en lecture seule, pas une version validée pour exposition rése
 
 ## Limites connues
 
-Le jeton est un mécanisme provisoire pour le développement mono-utilisateur.
-Il reste valide jusqu'au redémarrage ; la déconnexion efface seulement la copie
-mémoire de l'onglet. Pas encore de sessions expirables ni de limitation des
-échecs d'authentification. Ne pas réutiliser un jeton faible ou permanent.
+Le jeton du lanceur est un secret d’amorçage pour le fonctionnement mono-utilisateur.
+Il reste valide jusqu’au redémarrage sauf configuration explicite, mais ne permet
+que l’ouverture d’une session. Les sessions expirent et sont révocables côté serveur.
+Ne pas réutiliser un jeton faible ou permanent.
 Une autre application locale compromise ou le propriétaire du compte constitue
 une menace distincte ; le jeton ne protège pas d'un compte système compromis.
 Les limites globales de connexions et le durcissement systemd restent à implémenter.
@@ -72,3 +72,36 @@ Aucune collecte supplémentaire, aucun fichier serveur ni transmission externe.
 L’audit SQLite enregistre seulement l’opération, sans corps exporté. Si SQLite est
 indisponible, l’export indique l’absence d’audit. Les agrégats et versions restent
 des informations sur la machine : examiner le téléchargement avant partage.
+
+## Sessions et assistant — tranche L0–L3
+
+Sessions 256 bits, clés SHA-256 en mémoire, inactivité 15 min et durée absolue 8 h ;
+32 sessions maximum, dix connexions/minute globales. Les lectures automatiques ne
+repoussent pas l’expiration ; seule une activité explicite la repousse. La révocation
+est immédiate pour les prochaines requêtes et annule l’attente IA associée. Les autres
+lectures déjà autorisées ne sont pas interrompues rétroactivement. Aucun secret de
+session en base, localStorage ou URL. Pas de multi-utilisateurs, MFA ou accès distant.
+
+Les limites d’authentification sont globales : un programme local peut provoquer une
+saturation temporaire. Le compte système propriétaire peut consulter le secret de
+lanceur : ce mécanisme n’isole pas des applications malveillantes du même compte.
+La récupération passe par le terminal local/redémarrage, sans endpoint de secours.
+
+L’IA reçoit la question, un historique borné et, sur consentement explicite, un contexte
+numérique prévisualisé lié à la session. Aucun log ou identifiant système joint par
+défaut ; pas d’outil, shell, instruction privilégiée ou route d’action. Le contenu
+est du texte échappé et peut être incorrect ou hostile. Un prompt système n’est pas
+une protection suffisante : l’absence de capacités d’exécution impose la frontière.
+Le masquage des secrets dans prompts/réponses reste partiel. La conservation est
+facultative et privée, commune à l’utilisateur local ; ne pas saisir de secrets.
+
+Le diagnostic par liste blanche ne reprend ni conversations, ni adresses des nouvelles
+sondes. La collecte complémentaire et les erreurs restent bornées et expurgées.
+Les droits de lecture sur SMART, journald et autres sondes ne sont jamais élargis.
+
+Les modèles déclarés distants dans l’inventaire sont exclus de l’assistant. Avant
+chaque envoi du prompt, /api/show doit confirmer des métadonnées locales sans
+remote_host/remote_model. Cockpitor fait confiance au serveur Ollama local : ce n’est
+pas un pare-feu pour ce processus. Son mode OLLAMA_NO_CLOUD=1 peut renforcer cette
+frontière, à configurer côté Ollama sans modification automatique par Cockpitor.
+Référence : [mode local Ollama](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).

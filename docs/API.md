@@ -1,9 +1,11 @@
 # API v0.1 — préfixe /api/v1
 
-Toutes les routes API exigent `Authorization: Bearer <jeton>`.
+Toutes les routes API sauf auth/options et auth/sessions exigent
+`Authorization: Bearer <session>`. Le jeton du lanceur ne donne aucun accès aux données.
 Les routes de supervision acceptent GET et, lorsqu’il est pris en charge, HEAD.
-Les écritures autorisées sont PUT /api/v1/settings (réglages) et
-POST /api/v1/diagnostics (export confirmé). Aucune mutation système n’est disponible.
+Les écritures autorisées couvrent réglages, sessions, diagnostic et assistant IA.
+Aucune mutation système n’est disponible. Tous les POST/PUT exigent JSON, origine
+locale exacte et X-LocalCockpit-CSRF.
 
 | GET | Résultat |
 | --- | --- |
@@ -27,8 +29,8 @@ Les états d'intégration sont available, unavailable et disabled.
 Les états HTTP 503 indiquent la première collecte en cours.
 
 Les erreurs de contrôle d'accès et d'exécution ont une enveloppe error contenant
-code, message et correlation_id. Les erreurs de validation des paramètres utilisent
-encore le format 422 FastAPI : l'unification et les schémas de sortie typés sont
+code, message et correlation_id. Les erreurs de validation des paramètres utilisent la même enveloppe, avec
+INVALID_REQUEST et sans valeurs d’entrée. Les schémas de sortie typés exhaustifs restent
 à compléter. Les documentations interactives et l'OpenAPI public sont désactivés
 pour cette version ; un contrat versionné reste à livrer.
 
@@ -128,3 +130,58 @@ recorded ou unavailable. Le schéma du rapport reste stable et indépendant de l
 Preferences.language accepte fr/en (fr par défaut pour les anciennes données).
 Accept-Language choisit les messages d’erreur structurés, avec repli fr ;
 Content-Language et Vary sont renvoyés. Codes d’erreur et états restent stables.
+
+## Sessions
+
+1. GET /auth/options, public mais soumis aux contrôles Host/Origin : csrf_token et durées.
+2. POST /auth/sessions avec `{"token":"jeton du lanceur"}` ; corps 1 Kio maximum.
+   Retour : token de session aléatoire, csrf_token, idle_seconds=900, absolute_seconds=28800.
+3. Utiliser ce token en Bearer pour les autres routes ; rien en cookie/URL/localStorage.
+4. POST /auth/activity, session + CSRF : marque une interaction réelle. Les GET ne
+   prolongent pas l’inactivité. POST /auth/logout révoque et annule la génération associée.
+
+Dix tentatives de connexion globales/minute, succès inclus ; 429 à saturation.
+Maximum 32 sessions ; les sessions expirées sont purgées avant nouvelle connexion.
+Au redémarrage aucune session ne survit. La récupération locale consiste à utiliser
+le jeton du terminal, ou à redémarrer le lanceur sous le même compte système.
+Le frontend renvoie vers la connexion sur 401 et signale une session expirée.
+
+## Modules, audit et supervision
+
+- GET /modules : manifeste des capacités, system_actions=false pour chaque module.
+- GET /audit : limit 1–200, offset >=0 ; items(id/action/timestamp), total. Historique de 1000 opérations.
+- GET /system/inspection : dernière inspection partagée, collected_at et sections
+  indépendantes. Collecte toutes les 60 s après la fin de la précédente ; anciennes
+  données conservées avec leur date si échec. Outils : quatre secondes, 512 Kio stdout,
+  8 Kio stderr, environnement fixe, aucun shell ou sudo. Aucun scan réseau actif.
+- GET /system/trends?hours=24 : hours 1–168, items CPU/RAM horodatés, rétention sept jours,
+  une mesure/minute et 10080 points maximum. 503 si stockage indisponible.
+
+Les sections d’inspection précisent leurs limites : GPU NVIDIA seulement, routes
+IPv4, écoute IPv4/IPv6 sans preuve d’exposition externe, cache APT non actualisé,
+quatre disques SMART et quatre onduleurs d’un serveur NUT local existant maximum.
+Un outil absent ou refusé ne déclenche aucune installation ni changement de droits.
+
+## Assistant IA local
+
+- POST /ai/context : capture numérique CPU/RAM/swap, source/horodatage/fraîcheur et
+  context_id lié à la session, valable cinq minutes ; 32 aperçus maximum en mémoire.
+- POST /ai/chat : JSON 64 Kio maximum ; model existant dans le dernier inventaire,
+  prompt (1–4000 caractères), thread_id optionnel, context_id optionnel, retain bool
+  (false par défaut), history optionnel (huit messages user/assistant, 4000 caractères chacun).
+- Réponse : answer, thread_id (null sans conservation), context et system_actions_enabled=false.
+- POST /ai/cancel : annule seulement la génération de cette session.
+- GET /ai/threads : 20 conversations les plus récentes ; GET /ai/thread?id=... :
+  40 messages maximum. Identifiant : 32 caractères hexadécimaux minuscules.
+
+Une seule génération à la fois, délai minimal cinq secondes entre débuts ; 429 sinon.
+Le backend vérifie d’abord POST /api/show (512 Kio maximum, sans prompt), refuse
+les modèles distants ou sans métadonnées locales, puis appelle POST /api/chat sur
+l’Ollama loopback configuré, sans
+redirection/proxy d’environnement/outils, 75 s maximum, réponse HTTP 64 Kio maximum,
+texte conservé 16000 caractères maximum et num_predict=1024/num_ctx=8192.
+Au plus huit messages précédents, chacun tronqué à 4000 caractères, servent de contexte.
+Les observations jointes sont conservées avec la réponse seulement si retain=true.
+Le modèle peut se tromper ; aucune commande n’est exécutée. Annulation/déconnexion/
+expiration interrompt l’attente, sans garantie de déchargement du modèle côté Ollama.
+Les conversations sauvegardées sont communes au compte local, sans isolation multi-utilisateurs.

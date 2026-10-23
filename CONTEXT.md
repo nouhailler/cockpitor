@@ -22,14 +22,14 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 | Domaine | État |
 | --- | --- |
 | Interface | React, TypeScript strict, Vite ; responsive, thèmes clair/sombre |
-| Backend | FastAPI, lanceur non root, port 8765 sur 127.0.0.1 |
+| Backend | FastAPI, routeurs par domaine, sessions, lanceur non root, port 8765 sur 127.0.0.1 |
 | Système | CPU, RAM, swap, uptime, charge, réseau, stockage, processus et capteurs accessibles |
-| Historique | Jusqu’à 450 points en mémoire, environ 15 minutes |
+| Historique | 450 points en mémoire et 10080 points persistants, une mesure/minute, sept jours |
 | IA | Modèles Ollama, modèles chargés si disponibles, état HTTP/lien OpenWebUI |
 | Conteneurs | Inventaire, filtres, détails, CPU/RAM et journaux bornés via socket explicitement configuré |
 | Services et journaux | Inventaire des services chargés, détails, journaux bornés/paginés et permissions explicites |
 | Mutations | Aucune action système ; PUT settings et POST diagnostics protégés |
-| Persistance | SQLite v1 privé : préférences, événements d’alerte et audit borné des réglages |
+| Persistance | SQLite v2 privé : préférences, alertes, audit, tendances et conversations facultatives |
 | Distribution | Diagnostic expurgé disponible ; paquet Debian absent |
 
 ## Décisions à préserver
@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 109 tests backend et 18 tests frontend réussis localement.
+- 138 tests backend et 22 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -73,7 +73,7 @@ de dépréciation Starlette/TestClient concernant httpx reste présent.
 ## Limites et prochaines décisions
 
 - Choisir et tester la version Debian cible dans une VM propre.
-- Remplacer le jeton de développement par des sessions expirables, avec limitation des tentatives.
+- Qualifier les sessions et nouvelles sondes sur une VM Debian propre.
 - Compléter les schémas de sortie API, l’enveloppe d’erreur et le contrat de modules.
 - Qualifier le module Conteneurs sur Docker et Podman réels ; ajouter une vue de journaux applicatifs.
 - Étendre éventuellement l’inventaire aux fichiers de services installés mais non chargés.
@@ -169,3 +169,27 @@ Erreurs API localisées via Accept-Language, codes et identifiants stables.
 et téléchargement réel confirmés dans le navigateur ; captures anglaises versionnées.
 Prochaine étape : sessions expirables et limitation des tentatives, avant packaging.
 Les opérations sensibles restent absentes.
+
+## Tranche architecture → sessions → supervision → assistant — 23 octobre 2026
+
+- Routeurs dans backend/app/routes, security.py, errors.py, manifeste modules.py.
+  Le frontend sépare types, composants, connexion, supervision et assistant ; navigation par groupes.
+- Le jeton de lancement autorise seulement POST auth/sessions, jamais les lectures API.
+  Sessions aléatoires hachées en mémoire : inactivité 15 min, absolu 8 h, maximum 32.
+  Authentification limitée à dix tentatives/minute globales. POST auth/activity prolonge
+  seulement à l’interaction ; déconnexion révoque et annule l’IA de cette session.
+- monitoring.py collecte en arrière-plan, sans sudo ni installation, avec délai de
+  quatre secondes et sorties bornées. Réseau, DNS et routes IPv4, écoutes IPv4/IPv6,
+  lsblk, SMART sur quatre disques, NVIDIA, APT en cache, unités installées, heure,
+  alimentation noyau et NUT local sur quatre onduleurs. Absences explicites.
+- SQLite v2, sauvegarde de migration, historique minute/sept jours, audit consultable,
+  conversations facultatives bornées. Les bases v1 restent migrables et les versions futures refusées.
+- Assistant Ollama : modèle local existant, aperçu de contexte lié à la session et
+  valable cinq minutes, aucune identité ni log joint automatiquement ; prompt 4000
+  caractères, historique huit messages, génération unique, 75 s maximum, sortie bornée.
+  Aucune action, aucun cloud. L’IA peut se tromper ; texte React, pas de HTML rendu.
+- 138 tests backend et 22 frontend passants. Navigateur réel : supervision, connexion
+  et réponse qwen2.5:3b sans sauvegarde de conversation. GPU/SMART/NUT absents ou
+  inaccessibles ici ; parcours de succès simulés, qualification matérielle à poursuivre.
+- Les prochaines étapes de la roadmap restent séparées : aucune permission privilégiée,
+  action sensible ou publication réseau n’est autorisée par la présence de ces modules.

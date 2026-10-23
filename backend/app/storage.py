@@ -62,9 +62,9 @@ class Store:
                 os.close(fd)
             with self.connection() as db:
                 version = db.execute("PRAGMA user_version").fetchone()[0]
-                if version > 1:
+                if version > 2:
                     raise StorageError("Version de base plus récente ; aucune migration effectuée")
-                if version == 0:
+                if version < 2:
                     tables = db.execute(
                         "SELECT name FROM sqlite_master WHERE type='table'"
                     ).fetchall()
@@ -99,7 +99,16 @@ class Store:
                         "INSERT OR IGNORE INTO settings VALUES (1, ?)",
                         (Preferences().model_dump_json(),),
                     )
-                    db.execute("PRAGMA user_version=1")
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS metric_history (minute INTEGER PRIMARY KEY, collected_at TEXT NOT NULL, cpu_percent REAL, memory_percent REAL NOT NULL)"
+                    )
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS ai_threads (id TEXT PRIMARY KEY, created_at TEXT NOT NULL)"
+                    )
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS ai_messages (id INTEGER PRIMARY KEY, thread_id TEXT NOT NULL REFERENCES ai_threads(id) ON DELETE CASCADE, role TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT NOT NULL)"
+                    )
+                    db.execute("PRAGMA user_version=2")
         except OSError as exc:
             raise StorageError("Impossible de créer le stockage local privé") from exc
         return self.preferences()
@@ -192,7 +201,7 @@ class Store:
             }
 
     def audit(self, operation_id: str, action: str):
-        if action != "diagnostics.export":
+        if action not in {"diagnostics.export", "session.login", "session.logout"}:
             raise StorageError("Action audit non autorisée")
         with self.connection() as db:
             db.execute(
@@ -201,3 +210,74 @@ class Store:
             db.execute(
                 "DELETE FROM audit_events WHERE id NOT IN (SELECT id FROM audit_events ORDER BY rowid DESC LIMIT 1000)"
             )
+
+    def audit_events(self, limit: int, offset: int):
+        with self.connection() as db:
+            rows = db.execute(
+                "SELECT id, action, timestamp FROM audit_events ORDER BY rowid DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
+            total = db.execute("SELECT count(*) FROM audit_events").fetchone()[0]
+        return {"items": [dict(row) for row in rows], "total": total}
+
+    def record_metrics(self, data):
+        minute = int(time.time() // 60)
+        with self.connection() as db:
+            db.execute(
+                "INSERT OR IGNORE INTO metric_history VALUES (?, ?, ?, ?)",
+                (minute, data["collected_at"], data["cpu_percent"], data["memory"]["percent"]),
+            )
+            db.execute("DELETE FROM metric_history WHERE minute < ?", (minute - 7 * 1440,))
+            db.execute(
+                "DELETE FROM metric_history WHERE minute NOT IN (SELECT minute FROM metric_history ORDER BY minute DESC LIMIT 10080)"
+            )
+
+    def metric_history(self, hours):
+        with self.connection() as db:
+            rows = db.execute(
+                "SELECT collected_at, cpu_percent, memory_percent FROM metric_history WHERE minute >= ? ORDER BY minute LIMIT 10080",
+                (int(time.time() // 60) - hours * 60,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def threads(self):
+        with self.connection() as db:
+            return {
+                "items": [
+                    dict(row)
+                    for row in db.execute(
+                        "SELECT id, created_at FROM ai_threads ORDER BY rowid DESC LIMIT 20"
+                    )
+                ]
+            }
+
+    def messages(self, thread_id):
+        with self.connection() as db:
+            exists = db.execute("SELECT id FROM ai_threads WHERE id=?", (thread_id,)).fetchone()
+            if not exists:
+                raise StorageError("Conversation introuvable")
+            return [
+                dict(row)
+                for row in db.execute(
+                    "SELECT role, content, created_at FROM ai_messages WHERE thread_id=? ORDER BY id LIMIT 40",
+                    (thread_id,),
+                )
+            ]
+
+    def save_chat(self, thread_id, prompt, answer):
+        thread_id = thread_id or uuid.uuid4().hex
+        with self.connection() as db:
+            db.execute("INSERT OR IGNORE INTO ai_threads VALUES (?, ?)", (thread_id, timestamp()))
+            for role, content in (("user", prompt), ("assistant", answer)):
+                db.execute(
+                    "INSERT INTO ai_messages(thread_id, role, content, created_at) VALUES (?, ?, ?, ?)",
+                    (thread_id, role, content, timestamp()),
+                )
+            db.execute(
+                "DELETE FROM ai_messages WHERE thread_id=? AND id NOT IN (SELECT id FROM ai_messages WHERE thread_id=? ORDER BY id DESC LIMIT 40)",
+                (thread_id, thread_id),
+            )
+            db.execute(
+                "DELETE FROM ai_threads WHERE id NOT IN (SELECT id FROM ai_threads ORDER BY rowid DESC LIMIT 20)"
+            )
+        return thread_id

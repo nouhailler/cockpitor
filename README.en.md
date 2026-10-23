@@ -50,12 +50,33 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-109 backend tests and 18 frontend tests pass locally, alongside type checks,
+138 backend tests and 22 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
-Debian installation test remain pending. Authentication sessions with expiration
-and attempt limits are the next step; sensitive system actions remain disabled.
+Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
+implemented; sensitive system actions remain disabled.
 
 See the [French README](README.md) for integration configuration, test commands
 and documentation links, plus [CONTEXT](CONTEXT.md) and [CHANGELOG](CHANGELOG.md).
 
 ![Confirmed diagnostic export](docs/images/diagnostics-en.jpg)
+
+## ◴ Monitoring, sessions and local AI
+
+The launcher token opens an in-memory session: 15 minutes without user interaction,
+eight hours maximum, revoked on sign-out or server restart. Automatic polling does
+not extend inactivity. Ten sign-in attempts per minute and 32 concurrent sessions.
+
+Monitoring adds CPU/RAM history (one sample/minute, seven days), installed services,
+disk topology and SMART, NVIDIA GPU probes, local NUT UPS readings, time, existing
+APT cache, interfaces/DNS/IPv4 routes and IPv4/IPv6 listeners. Tools and permission
+errors remain explicit. No software or drivers are installed. A listener does not
+prove Internet exposure; package-cache data can be outdated.
+
+The AI assistant uses an already installed Ollama model, without tools or execution.
+Preview and explicitly include a timestamped CPU/RAM/swap context if desired.
+Saving is optional and off by default: 20 conversations, 40 messages each. Up to
+eight previous messages are sent as conversation context. Secret masking is partial;
+never enter secrets. Saved conversations belong to the single local application user.
+SQLite v2 migration creates a private backup. Audit history is available in the UI.
+
+![Local AI assistant](docs/images/assistant-en.jpg)

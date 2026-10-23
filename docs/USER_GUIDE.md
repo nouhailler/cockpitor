@@ -84,3 +84,24 @@ suivent ce choix ; les journaux et noms externes restent inchangés.
 Dans Diagnostic, lire les exclusions, cocher la confirmation puis télécharger.
 Le JSON ne contient que les agrégats autorisés. Vérifier son contenu avant partage.
 Aucun envoi externe automatique. L’audit est signalé indisponible si SQLite ne répond pas.
+
+## Sessions, supervision et assistant local
+
+Le jeton affiché par le lanceur ouvre une session : 15 minutes sans interaction,
+huit heures maximum. Déconnexion la révoque ; les rafraîchissements automatiques
+ne comptent pas comme activité. Après expiration, saisir à nouveau le jeton local.
+
+Supervision regroupe les tendances CPU/RAM (24 heures ou sept jours), sondes réseau,
+disques, mises à jour du cache APT, services installés et état de l’heure/alimentation.
+Un message indisponible signifie absence d’outil, droits ou matériel ; aucun droit
+n’est modifié. Une écoute toutes interfaces ne suffit pas à conclure à un accès Internet.
+
+Assistant IA : choisir un modèle, écrire la question, puis envoyer. L’inclusion du
+contexte nécessite un aperçu et une case distincte. Sans cette case, seule la question
+et l’historique de conversation borné sont transmis au modèle local. Le contexte
+ne contient que CPU/RAM/swap, source, fraîcheur et date. Aucun service externe.
+Les réponses sont des suggestions et ne déclenchent jamais de commande. Annuler
+arrête la requête, sans nécessairement décharger le modèle du serveur Ollama.
+Conservation facultative, désactivée initialement : vingt conversations et quarante
+messages par conversation. Ne pas saisir de secret ; le masquage n’est pas exhaustif.
+Audit permet de consulter les dernières opérations applicatives, sans leurs corps.

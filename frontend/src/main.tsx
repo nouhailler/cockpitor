@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
+import { SettingsView, AlertsView, type Preferences } from "./preferences";
 import { bytes } from "./format";
 export { bytes } from "./format";
 import { ContainersView } from "./containers";
@@ -146,9 +147,50 @@ export function App() {
   const [moduleError, setModuleError] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const [refreshSeconds, setRefreshSeconds] = useState(3);
+  const [preferencesError, setPreferencesError] = useState("");
+  function applyPreferences(settings: Preferences) {
+    setTheme(settings.theme);
+    setRefreshSeconds(settings.refresh_seconds);
+  }
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    if (!token) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function load() {
+      try {
+        const data = await api<{ settings: Preferences }>(
+          "settings",
+          token,
+          controller.signal,
+        );
+        if (data.settings && !controller.signal.aborted) {
+          applyPreferences(data.settings);
+          setPreferencesError("");
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setPreferencesError("Réglages persistants indisponibles");
+          timer = setTimeout(load, 3000);
+        }
+      }
+    }
+    void load();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [token]);
+  useEffect(() => {
+    const media = window.matchMedia?.("(prefers-color-scheme: dark)");
+    const update = () => {
+      document.documentElement.dataset.theme =
+        theme === "system" ? (media?.matches ? "dark" : "light") : theme;
+    };
+    update();
+    media?.addEventListener("change", update);
     localStorage.setItem("theme", theme);
+    return () => media?.removeEventListener("change", update);
   }, [theme]);
   useEffect(() => {
     if (!token) return;
@@ -168,7 +210,8 @@ export function App() {
       } catch (e) {
         if (!controller.signal.aborted) setError((e as Error).message);
       } finally {
-        if (!controller.signal.aborted) timer = setTimeout(load, 3000);
+        if (!controller.signal.aborted)
+          timer = setTimeout(load, refreshSeconds * 1000);
       }
     };
     void load();
@@ -176,7 +219,7 @@ export function App() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [token, refresh]);
+  }, [token, refresh, refreshSeconds]);
   useEffect(() => {
     if (!token || page !== "Processus") return;
     const controller = new AbortController();
@@ -195,7 +238,8 @@ export function App() {
       } catch (e) {
         if (!controller.signal.aborted) setError((e as Error).message);
       } finally {
-        if (!controller.signal.aborted) timer = setTimeout(load, 3000);
+        if (!controller.signal.aborted)
+          timer = setTimeout(load, refreshSeconds * 1000);
       }
     };
     void load();
@@ -203,7 +247,7 @@ export function App() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [token, page, query, offset, refresh]);
+  }, [token, page, query, offset, refresh, refreshSeconds]);
   useEffect(() => {
     if (!token || !["IA locale", "Conteneurs"].includes(page)) return;
     const controller = new AbortController();
@@ -276,6 +320,8 @@ export function App() {
             "Services",
             "IA locale",
             "Conteneurs",
+            "Alertes",
+            "Paramètres",
           ].map((p, i) => (
             <button
               key={p}
@@ -283,17 +329,14 @@ export function App() {
               aria-current={page === p ? "page" : undefined}
               onClick={() => setPage(p)}
             >
-              <span>{["▦", "◉", "≋", "⚙", "✧", "▣"][i]}</span>
+              <span>{["▦", "◉", "≋", "⚙", "✧", "▣", "⚑", "☷"][i]}</span>
               {p}
             </button>
           ))}
         </nav>
         <div className="aside-bottom">
-          <p>● Mode lecture seule</p>
+          <p>● Système en lecture seule</p>
           <small>Aucune action système autorisée</small>
-          <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            Thème {theme === "dark" ? "clair" : "sombre"}
-          </button>
           <button
             onClick={() => {
               setToken("");
@@ -307,7 +350,10 @@ export function App() {
       </aside>
       <main>
         <header>
-          <span>POSTE LOCAL / {metrics?.hostname || "Connexion"}</span>
+          <span>
+            POSTE LOCAL / {metrics?.hostname || "Connexion"}
+            {preferencesError && <small> · {preferencesError}</small>}
+          </span>
           <div>
             <span className={error || stale ? "badge warning" : "badge"}>
               {error || stale
@@ -531,6 +577,16 @@ export function App() {
         {page === "Services" && (
           <ServicesView token={token} refresh={refresh} />
         )}
+        {page === "Paramètres" && (
+          <SettingsView
+            token={token}
+            onSaved={(settings) => {
+              applyPreferences(settings);
+              setPreferencesError("");
+            }}
+          />
+        )}
+        {page === "Alertes" && <AlertsView token={token} refresh={refresh} />}
         <footer>
           Lecture seule · Données conservées localement · Aucun service cloud
         </footer>

@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Préférences et alertes — 23 octobre 2026
+
+- SQLite v1 privé, initialisation/migration avec sauvegarde, préférences et audit borné.
+- Pages Paramètres et Alertes, thèmes clair/sombre/système et fréquence d’affichage persistants.
+- Règles temporisées CPU/RAM/swap/disque, Ollama indisponible, service en échec et conteneur arrêté.
+- Déduplication, résolution, rétention des événements et sources indisponibles explicites.
+- PUT settings limité aux réglages applicatifs, protégé par authentification, origine et CSRF.
+- Collecteur CPU isolé dans un thread dédié ; panne SQLite sans arrêt de la supervision.
+- 97 tests backend et 13 frontend, captures réelles et documentation mises à jour.
+- Aucune action sur le système, les services ou les conteneurs ajoutée.
+
 ### Conteneurs — 23 octobre 2026
 
 - Inventaire filtrable par nom/image et état, sélection d’un moteur et d’un conteneur.

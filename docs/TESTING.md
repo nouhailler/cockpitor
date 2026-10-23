@@ -55,3 +55,20 @@ Vérification navigateur : états Docker/Podman absents et filtres accessibles,
 sans invention de conteneur ni activation de socket. Capture docs/images/containers.jpg.
 Les moteurs réels, pilotes de logs, contextes rootless et versions distribuées restent
 NON TESTÉS sur cette machine. Les doubles de test sont confinés aux tests.
+
+## SQLite et alertes — 23 octobre 2026
+
+97 tests backend et 13 tests frontend. Tests ajoutés : réouverture persistante,
+permissions privées, liens symboliques, sauvegarde pré-migration, refus de version
+future, verrouillage SQLite, conservation du réglage précédent après échec,
+validation stricte, seuils temporisés, déduplication/reprise, source périmée,
+observabilité, résolution après modification et rétention qui conserve les actifs.
+Les tests API isolent la base dans un dossier temporaire et vérifient Bearer,
+origine, CSRF, JSON, taille de corps, champs refusés et disponibilité des métriques.
+Les tests jsdom couvrent sauvegarde réelle du formulaire via PUT, erreurs,
+relance de lecture, filtres/pagination des alertes et rendu textuel sûr.
+
+Vérification navigateur : lecture et enregistrement des réglages réels confirmés,
+page Alertes sans événement inventé, observabilité des quatre règles initiales sur
+les mesures du poste. Captures docs/images/settings.jpg et docs/images/alerts.jpg.
+Les scénarios d’activation/résolution forcés sont limités aux tests contrôlés.

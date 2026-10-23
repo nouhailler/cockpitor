@@ -441,3 +441,25 @@ select:focus-visible {
   max-height: 600px;
   overflow: auto;
 }
+.rule-editor {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+  min-width: 0;
+}
+.rule-editor legend {
+  color: var(--accent);
+  font-size: 13px;
+  padding: 0 8px;
+}
+.rule-editor input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+.rule-editor .filters {
+  margin: 8px 0;
+}
+.rule-editor input[type="number"] {
+  width: 145px;
+}

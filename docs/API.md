@@ -1,12 +1,13 @@
 # API v0.1 — préfixe /api/v1
 
 Toutes les routes API exigent `Authorization: Bearer <jeton>`.
-Les seules méthodes acceptées sont GET et HEAD (HEAD seulement sur les routes
-qui le prennent en charge). Aucune méthode d'écriture n'est disponible.
+Les routes de supervision acceptent GET et, lorsqu’il est pris en charge, HEAD.
+La seule écriture autorisée est PUT /api/v1/settings, limitée aux réglages de
+l’application. Aucune mutation système n’est disponible.
 
 | GET | Résultat |
 | --- | --- |
-| /health | version et indicateur read_only |
+| /health | version, read_only (système), settings_writable et santé du stockage |
 | /system/metrics | dernier instantané système hors processus |
 | /system/history | au plus 450 échantillons CPU/RAM horodatés |
 | /system/processes | items, total, collected_at ; q (100 caractères), offset >= 0, limit 1–200 |
@@ -81,3 +82,35 @@ Limites : deux opérations détaillées concurrentes, délai total de six second
 accès désactivé : 409 ENGINE_DISABLED ; absence API/conteneur : 404 ; permissions :
 403 ; statistiques incompatibles avec l’état : 409 ; fonction absente : 503.
 Toutes les erreurs publiques sont expurgées ; aucune mutation n’est disponible.
+
+## Préférences et alertes
+
+GET /settings retourne settings, csrf_token et storage (status/schema_version).
+PUT /settings remplace l’objet settings complet et retourne operation_id, status
+completed et les réglages réellement enregistrés. Champs autorisés : theme
+(dark/light/system), refresh_seconds (entier 3–60), retention_days (1–90), rules
+(20 maximum, identifiants uniques). Champs inconnus et types non conformes sont refusés.
+
+Les règles définissent id, metric, enabled, threshold (0–100), duration_seconds
+(0–3600), severity (warning/critical), target et engine. metric est cpu_percent,
+memory_percent, swap_percent, disk_free_percent, ollama_unavailable, service_failed
+ou container_stopped. Une cible est requise pour disque/service/conteneur ; engine
+est autorisé seulement pour un conteneur. Les conditions booléennes ignorent threshold.
+Les comparaisons sont strictes : supérieur pour CPU/RAM/swap, inférieur pour libre disque.
+
+PUT exige Bearer et Origin correspondant exactement à l’origine de la requête,
+Content-Type application/json et X-LocalCockpit-CSRF égal au jeton du GET authentifié.
+Le corps réellement lu est limité à 16384 octets (413 au-delà). CSRF/origine refusée :
+403 ; contenu non JSON : 415 ; configuration invalide : 422 expurgé ; stockage : 503.
+Un succès correspond au commit atomique des réglages et de l’audit, pas à une simple
+acceptation en mémoire. Les tokens ne sont pas stockés dans SQLite.
+
+GET /alerts : status=all/active/resolved, limit 1–200 (50 par défaut), offset >= 0.
+Réponse items/total pour les événements, rules pour l’observabilité courante et
+evaluated_at pour l’heure de dernière évaluation. rules.status : healthy, pending,
+active, unavailable ou disabled. Le champ active permet de distinguer une source
+indisponible avec événement actif conservé. Les événements contiennent identifiant,
+règle, gravité, message, état, début et résolution. Pas d’acquittement ni notification externe.
+
+La santé conserve read_only=true au sens des ressources système et annonce
+settings_writable=true. Une base indisponible ne rend pas /health ou les métriques inaccessibles.

@@ -28,8 +28,9 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 | IA | Modèles Ollama, modèles chargés si disponibles, état HTTP/lien OpenWebUI |
 | Conteneurs | Inventaire, filtres, détails, CPU/RAM et journaux bornés via socket explicitement configuré |
 | Services et journaux | Inventaire des services chargés, détails, journaux bornés/paginés et permissions explicites |
-| Mutations | Absentes ; méthodes d’écriture refusées par le middleware |
-| Persistance et packaging | SQLite, alertes, diagnostic et paquet Debian absents |
+| Mutations | Aucune action système ; PUT /api/v1/settings protège les seuls réglages applicatifs |
+| Persistance | SQLite v1 privé : préférences, événements d’alerte et audit borné des réglages |
+| Distribution | Diagnostic et paquet Debian absents |
 
 ## Décisions à préserver
 
@@ -58,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 75 tests backend et 9 tests frontend réussis localement.
+- 97 tests backend et 13 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -128,3 +129,28 @@ Le navigateur vérifie l’absence de moteurs sur ce poste. Les scénarios dispo
 arrêtés, refusés et incompatibles sont couverts par tests, dont un vrai serveur Unix
 HTTP contrôlé (ce n’est pas un moteur réel). Aucun accès moteur ni privilège activé.
 Prochaine étape : préférences persistantes et alertes locales, toujours sans actions sensibles.
+
+## Préférences et alertes — 23 octobre 2026
+
+- `preferences.py` définit des schémas stricts : thème, rafraîchissement, rétention,
+  maximum 20 règles nommées de façon unique et cibles exactes.
+- `storage.py` utilise SQLite v1, transactions, paramètres SQL, délai de verrouillage
+  court, permissions 0700/0600 et refus des liens symboliques pour la base/dossier.
+  Une base non vide de version 0 est sauvegardée avant initialisation ; les versions
+  futures sont refusées sans modification. Les lectures ne recréent pas une base disparue.
+- `alerts.py` évalue toutes les deux secondes, avec fraîcheur des sources, durée,
+  nouveaux échantillons, déduplication, résolution et reprise des événements actifs.
+- Les événements résolus expirent après la rétention choisie, à partir de leur
+  résolution, avec plafond de 1000 résolus. Les actifs restent conservés ; l’audit
+  des enregistrements est limité à 1000 événements sans corps ni jeton.
+- Seul PUT settings est autorisé en écriture : Bearer, origine exacte obligatoire,
+  jeton CSRF obtenu via GET authentifié, application/json, corps borné à 16 Kio.
+- `frontend/src/preferences.tsx` fournit Paramètres et Alertes ; le thème et la
+  fréquence d’affichage système sont appliqués après chargement/enregistrement.
+- Le collecteur système a son propre thread unique afin que les lectures SQLite
+  n’altèrent pas les références de mesure CPU par thread de psutil.
+
+Le répertoire privé par défaut est `.localcockpit/` à la racine ; il est ignoré par
+Git et ne doit pas être commité. Le nom peut être remplacé au lancement par
+LOCALCOCKPIT_DATA_DIR. Une panne de base est signalée et réessayée en arrière-plan,
+sans bloquer les autres modules. Le diagnostic expurgé reste la prochaine étape.

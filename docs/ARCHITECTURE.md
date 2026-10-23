@@ -17,8 +17,8 @@ Les lectures HTTP sont limitées en durée et volume ; les réponses sont filtr�
 et validées. Seules les informations utiles sont transmises à React. Aucun accès
 à l'environnement d'un conteneur ou à une base OpenWebUI.
 
-Cette première version n'a ni stockage SQLite, ni système de plugins chargeables,
-ni agent privilégié. Les interfaces de modules versionnées restent à formaliser.
+Cette version utilise SQLite pour les préférences et événements ; elle n’a ni
+système de plugins chargeables ni agent privilégié. Les interfaces de modules versionnées restent à formaliser.
 Les données de la machine de développement ne prouvent pas la compatibilité
 avec une installation Debian propre.
 
@@ -54,3 +54,22 @@ Références vérifiées : [spécification Moby API 1.47](https://github.com/mob
 [versionnement Docker](https://docs.docker.com/reference/api/engine/),
 [API Podman et compatibilité](https://docs.podman.io/en/latest/_static/api.html).
 La qualification des moteurs réels et de leurs différences de versions reste à réaliser.
+
+## Persistance et moteur d’alertes
+
+Le stockage est indépendant des collecteurs. Une connexion SQLite courte est ouverte
+par opération, sans fichier temporaire disque ; les transactions protègent réglages,
+résolutions associées et audit. Un verrou applicatif sérialise l’évaluation des
+règles et les enregistrements. La base garde les préférences JSON, événements et
+un audit minimal, aucune métrique haute fréquence ni secret.
+
+L’évaluation toutes les deux secondes utilise les instantanés déjà partagés. Les
+métriques système ont une fraîcheur maximale de 15 s, les modules optionnels de 40 s.
+Une temporisation n’aboutit qu’avec un nouvel échantillon ; un résultat sain résout
+un événement actif, une source inconnue le conserve. Les temporisations ne sont pas
+persistées et repartent au démarrage ; les événements actifs sont relus pour éviter
+les doublons. Modifier/supprimer une règle clôt son événement actif.
+
+Références : [sqlite3 Python](https://docs.python.org/3/library/sqlite3.html),
+[validation Pydantic](https://docs.pydantic.dev/latest/concepts/validators/) et
+[protection CSRF OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).

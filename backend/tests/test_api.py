@@ -7,7 +7,9 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture
-def client(monkeypatch):
+def client(monkeypatch, tmp_path):
+    monkeypatch.setenv("LOCALCOCKPIT_DATA_DIR", str(tmp_path / "state"))
+
     async def offline_ai():
         return {"status": "ok", "ollama": {"status": "unavailable"}}
 
@@ -152,3 +154,72 @@ def test_container_detail_routes_validate_and_refuse_mutations(client, monkeypat
     assert (
         client.get(path + "/logs?tail=50&period=day").json()["items"][0]["message"] == "<img src=x>"
     )
+
+
+def wait_settings(client):
+    for _ in range(100):
+        response = client.get("/api/v1/settings")
+        if response.status_code == 200:
+            return response.json()
+        time.sleep(0.02)
+    raise AssertionError(response.json())
+
+
+def test_settings_save_requires_auth_origin_csrf_json_and_bounds(client):
+    envelope = wait_settings(client)
+    settings = envelope["settings"]
+    path = "/api/v1/settings"
+    safe = {"origin": "http://127.0.0.1:8765", "x-localcockpit-csrf": envelope["csrf_token"]}
+    assert client.put(path, json=settings).status_code == 403
+    assert (
+        client.put(path, json=settings, headers={"origin": "http://evil.example"}).status_code
+        == 403
+    )
+    assert (
+        client.put(path, json=settings, headers={"origin": "http://127.0.0.1:8765"}).status_code
+        == 403
+    )
+    assert client.put(path, json=settings, headers={**safe, "authorization": ""}).status_code == 401
+    assert (
+        client.put(path, content="{}", headers={**safe, "content-type": "text/plain"}).status_code
+        == 415
+    )
+    assert (
+        client.put(
+            path, content="x" * 16385, headers={**safe, "content-type": "application/json"}
+        ).status_code
+        == 413
+    )
+    assert (
+        client.put(path, json={**settings, "listen_address": "0.0.0.0"}, headers=safe).status_code
+        == 422
+    )
+    assert (
+        client.put(path, json={**settings, "refresh_seconds": 1}, headers=safe).status_code == 422
+    )
+    response = client.put(
+        path, json={**settings, "theme": "light", "refresh_seconds": 10}, headers=safe
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "completed" and response.json()["operation_id"]
+    assert client.get(path).json()["settings"]["theme"] == "light"
+    assert client.post("/api/v1/actions/restart").status_code == 405
+
+
+def test_alerts_filters_and_storage_failure_do_not_break_system(client, monkeypatch):
+    wait_settings(client)
+    event = client.app.state.store.activate("test", "warning", "Seuil franchi")
+    assert client.get("/api/v1/alerts?status=active").json()["items"][0]["id"] == event
+    assert client.get("/api/v1/alerts?limit=999").status_code == 422
+    assert client.get("/api/v1/alerts?status=arbitrary").status_code == 422
+    assert client.get("/api/v1/alerts", headers={"authorization": ""}).status_code == 401
+    client.app.state.store.resolve(event)
+    assert client.get("/api/v1/alerts?status=resolved").json()["total"] == 1
+
+    def unavailable():
+        raise main.StorageError("Stockage local indisponible")
+
+    monkeypatch.setattr(client.app.state.store, "preferences", unavailable)
+    assert client.get("/api/v1/settings").status_code == 503
+    assert client.get("/api/v1/health").status_code == 200
+    assert client.get("/api/v1/health").json()["read_only"] is True

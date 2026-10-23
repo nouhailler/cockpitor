@@ -16,3 +16,8 @@ frontend/dist/
 !.env.example
 *.log
 .DS_Store
+
+# Private runtime state
+.localcockpit/
+*.sqlite3
+*.sqlite3-*

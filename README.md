@@ -39,7 +39,9 @@ la machine et de l’instant de collecte ; aucune donnée de démonstration n’
 | 🧠 **Ollama** | Disponibilité, modèles installés et modèles chargés si exposés |
 | 🌐 **OpenWebUI** | État HTTP et lien vers une URL locale configurée |
 | 📦 **Docker / Podman** | Inventaire filtrable, détails, CPU/RAM et journaux bornés, avec accès explicite au socket |
-| 🎨 **Interface** | Navigation responsive et thèmes clair/sombre |
+| ⚑ **Alertes locales** | Règles temporisées CPU/RAM/swap/disque, Ollama, services et conteneurs ; historique actif/résolu |
+| ☷ **Paramètres** | Thème clair/sombre/système, fréquence d’affichage, règles et rétention persistants dans SQLite |
+| 🎨 **Interface** | Navigation responsive et préférences restaurées après redémarrage |
 
 ### 🔐 Principes
 
@@ -133,6 +135,39 @@ Unix de test ; aucun moteur réel n’est installé/configuré dans l’environn
 
 </details>
 
+## ⚑ Préférences et alertes
+
+Dans **Paramètres**, enregistrer le thème, l’actualisation des métriques (3–60 s),
+la rétention des alertes résolues (1–90 jours) et jusqu’à 20 règles. Les sources
+sont collectées indépendamment de la fréquence d’affichage. Les valeurs initiales
+surveillent CPU/RAM/swap au-dessus de 90 % et l’espace libre de `/` sous 10 %, pendant 30 s.
+Les règles sur services et conteneurs demandent une cible exacte déjà observable.
+
+Dans **Alertes**, consulter les événements actifs/résolus et l’observabilité des
+règles. Une source absente/périmée n’est jamais assimilée à un état sain ; elle ne
+résout pas une alerte active. Les durées en attente repartent après redémarrage,
+mais les événements actifs/résolus persistent. Aucune notification externe ni
+commande automatique n’est déclenchée.
+
+La base est privée : `.localcockpit/cockpitor.sqlite3` dans le projet, dossier
+`0700`, fichier `0600`, exclus de Git. `LOCALCOCKPIT_DATA_DIR` permet de choisir
+un autre dossier dédié au lancement. Ne pas choisir un répertoire partagé.
+Conserver/sauvegarder ce dossier avant de supprimer le checkout. Aucun jeton ou
+mot de passe n’est stocké dans la base. Une panne SQLite laisse la supervision disponible.
+
+> La seule écriture API autorisée est **PUT /api/v1/settings**, pour les réglages
+> de l’application : jeton d’accès, origine locale exacte, en-tête CSRF et JSON
+> limité à 16 Kio sont requis. Les mutations système restent interdites.
+
+<details>
+<summary>⚑ Captures réelles des alertes et des réglages</summary>
+
+![Observabilité des règles sur les métriques réelles](docs/images/alerts.jpg)
+
+![Préférences persistantes enregistrées dans SQLite](docs/images/settings.jpg)
+
+</details>
+
 ## 🏗️ Architecture
 
 ```mermaid
@@ -169,7 +204,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **75 tests backend et 9 tests frontend
+Validation locale de cette version : **97 tests backend et 13 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -182,7 +217,8 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 - [x] Détails, statistiques et journaux bornés des conteneurs (qualification sur moteurs réels à réaliser).
 - [x] Services systemd chargés et lecture bornée des journaux par service.
 - [ ] Sessions avec expiration et limitation des tentatives.
-- [ ] Préférences persistantes, alertes et diagnostic expurgé.
+- [x] Préférences SQLite et alertes locales.
+- [ ] Diagnostic expurgé.
 - [ ] Paquet `.deb`, durcissement systemd et validation Debian.
 - [ ] Actions sensibles, **uniquement après validation des protections et tests dédiés**.
 

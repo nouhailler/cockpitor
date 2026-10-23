@@ -4,6 +4,7 @@ import logging
 import os
 import secrets
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
@@ -12,10 +13,14 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import ValidationError
 
+from .alerts import AlertEngine
 from .containers import ContainerError, Containers
 from .integrations import ai_status, container_status
+from .preferences import Preferences
 from .services import ServiceError, Services
+from .storage import StorageError, Store
 from .system import Collector
 
 TOKEN = os.environ.get("LOCALCOCKPIT_TOKEN") or secrets.token_urlsafe(32)
@@ -23,14 +28,31 @@ TOKEN = os.environ.get("LOCALCOCKPIT_TOKEN") or secrets.token_urlsafe(32)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    store = Store(
+        Path(
+            os.environ.get(
+                "LOCALCOCKPIT_DATA_DIR", str(Path(__file__).resolve().parents[2] / ".localcockpit")
+            )
+        )
+    )
+    app.state.store = store
+    app.state.preferences = Preferences()
+    app.state.storage_ready = False
+    app.state.storage_error = "Initialisation du stockage en cours"
+    app.state.csrf = secrets.token_urlsafe(32)
+    app.state.preferences_lock = asyncio.Lock()
+    app.state.alert_engine = AlertEngine(store)
     collector = Collector()
+    collector_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="cockpitor-collector")
     app.state.snapshot = None
     app.state.history = deque(maxlen=450)
 
     async def sample():
         while True:
             try:
-                data = await asyncio.to_thread(collector.collect)
+                data = await asyncio.get_running_loop().run_in_executor(
+                    collector_executor, collector.collect
+                )
                 app.state.snapshot = data
                 app.state.history.append(
                     {
@@ -62,19 +84,45 @@ async def lifespan(app: FastAPI):
             app.state.services = await app.state.services_adapter.inventory()
             await asyncio.sleep(10)
 
+    async def evaluate_alerts():
+        while True:
+            async with app.state.preferences_lock:
+                try:
+                    if not app.state.storage_ready:
+                        app.state.preferences = await asyncio.to_thread(store.initialize)
+                        app.state.alert_engine = AlertEngine(store)
+                    await asyncio.to_thread(
+                        app.state.alert_engine.evaluate,
+                        app.state.preferences,
+                        app.state.snapshot,
+                        app.state.ai,
+                        app.state.services,
+                        app.state.containers,
+                    )
+                    app.state.storage_ready = True
+                    app.state.storage_error = ""
+                except StorageError as exc:
+                    app.state.storage_ready = False
+                    app.state.storage_error = str(exc)
+            await asyncio.sleep(2)
+
+    alert_task = asyncio.create_task(evaluate_alerts())
     service_task = asyncio.create_task(service_inventory())
     task = asyncio.create_task(sample())
     integration_task = asyncio.create_task(integrations())
     try:
         yield
     finally:
+        alert_task.cancel()
         service_task.cancel()
         integration_task.cancel()
         task.cancel()
         try:
-            await asyncio.gather(task, integration_task, service_task)
+            await asyncio.gather(task, integration_task, service_task, alert_task)
         except asyncio.CancelledError:
             pass
+        finally:
+            collector_executor.shutdown(wait=False, cancel_futures=True)
 
 
 app = FastAPI(
@@ -105,12 +153,27 @@ async def security(request: Request, call_next):
         response = error(400, "HOST_REJECTED", "Hôte non autorisé")
     elif origin and origin != str(request.base_url).rstrip("/"):
         response = error(403, "ORIGIN_REJECTED", "Origine non autorisée")
-    elif request.method not in {"GET", "HEAD"}:
+    elif request.method not in {"GET", "HEAD"} and not (
+        request.method == "PUT" and request.url.path == "/api/v1/settings"
+    ):
         response = error(405, "READ_ONLY", "Cette version est en lecture seule")
     elif request.url.path.startswith("/api/") and not hmac.compare_digest(
         request.headers.get("authorization", "").encode(), ("Bearer " + TOKEN).encode()
     ):
         response = error(401, "AUTH_REQUIRED", "Jeton local requis")
+    elif request.method == "PUT" and (
+        origin != str(request.base_url).rstrip("/")
+        or not hmac.compare_digest(
+            request.headers.get("x-localcockpit-csrf", "").encode(), request.app.state.csrf.encode()
+        )
+    ):
+        response = error(403, "CSRF_REJECTED", "Origine locale et protection CSRF requises")
+    elif (
+        request.method == "PUT"
+        and request.headers.get("content-type", "").split(";")[0].strip().lower()
+        != "application/json"
+    ):
+        response = error(415, "JSON_REQUIRED", "Contenu JSON requis")
     else:
         response = await call_next(request)
     response.headers.update(
@@ -133,6 +196,11 @@ async def service_error(request: Request, exc: ServiceError):
     return error(exc.status, exc.code, exc.message)
 
 
+@app.exception_handler(StorageError)
+async def storage_error(request: Request, exc: StorageError):
+    return error(503, "STORAGE_UNAVAILABLE", str(exc))
+
+
 @app.exception_handler(Exception)
 async def unexpected(request: Request, exc: Exception):
     return error(500, "INTERNAL_ERROR", "Erreur interne ; réessayez ultérieurement")
@@ -140,7 +208,13 @@ async def unexpected(request: Request, exc: Exception):
 
 @app.get("/api/v1/health")
 def health():
-    return {"status": "ok", "version": "0.1.0", "read_only": True}
+    return {
+        "status": "ok",
+        "version": "0.1.0",
+        "read_only": True,
+        "settings_writable": True,
+        "storage": {"status": "available" if app.state.storage_ready else "unavailable"},
+    }
 
 
 @app.get("/api/v1/system/metrics")
@@ -248,6 +322,53 @@ async def container_logs(
     return await app.state.container_adapter.logs(
         engine, container_id, tail, 3600 if period == "hour" else 86400
     )
+
+
+@app.get("/api/v1/settings")
+async def settings():
+    if not app.state.storage_ready:
+        raise StorageError(app.state.storage_error)
+    preferences = await asyncio.to_thread(app.state.store.preferences)
+    return {
+        "settings": preferences.model_dump(),
+        "csrf_token": app.state.csrf,
+        "storage": {"status": "available", "schema_version": 1},
+    }
+
+
+@app.put("/api/v1/settings")
+async def save_settings(request: Request):
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > 16384:
+            return error(413, "BODY_LIMIT", "Configuration limitée à 16 Kio")
+    try:
+        preferences = Preferences.model_validate_json(bytes(body))
+    except ValidationError:
+        return error(422, "INVALID_SETTINGS", "Paramètres invalides ou champs non autorisés")
+    async with app.state.preferences_lock:
+        if not app.state.storage_ready:
+            raise StorageError(app.state.storage_error)
+        operation = await asyncio.to_thread(app.state.store.save, preferences)
+        app.state.preferences = preferences
+    return {"operation_id": operation, "status": "completed", "settings": preferences.model_dump()}
+
+
+@app.get("/api/v1/alerts")
+async def alerts(
+    status: Literal["all", "active", "resolved"] = "all",
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
+    if not app.state.storage_ready:
+        raise StorageError(app.state.storage_error)
+    events = await asyncio.to_thread(app.state.store.events, status, limit, offset)
+    return {
+        **events,
+        "rules": app.state.alert_engine.states,
+        "evaluated_at": getattr(app.state.alert_engine, "evaluated_at", None),
+    }
 
 
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"

@@ -16,20 +16,20 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 | 9. Conteneurs en lecture seule | PARTIEL | inventaire, détails, statistiques et logs avec opt-in ; tests simulés et transport Unix contrôlé ; moteurs réels NON TESTÉS |
 | 10. Journaux bornés et rendus sûrs | PARTIEL | journaux systemd et conteneurs reliés de bout en bout, bornés et testés ; journal applicatif dédié absent, lecture réelle réussie NON TESTÉE faute de droits |
 | 11. Pas de shell arbitraire | IMPLÉMENTÉ | sous-processus systemctl/journalctl avec arguments fixes et unités validées ; aucun endpoint de commande libre |
-| 12. Mutations désactivées | IMPLÉMENTÉ | middleware refuse POST/PUT/PATCH/DELETE ; test_api.py |
+| 12. Mutations désactivées | IMPLÉMENTÉ | middleware refuse les mutations système ; seule écriture applicative PUT settings protégée ; test_api.py |
 | 13. Secrets et diagnostic | PARTIEL | champs conteneur en liste blanche, erreurs expurgées ; export ABSENT, revue exhaustive NON TESTÉE |
 | 14. Hors ligne après installation | PARTIEL | assets locaux et IP loopback seules ; essai avec réseau coupé NON TESTÉ |
-| 15. Tests et build CI | PARTIEL | contrôles locaux passants ; CI initiale et Services réussies, lot Conteneurs à vérifier après publication |
+| 15. Tests et build CI | PARTIEL | contrôles locaux passants ; CI précédente Conteneurs réussie, lot SQLite/alertes à vérifier après publication |
 
 ## Validations exécutées
 
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 75 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 97 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
-- `npm test --prefix frontend` : 9 tests réussis.
+- `npm test --prefix frontend` : 13 tests réussis.
 - `npm run build --prefix frontend` : réussi.
 - `npm audit --prefix frontend` : zéro vulnérabilité après mise à jour de Vitest.
 
@@ -104,3 +104,24 @@ build. L’avertissement TestClient/httpx préexistant reste présent. Le transp
 est vérifié contre un serveur contrôlé ; aucun droit système ou socket moteur réel
 n’a été activé. Le navigateur affiche honnêtement « Socket non détecté » pour les
 deux moteurs. La prochaine étape du plan concerne la persistance et les alertes.
+
+## SQLite et alertes — 23 octobre 2026
+
+Fichiers ajoutés : backend/app/{preferences,storage,alerts}.py,
+backend/tests/test_storage_alerts.py, frontend/src/preferences.tsx,
+frontend/tests/preferences.test.tsx et captures settings.jpg/alerts.jpg.
+Main API/UI, client HTTP, styles, tests API, exclusions Git et guides mis à jour.
+
+IMPLÉMENTÉ : préférences SQLite, migration initiale privée avec sauvegarde,
+schémas stricts, règles locales temporisées, événements actifs/résolus et audit
+bornés, récupération après erreur, formulaire connecté et protection d’écriture.
+PARTIEL : modèle d’authentification encore fondé sur un jeton de développement,
+audit minimal sans interface dédiée. ABSENT : diagnostic exportable et actions
+système. NON TESTÉ : migration depuis une ancienne version livrée (aucune version
+SQLite précédente n’existe), disque physiquement plein et scénarios de coupure électrique.
+
+Les 97 tests backend et 13 frontend passent, ainsi que lint, types, format et build.
+Le navigateur a confirmé un enregistrement dans la base réelle et l’observabilité
+sur les métriques du poste. Aucune alerte fictive n’a été créée dans cette base.
+Les fichiers SQLite locaux restent privés et exclus du commit. Les durées en
+attente repartent après redémarrage ; les événements persistés évitent les doublons.

@@ -54,3 +54,24 @@ ou 24 heures. stdout et stderr sont regroupés séparément, sans ordre global g
 En mode TTY, les deux flux sont déjà fusionnés. Un moteur/driver ne permettant pas
 la lecture des logs affiche une erreur explicite. Le masquage vise les secrets
 courants ; ne pas publier les journaux sans vérification humaine.
+
+## Paramètres et alertes
+
+Paramètres enregistre le thème, la fréquence d’affichage des métriques (la collecte
+reste indépendante), les règles et la rétention. Le choix « Suivre le système »
+suit les changements de thème du poste. La confirmation d’enregistrement contient
+un identifiant d’opération ; une erreur de stockage signifie qu’aucun succès n’est confirmé.
+
+Les règles CPU/RAM/swap déclenchent au-dessus du seuil ; disque libre déclenche
+au-dessous. Les règles d’état (Ollama, service et conteneur) n’utilisent pas de seuil
+numérique. Choisir une cible exacte pour service/conteneur/disque ; les sources
+absentes ou non observables sont signalées, pas présumées saines. Une règle en
+attente nécessite de nouvelles observations pendant la durée choisie.
+
+Alertes sépare les événements actifs/résolus de l’état actuel des sources. Une
+source devenue indisponible conserve un événement actif. Un état redevenu sain le
+résout. Modifier, désactiver ou supprimer une règle résout ses événements actifs ;
+changer uniquement le thème ne les résout pas. Les durées en attente repartent au
+redémarrage, les événements persistent sans doublon. Les résolus sont conservés
+pendant 1–90 jours à compter de leur résolution, avec un maximum de 1000 résolus.
+Aucun envoi externe ou action automatique. Le diagnostic exportable reste absent.

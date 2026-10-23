@@ -9,7 +9,13 @@ Prototype local en lecture seule, pas une version validée pour exposition rése
 - Hôtes loopback autorisés uniquement ; origine étrangère refusée ; aucun CORS global.
 - Aucun cookie d'authentification ; une page étrangère ne peut pas attacher le jeton
   détenu uniquement en mémoire par l'interface. Aucun jeton dans les URL.
-- Toutes les méthodes autres que GET/HEAD refusées, aucun endpoint d'action.
+- Méthodes d’écriture refusées sauf PUT exact sur /api/v1/settings ; aucun endpoint d’action système.
+- Réglages : authentification, origine locale obligatoire, jeton CSRF en mémoire,
+  JSON borné et schéma strict sans adresse réseau, chemin de socket ni commande.
+- SQLite : dossier dédié 0700/base 0600 possédés par le compte, refus des liens
+  symboliques, requêtes paramétrées, audit sans corps ni jeton, rétention bornée.
+- Les fichiers de données privés sont exclus de Git ; aucune clé d’intégration
+  ou token d’authentification/CSRF n’est enregistré dans la base.
 - CSP, anti-frame, nosniff, no-referrer, no-store ; aucun asset externe.
 - IP loopback numériques seulement pour les intégrations, sans redirection, proxy
   d'environnement ou identifiant intégré à l'URL. HTTPS conserve sa validation TLS.

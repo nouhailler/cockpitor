@@ -6,6 +6,7 @@ import secrets
 from collections import deque
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Query, Request
@@ -13,6 +14,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .integrations import ai_status, container_status
+from .services import ServiceError, Services
 from .system import Collector
 
 TOKEN = os.environ.get("LOCALCOCKPIT_TOKEN") or secrets.token_urlsafe(32)
@@ -41,6 +43,8 @@ async def lifespan(app: FastAPI):
                 logging.getLogger("localcockpit").warning("Collecte système indisponible")
             await asyncio.sleep(2)
 
+    app.state.services_adapter = Services()
+    app.state.services = None
     app.state.ai = None
     app.state.containers = None
 
@@ -51,15 +55,22 @@ async def lifespan(app: FastAPI):
             )
             await asyncio.sleep(10)
 
+    async def service_inventory():
+        while True:
+            app.state.services = await app.state.services_adapter.inventory()
+            await asyncio.sleep(10)
+
+    service_task = asyncio.create_task(service_inventory())
     task = asyncio.create_task(sample())
     integration_task = asyncio.create_task(integrations())
     try:
         yield
     finally:
+        service_task.cancel()
         integration_task.cancel()
         task.cancel()
         try:
-            await asyncio.gather(task, integration_task)
+            await asyncio.gather(task, integration_task, service_task)
         except asyncio.CancelledError:
             pass
 
@@ -114,6 +125,11 @@ async def security(request: Request, call_next):
     return response
 
 
+@app.exception_handler(ServiceError)
+async def service_error(request: Request, exc: ServiceError):
+    return error(exc.status, exc.code, exc.message)
+
+
 @app.exception_handler(Exception)
 async def unexpected(request: Request, exc: Exception):
     return error(500, "INTERNAL_ERROR", "Erreur interne ; réessayez ultérieurement")
@@ -162,6 +178,51 @@ def ai():
 @app.get("/api/v1/containers")
 def containers():
     return app.state.containers or error(503, "CHECKING", "Vérification des moteurs en cours")
+
+
+@app.get("/api/v1/services")
+def services(
+    q: str = Query("", max_length=100),
+    state: Literal["all", "active", "inactive", "failed"] = "all",
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+):
+    data = app.state.services
+    if data is None:
+        return error(503, "COLLECTING", "Inventaire des services en cours")
+    if data["status"] != "available":
+        return error(503, data["code"], data["message"])
+    rows = [
+        row
+        for row in data["items"]
+        if (state == "all" or row["active"] == state)
+        and q.lower() in (row["unit"] + " " + row["description"]).lower()
+    ]
+    return {
+        "items": rows[offset : offset + limit],
+        "total": len(rows),
+        "collected_at": data["collected_at"],
+        "scope": "loaded_system_services",
+    }
+
+
+@app.get("/api/v1/services/{unit}")
+async def service_detail(unit: str):
+    return await app.state.services_adapter.detail(unit)
+
+
+@app.get("/api/v1/services/{unit}/logs")
+async def service_logs(
+    unit: str,
+    limit: int = Query(50, ge=1, le=200),
+    period: Literal["hour", "day"] = "hour",
+    priority: int = Query(7, ge=0, le=7),
+    q: str = Query("", max_length=100),
+    cursor: str | None = Query(None, max_length=1024),
+):
+    return await app.state.services_adapter.logs(
+        unit, limit, 3600 if period == "hour" else 86400, priority, q, cursor
+    )
 
 
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"

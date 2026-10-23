@@ -14,8 +14,8 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 | 7. Ollama et modèles | IMPLÉMENTÉ | integrations.py, vue IA, tests d'intégration et service Ollama local observé |
 | 8. OpenWebUI | PARTIEL | état HTTP et lien implémentés ; instance réelle configurée NON TESTÉE |
 | 9. Conteneurs en lecture seule | PARTIEL | inventaire avec opt-in ; tests simulés Docker, socket Podman ; moteurs réels NON TESTÉS |
-| 10. Journaux bornés et rendus sûrs | ABSENT | aucun endpoint ou écran de logs |
-| 11. Pas de shell arbitraire | IMPLÉMENTÉ | aucun subprocess ni endpoint de commande ; routes en lecture seule |
+| 10. Journaux bornés et rendus sûrs | PARTIEL | journaux systemd par service reliés de bout en bout, bornés et testés ; journal applicatif dédié absent, lecture réelle réussie NON TESTÉE faute de droits |
+| 11. Pas de shell arbitraire | IMPLÉMENTÉ | sous-processus systemctl/journalctl avec arguments fixes et unités validées ; aucun endpoint de commande libre |
 | 12. Mutations désactivées | IMPLÉMENTÉ | middleware refuse POST/PUT/PATCH/DELETE ; test_api.py |
 | 13. Secrets et diagnostic | PARTIEL | champs conteneur en liste blanche, erreurs expurgées ; export ABSENT, revue exhaustive NON TESTÉE |
 | 14. Hors ligne après installation | PARTIEL | assets locaux et IP loopback seules ; essai avec réseau coupé NON TESTÉ |
@@ -26,10 +26,10 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 19 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 41 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
-- `npm test --prefix frontend` : 4 tests réussis.
+- `npm test --prefix frontend` : 6 tests réussis.
 - `npm run build --prefix frontend` : réussi.
 - `npm audit --prefix frontend` : zéro vulnérabilité après mise à jour de Vitest.
 
@@ -67,3 +67,21 @@ Avant distribution : sessions avec expiration, limitation des tentatives,
 formalisation des modules et schémas API, validation Debian/systemd, tests réels
 moteurs/OpenWebUI, journalisation contrôlée, audit Python et revue de charge.
 Les actions sensibles restent interdites avant conception et validation dédiées.
+
+## Lot Services — 23 octobre 2026
+
+Fichiers ajoutés : backend/app/services.py, backend/tests/test_services.py,
+frontend/src/api.ts, frontend/src/services.tsx, frontend/tests/services.test.tsx,
+docs/images/services.jpg. Main backend/frontend, styles, tests API, README,
+CONTEXT, CHANGELOG et guides mis à jour.
+
+IMPLÉMENTÉ : inventaire des services système chargés, recherche/pagination/filtres,
+détail et journaux par unité, limites de sous-processus, refus des permissions,
+masquage courant, rendu textuel, refus des mutations. PARTIEL : couverture complète
+des journaux et secrets arbitraires. ABSENT : journal applicatif dédié et inventaire
+des fichiers de services non chargés. NON TESTÉ : journal réel accessible à ce compte.
+
+Validation réelle : 132 unités trouvées, propriétés de dbus.service affichées,
+refus de lecture journald expliqué dans l’interface sans modification des droits.
+La CI du commit initial était réussie avant ce lot ; les résultats de ce lot
+sont vérifiés localement puis soumis au workflow à la publication.

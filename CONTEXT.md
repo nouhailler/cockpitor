@@ -27,6 +27,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 | Historique | Jusqu’à 450 points en mémoire, environ 15 minutes |
 | IA | Modèles Ollama, modèles chargés si disponibles, état HTTP/lien OpenWebUI |
 | Conteneurs | Inventaire Docker/Podman via socket explicitement configuré |
+| Services et journaux | Inventaire des services chargés, détails, journaux bornés/paginés et permissions explicites |
 | Mutations | Absentes ; méthodes d’écriture refusées par le middleware |
 | Persistance et packaging | SQLite, alertes, diagnostic et paquet Debian absents |
 
@@ -47,7 +48,9 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 - `backend/app/main.py` : cycle de vie, routes, authentification, hôtes/origines et headers.
 - `backend/app/system.py` : collecte système et référence des mesures différentielles.
 - `backend/app/integrations.py` : lectures HTTP bornées et adaptateurs optionnels.
-- `frontend/src/main.tsx` : vues, client API et rafraîchissement.
+- `frontend/src/main.tsx` : vues et rafraîchissement.
+- `frontend/src/api.ts` : client HTTP authentifié avec délai maximal.
+- `backend/app/services.py` et `frontend/src/services.tsx` : services et journaux en lecture seule.
 - `frontend/src/style.css` : thèmes et mise en page responsive.
 - `scripts/serve.py` : lancement utilisateur et génération du jeton.
 - `requirements.lock` et `frontend/package-lock.json` : dépendances résolues.
@@ -55,7 +58,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 19 tests backend et 4 tests frontend réussis localement.
+- 41 tests backend et 6 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -71,7 +74,8 @@ de dépréciation Starlette/TestClient concernant httpx reste présent.
 - Choisir et tester la version Debian cible dans une VM propre.
 - Remplacer le jeton de développement par des sessions expirables, avec limitation des tentatives.
 - Compléter les schémas de sortie API, l’enveloppe d’erreur et le contrat de modules.
-- Ajouter détails/statistiques/logs conteneurs et services/journaux en lecture seule.
+- Ajouter détails/statistiques/logs conteneurs et une vue de journaux applicatifs.
+- Étendre éventuellement l’inventaire aux fichiers de services installés mais non chargés.
 - Tester Docker, Podman et OpenWebUI sur des instances réelles configurées.
 - Ajouter audit des dépendances Python, tests de charge et revue d’accessibilité.
 - Concevoir packaging, service systemd, migrations et désinstallation.
@@ -88,3 +92,19 @@ Travailler par lots vérifiables ; lancer les commandes du
 et le CHANGELOG sans déclarer implémentée une fonction non reliée de bout en bout.
 
 Dépôt : [nouhailler/cockpitor](https://github.com/nouhailler/cockpitor).
+
+## Étape du 23 octobre 2026
+
+Le module Services consulte `systemctl list-units` et une liste limitée de
+propriétés de `systemctl show`. `journalctl` lit au plus 202 entrées brutes par
+requête, avec une période limitée à une heure ou 24 heures. La recherche de texte
+est littérale et locale à la page ; la pagination utilise les curseurs journald.
+Les commandes sont sans shell, exécutées avec des chemins absolus, un environnement
+fixe, deux lectures concurrentes maximum, un délai de cinq secondes et une limite
+de sortie de 2 Mio. Le processus est arrêté et récupéré après dépassement ou annulation.
+
+Sur le poste réel : 132 services détectés, détails de dbus.service consultés,
+journal refusé faute de permissions. Aucun changement de droits n’a été effectué.
+Les journaux lisibles et leur pagination sont validés par tests simulés ; un compte
+réel ayant accès au journal reste à tester. Le masquage couvre les secrets courants,
+sans garantir de détecter tous les secrets propres aux applications.

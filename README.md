@@ -20,12 +20,20 @@ Le nom de travail affiché dans l’application est **LocalCockpit**.
 *Capture réelle de la vue d’ensemble en thème sombre. Les valeurs dépendent de
 la machine et de l’instant de collecte ; aucune donnée de démonstration n’est injectée.*
 
+<details>
+<summary>⚙️ Aperçu des services et de la gestion des permissions</summary>
+
+![Services systemd, détails et erreur explicite de droits journald](docs/images/services.jpg)
+
+</details>
+
 ## ✨ Fonctionnalités
 
 | Module | Disponible aujourd’hui |
 | --- | --- |
 | 📊 **Vue d’ensemble** | CPU global, RAM, swap, uptime, charge et réseau |
 | 💽 **Système** | Systèmes de fichiers, capacité et capteurs accessibles |
+| ⚙️ **Services et journaux** | Services système chargés, détails, journaux paginés et erreurs de permissions explicites |
 | 🔎 **Processus** | Recherche, pagination, utilisateur, CPU et mémoire |
 | 📈 **Historique** | Courbe CPU, environ 15 minutes conservées en mémoire |
 | 🧠 **Ollama** | Disponibilité, modèles installés et modèles chargés si exposés |
@@ -143,7 +151,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **19 tests backend et 4 tests frontend
+Validation locale de cette version : **41 tests backend et 6 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -154,7 +162,7 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 - [x] Surveillance Ollama et état HTTP OpenWebUI.
 - [x] Inventaire optionnel Docker/Podman en lecture seule.
 - [ ] Détails, statistiques et journaux des conteneurs.
-- [ ] Services systemd et lecture bornée des journaux.
+- [x] Services systemd chargés et lecture bornée des journaux par service.
 - [ ] Sessions avec expiration et limitation des tentatives.
 - [ ] Préférences persistantes, alertes et diagnostic expurgé.
 - [ ] Paquet `.deb`, durcissement systemd et validation Debian.

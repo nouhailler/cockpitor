@@ -26,3 +26,16 @@ Ollama local ; aucun accès moteur réel n'a été configuré pour les tests.
 Restent à tester : Debian propre, systemd, moteurs réels Docker/Podman, OpenWebUI
 configuré, accessibilité exhaustive, charge et installation/désinstallation Debian.
 La CI est fournie mais son exécution distante n'est pas attestée par les tests locaux.
+
+## Lot Services — 23 octobre 2026
+
+41 tests backend et 6 tests frontend réussis. Tests supplémentaires : validation
+anti-injection des unités/curseurs, sélection des propriétés, pagination, recherche
+littérale, secrets connus, refus de permissions, timeout, limites de sortie,
+concurrence et nettoyage des processus annulés. Les limites de sous-processus sont
+exercées avec de vrais processus Python substitués aux commandes système de test.
+Les tests de l’API utilisent un inventaire simulé et n’interrogent pas l’hôte.
+
+Dans le navigateur réel : 132 services détectés, détail de dbus.service affiché,
+refus du journal explicitement visible. Un journal réel lisible n’a pas été testé
+avec les permissions actuelles. Capture : docs/images/services.jpg.

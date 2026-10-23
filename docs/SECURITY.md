@@ -16,6 +16,14 @@ Prototype local en lecture seule, pas une version validée pour exposition rése
 - Lectures HTTP bornées en taille et temps ; inventaire filtré par liste de champs.
 - React échappe le texte ; aucun rendu HTML de données externes.
 - Aucun appel shell, aucune élévation de droits, aucun changement de groupe.
+- Lectures systemctl/journalctl avec chemins absolus, arguments séparés, unités
+  exactes et environnement fixe ; pas de saisie libre de commande.
+- Sous-processus limités à cinq secondes, 2 Mio stdout, 8 Kio stderr et deux
+  lectures concurrentes ; arrêt et récupération après annulation ou dépassement.
+- Propriétés systemd en liste blanche, erreurs expurgées ; avertissements de
+  visibilité journald signalés, texte des logs échappé par React.
+- Masquage des motifs password/token/api_key/secret, Bearer et clés privées
+  connues dans les textes ; ce mécanisme n’est pas une garantie exhaustive.
 
 ## Limites connues
 

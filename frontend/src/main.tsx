@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
+import { api } from "./api";
+export { api } from "./api";
+import { ServicesView } from "./services";
 
 type Metrics = {
   collected_at: string;
@@ -73,22 +76,6 @@ export const bytes = (n: number | null | undefined) =>
         : `${(n / 1024).toFixed(1)} Kio`;
 const pct = (n: number | null | undefined) =>
   n == null ? "Indisponible" : `${n.toFixed(1)} %`;
-export async function api<T>(
-  path: string,
-  token: string,
-  signal?: AbortSignal,
-): Promise<T> {
-  const response = await fetch(`/api/v1/${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    signal: signal
-      ? AbortSignal.any([signal, AbortSignal.timeout(8000)])
-      : AbortSignal.timeout(8000),
-  });
-  const data = await response.json();
-  if (!response.ok)
-    throw new Error(data.error?.message || `Erreur HTTP ${response.status}`);
-  return data as T;
-}
 const statusLabel = (status: string) =>
   ({
     available: "Disponible",
@@ -291,6 +278,7 @@ export function App() {
             "Vue d’ensemble",
             "Système",
             "Processus",
+            "Services",
             "IA locale",
             "Conteneurs",
           ].map((p, i) => (
@@ -300,7 +288,7 @@ export function App() {
               aria-current={page === p ? "page" : undefined}
               onClick={() => setPage(p)}
             >
-              <span>{["▦", "◉", "≋", "✧", "▣"][i]}</span>
+              <span>{["▦", "◉", "≋", "⚙", "✧", "▣"][i]}</span>
               {p}
             </button>
           ))}
@@ -574,6 +562,9 @@ export function App() {
               </>
             )}
           </>
+        )}
+        {page === "Services" && (
+          <ServicesView token={token} refresh={refresh} />
         )}
         <footer>
           Lecture seule · Données conservées localement · Aucun service cloud

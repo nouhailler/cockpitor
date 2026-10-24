@@ -12,5 +12,6 @@ MODULES = [
         ("alerts", False),
         ("diagnostics", True),
         ("audit", False),
+        ("action_simulations", True),
     )
 ]

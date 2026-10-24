@@ -3,7 +3,7 @@
 Toutes les routes API sauf auth/options et auth/sessions exigent
 `Authorization: Bearer <session>`. Le jeton du lanceur ne donne aucun accès aux données.
 Les routes de supervision acceptent GET et, lorsqu’il est pris en charge, HEAD.
-Les écritures autorisées couvrent réglages, sessions, diagnostic et assistant IA.
+Les écritures autorisées couvrent réglages, sessions, diagnostic, assistant IA et plans de simulation.
 Aucune mutation système n’est disponible. Tous les POST/PUT exigent JSON, origine
 locale exacte et X-LocalCockpit-CSRF.
 
@@ -185,3 +185,28 @@ Les observations jointes sont conservées avec la réponse seulement si retain=t
 Le modèle peut se tromper ; aucune commande n’est exécutée. Annulation/déconnexion/
 expiration interrompt l’attente, sans garantie de déchargement du modèle côté Ollama.
 Les conversations sauvegardées sont communes au compte local, sans isolation multi-utilisateurs.
+
+## Plans d’action — simulation uniquement
+
+Toutes les routes restent authentifiées. Les POST exigent origine exacte, CSRF,
+application/json et un corps réellement lu de 2 Kio maximum.
+
+- GET /action-plans/options : types, mode=simulation, system_execution_enabled=false et durées.
+- POST /action-plans/prepare : action (service.start/stop/restart ou container.start/restart),
+  target exact, engine docker/podman pour conteneur uniquement. Champs supplémentaires refusés.
+  Retour : id, type/cible, instantané filtré, fingerprint, status=prepared, durée restante.
+- POST /action-plans/approve : plan_id, fingerprint et confirmed exactement true.
+  Retour : plan et approval_token ponctuel. Le token n’est présent dans aucune liste/historique.
+- POST /action-plans/simulate : plan_id et approval_token ; retourne plan et
+  commands_executed=false/system_changed=false. L’approbation est consommée avant simulation.
+- POST /action-plans/cancel : plan_id de la session courante ; annulation auditable.
+- GET /action-plans : seuls les plans de la session courante encore présents en mémoire.
+- GET /operations : limit 1–200, offset >=0 ; id/action/status/created_at/updated_at, sans cible.
+
+Plan 120 s, approbation au plus 60 s ; contrôles répétés avant approbation/démarrage
+et pendant simulation. HMAC de configuration avec clé volatile, sans exposition
+brute des commandes/env/montages. Un inventaire de plus de 40 s est refusé.
+Codes : PLAN_EXPIRED, TARGET_CHANGED, APPROVAL_REQUIRED (409), APPROVAL_INVALID (403),
+PLAN_NOT_FOUND (404), ACTION_BUSY/PLAN_LIMIT (429), ACTION_TIMEOUT (504), stockage (503).
+Les transitions terminales et la reprise après interruption sont décrites dans
+[ACTIONS_SECURITY.md](ACTIONS_SECURITY.md). Aucune route d’exécution réelle n’est autorisée.

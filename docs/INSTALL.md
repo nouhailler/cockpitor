@@ -21,7 +21,7 @@ La désinstallation depuis les sources consiste à supprimer le checkout et son
 environnement virtuel après arrêt, après avoir sauvegardé les données privées souhaitées. Aucun modèle Ollama, moteur, conteneur ou volume externe n'est supprimé.
 Le thème est une préférence locale du navigateur, effaçable via ses données de site.
 Le paquet .deb et le retour arrière automatisé ne sont pas encore disponibles.
-Le schéma SQLite courant est v2, décrit ci-dessous.
+Le schéma SQLite courant est v3, décrit ci-dessous.
 
 ## Données persistantes
 
@@ -34,7 +34,7 @@ mais les métriques restent accessibles ; la récupération est réessayée.
 
 Sauvegarde manuelle : arrêter l’application puis copier le dossier privé vers un
 emplacement privé. Au redémarrage, conserver son propriétaire et ses permissions.
-Une base antérieure (sans version ou v1) est sauvegardée avant la migration vers v2 ;
+Une base antérieure (sans version, v1 ou v2) est sauvegardée avant la migration vers v3 ;
 une base de version future est refusée. Les sauvegardes backup-*.sqlite3 restent
 privées et doivent être conservées/supprimées explicitement par le propriétaire.
 Ne pas supprimer le checkout sans préserver `.localcockpit/` si l’historique est utile.
@@ -53,3 +53,8 @@ fixes sous /usr/bin et /usr/sbin. Les outils absents, permissions insuffisantes 
 matériels incompatibles sont signalés ; ne pas lancer l’application en root pour les contourner.
 L’IA exige un modèle déjà installé dans Ollama ; l’application ne télécharge pas de modèle.
 Conserver le dossier locales/ avec le backend pour les messages FR/EN.
+
+Le lot L4 ne nécessite aucune installation supplémentaire : aucun helper privilégié,
+sudoers, groupe système ou accès moteur n’est créé. La migration v3 sauvegarde la
+base avant ajout de l’historique minimal des simulations. Les plans non terminés
+sont invalidés au redémarrage/rétablissement du stockage, sans restauration d’approbation.

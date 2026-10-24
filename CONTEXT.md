@@ -29,7 +29,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 | Conteneurs | Inventaire, filtres, détails, CPU/RAM et journaux bornés via socket explicitement configuré |
 | Services et journaux | Inventaire des services chargés, détails, journaux bornés/paginés et permissions explicites |
 | Mutations | Aucune action système ; PUT settings et POST diagnostics protégés |
-| Persistance | SQLite v2 privé : préférences, alertes, audit, tendances et conversations facultatives |
+| Persistance | SQLite v3 privé : préférences, alertes, audit, tendances et conversations facultatives |
 | Distribution | Diagnostic expurgé disponible ; paquet Debian absent |
 
 ## Décisions à préserver
@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 138 tests backend et 22 tests frontend réussis localement.
+- 179 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -193,3 +193,19 @@ Les opérations sensibles restent absentes.
   inaccessibles ici ; parcours de succès simulés, qualification matérielle à poursuivre.
 - Les prochaines étapes de la roadmap restent séparées : aucune permission privilégiée,
   action sensible ou publication réseau n’est autorisée par la présence de ces modules.
+
+## L4 — moteur contrôlé en simulation, 24 octobre 2026
+
+- actions.py : types, politiques de cible, plans 120 s, approbations ponctuelles 60 s,
+  liaison à la session/empreinte, revalidation, une simulation concurrente, délai et annulation.
+- action_targets.py et action_snapshot dans les adaptateurs : lectures seulement,
+  empreinte HMAC de configuration sans commandes/environnements/montages bruts exposés.
+- routes/actions.py : prepare/approve/simulate/cancel, options et historique minimal.
+  Tous les POST sont en liste blanche avec session/origine/CSRF/JSON. Aucune route execute.
+- SQLite v3 ajoute action_operations avec sauvegarde avant migration. État/audit atomiques,
+  reprise en interrupted ; aucun jeton, propriétaire, cible ou instantané persisté.
+- ActionsView FR/EN exige examen et confirmation ; aucune approbation dans localStorage/DOM.
+- 179 tests backend et 26 frontend, parcours réel cron.service simulé sans redémarrage.
+- Lire docs/ACTIONS_SECURITY.md : le socle est livré en simulation, la barrière de
+  qualification avant L5 reste non franchie. Aucun exécuteur/helper privilégié installé
+  ou activable. Revue du futur exécuteur et essais en VM jetable requis avant toute action réelle.

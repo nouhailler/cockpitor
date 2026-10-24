@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-138 backend tests and 22 frontend tests pass locally, alongside type checks,
+179 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -77,6 +77,20 @@ Preview and explicitly include a timestamped CPU/RAM/swap context if desired.
 Saving is optional and off by default: 20 conversations, 40 messages each. Up to
 eight previous messages are sent as conversation context. Secret masking is partial;
 never enter secrets. Saved conversations belong to the single local application user.
-SQLite v2 migration creates a private backup. Audit history is available in the UI.
+SQLite v3 migration creates a private backup. Audit history is available in the UI.
 
 ![Local AI assistant](docs/images/assistant-en.jpg)
+
+## ◇ Controlled actions — simulation only
+
+Prepare a plan for an exact target, review its state, approve it, then run a simulation.
+Plans last 120 seconds; single-use approvals last up to 60 seconds and are bound to
+the session, plan and target/configuration fingerprints. Stale inventory, changed
+targets, replay, expired sessions or audit failure block the workflow.
+
+No resource is started, stopped or restarted. There is no system executor or privileged
+helper and no switch to enable one. Simulation testing does not qualify real execution.
+Pending operations are interrupted after restart; approval tokens are never persisted.
+See [the safeguards and remaining activation gate](docs/ACTIONS_SECURITY.md).
+
+![Approved simulation](docs/images/actions-en.jpg)

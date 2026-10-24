@@ -62,9 +62,9 @@ class Store:
                 os.close(fd)
             with self.connection() as db:
                 version = db.execute("PRAGMA user_version").fetchone()[0]
-                if version > 2:
+                if version > 3:
                     raise StorageError("Version de base plus récente ; aucune migration effectuée")
-                if version < 2:
+                if version < 3:
                     tables = db.execute(
                         "SELECT name FROM sqlite_master WHERE type='table'"
                     ).fetchall()
@@ -108,7 +108,20 @@ class Store:
                     db.execute(
                         "CREATE TABLE IF NOT EXISTS ai_messages (id INTEGER PRIMARY KEY, thread_id TEXT NOT NULL REFERENCES ai_threads(id) ON DELETE CASCADE, role TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT NOT NULL)"
                     )
-                    db.execute("PRAGMA user_version=2")
+                    db.execute(
+                        "CREATE TABLE IF NOT EXISTS action_operations (id TEXT PRIMARY KEY, action TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
+                    )
+                    db.execute("PRAGMA user_version=3")
+                # Approvals never survive restart or storage recovery.
+                rows = db.execute(
+                    "SELECT id FROM action_operations WHERE status IN ('prepared','approved','simulating')"
+                ).fetchall()
+                for row in rows:
+                    db.execute(
+                        "UPDATE action_operations SET status='interrupted', updated_at=? WHERE id=?",
+                        (timestamp(), row["id"]),
+                    )
+                    self._action_audit(db, row["id"], "interrupted")
         except OSError as exc:
             raise StorageError("Impossible de créer le stockage local privé") from exc
         return self.preferences()
@@ -281,3 +294,52 @@ class Store:
                 "DELETE FROM ai_threads WHERE id NOT IN (SELECT id FROM ai_threads ORDER BY rowid DESC LIMIT 20)"
             )
         return thread_id
+
+    @staticmethod
+    def _action_audit(db, operation_id, status):
+        now = timestamp()
+        db.execute(
+            "INSERT INTO audit_events VALUES (?, ?, ?)",
+            (operation_id + ":" + uuid.uuid4().hex, "actions." + status, now),
+        )
+        db.execute(
+            "DELETE FROM audit_events WHERE id NOT IN (SELECT id FROM audit_events ORDER BY rowid DESC LIMIT 1000)"
+        )
+        db.execute(
+            "DELETE FROM action_operations WHERE status NOT IN ('prepared','approved','simulating') AND id NOT IN (SELECT id FROM action_operations ORDER BY rowid DESC LIMIT 1000)"
+        )
+
+    def action_create(self, operation_id, action):
+        with self.connection() as db:
+            now = timestamp()
+            db.execute(
+                "INSERT INTO action_operations VALUES (?, ?, 'prepared', ?, ?)",
+                (operation_id, action, now, now),
+            )
+            self._action_audit(db, operation_id, "prepared")
+
+    def action_transition(self, operation_id, previous, status):
+        allowed = {
+            "prepared": {"approved", "cancelled", "expired", "rejected", "failed"},
+            "approved": {"simulating", "cancelled", "expired", "rejected", "failed"},
+            "simulating": {"simulated", "cancelled", "expired", "rejected", "failed"},
+        }
+        if status not in allowed.get(previous, set()):
+            raise StorageError("Transition d’opération refusée")
+        with self.connection() as db:
+            changed = db.execute(
+                "UPDATE action_operations SET status=?, updated_at=? WHERE id=? AND status=?",
+                (status, timestamp(), operation_id, previous),
+            ).rowcount
+            if changed != 1:
+                raise StorageError("Opération interrompue ou déjà modifiée")
+            self._action_audit(db, operation_id, status)
+
+    def operations(self, limit, offset):
+        with self.connection() as db:
+            rows = db.execute(
+                "SELECT * FROM action_operations ORDER BY rowid DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
+            total = db.execute("SELECT count(*) FROM action_operations").fetchone()[0]
+        return {"items": [dict(row) for row in rows], "total": total}

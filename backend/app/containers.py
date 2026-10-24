@@ -1,6 +1,9 @@
 """Docker-compatible read API over explicitly configured Unix sockets only."""
 
 import asyncio
+import hashlib
+import hmac
+import json
 import math
 import os
 import re
@@ -195,6 +198,27 @@ class Containers:
                 "state": data.State.model_dump(),
                 "tty": data.Config.Tty,
                 "collected_at": timestamp(),
+            }
+
+    async def action_snapshot(self, engine: str, container_id: str, key: bytes):
+        async with self.connection(engine, container_id) as (client, url):
+            raw = await read(client, url + "/json")
+            data = Inspect.model_validate(raw)
+            if data.Id != container_id:
+                raise ValueError("Container identity mismatch")
+            configuration = {field: raw.get(field) for field in ("Config", "HostConfig", "Mounts")}
+            digest = hmac.new(
+                key,
+                json.dumps(configuration, sort_keys=True, allow_nan=False).encode(),
+                hashlib.sha256,
+            ).hexdigest()
+            return {
+                "id": data.Id,
+                "engine": engine,
+                "image": redact(data.Config.Image),
+                "created": data.Created,
+                "state": data.State.model_dump(),
+                "configuration_fingerprint": digest,
             }
 
     async def stats(self, engine: str, container_id: str) -> dict[str, Any]:

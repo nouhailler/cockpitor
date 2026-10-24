@@ -16,6 +16,7 @@ import { ContainersView } from "./containers";
 import { api, post } from "./api";
 import { LoginView } from "./login";
 import { MonitoringView, AuditView } from "./monitoring";
+import { ActionsView } from "./actions";
 import { AssistantView } from "./assistant";
 import { navigation } from "./navigation";
 export { api } from "./api";
@@ -533,6 +534,9 @@ export function App() {
         {page === "Supervision" && <MonitoringView token={token} />}
         {page === "Audit" && <AuditView token={token} />}
         {page === "Assistant IA" && <AssistantView token={token} csrf={csrf} />}
+        {page === "Actions contrôlées" && (
+          <ActionsView token={token} csrf={csrf} />
+        )}
         {page === "Diagnostic" && <DiagnosticView token={token} />}
         <footer>
           {t(

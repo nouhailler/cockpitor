@@ -102,3 +102,15 @@ la connexion ; déconnexion confirmée ; assistant FR/EN ; affichage à 390 px s
 débordement du document, après correction de la grille mobile. Le contrôle /api/show
 précède désormais chaque prompt ; le refus des modèles cloud avant transmission
 du texte est couvert par un test dédié.
+
+## L4 — simulations contrôlées
+
+179 tests backend et 26 frontend passants. test_actions.py couvre types/injections,
+unités critiques, confirmations non booléennes, sessions étrangères/révoquées,
+empreintes/cibles/configurations modifiées, échéance pendant préflight, rejeu,
+concurrence, annulation, timeout, quotas, audit absent et rollback SQL, reprise et
+migration v2 sauvegardée. Les adaptateurs vérifient le masquage HMAC et les seuls GET moteur.
+Les tests frontend imposent examen/confirmation, absence de token dans DOM/storage,
+invalidation sur erreur, annulation et anglais. Parcours navigateur réel cron.service
+préparé/approuvé/simulé, sans redémarrage. Aucune VM d’exécution privilégiée qualifiée.
+Voir ACTIONS_SECURITY.md pour la portée exacte des preuves.

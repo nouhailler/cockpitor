@@ -221,10 +221,25 @@ L’enregistrement est désactivé par défaut : au maximum 20 conversations et
 40 messages par conversation, huit derniers messages utilisés comme contexte.
 Le masquage des secrets est partiel : ne saisir aucun secret. Les conversations
 sauvegardées sont communes au compte local Cockpitor, pas des comptes multi-utilisateurs.
-SQLite passe en version 2 avec une sauvegarde privée préalable de l’ancienne base.
+SQLite passe en version 3 avec une sauvegarde privée préalable de l’ancienne base.
 Le diagnostic exclut aussi les conversations et les nouvelles informations réseau.
 
 ![Assistant IA local en anglais](docs/images/assistant-en.jpg)
+
+## ◇ Actions contrôlées — simulation
+
+La page **Actions contrôlées** permet de préparer un plan pour une cible exacte,
+de l’examiner, de confirmer puis de simuler. Plan valable 120 s, approbation à usage
+unique valable au plus 60 s, liés à la session et aux empreintes de cible/configuration.
+Une modification de cible, une session expirée, un rejeu ou une panne d’audit
+bloque le parcours. L’historique minimal survit au redémarrage ; les approbations non.
+
+**Aucun service ni conteneur n’est démarré, arrêté ou redémarré.** Les contrôles
+lisent l’état réel ; il n’existe aucun exécuteur système ni agent privilégié.
+La validation du simulateur ne vaut pas qualification pour une action réelle.
+Voir [les protections et la barrière avant activation](docs/ACTIONS_SECURITY.md).
+
+![Simulation approuvée et historique, en anglais](docs/images/actions-en.jpg)
 
 ## 🏗️ Architecture
 
@@ -262,7 +277,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **138 tests backend et 22 tests frontend
+Validation locale de cette version : **179 tests backend et 26 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -279,6 +294,7 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 - [x] Diagnostic expurgé et interface français/anglais.
 - [x] Architecture modulaire, supervision enrichie et assistant IA local sans exécution.
 - [ ] Paquet `.deb`, durcissement systemd et validation Debian.
+- [x] Plans, approbations ponctuelles et audit en simulation.
 - [ ] Actions sensibles, **uniquement après validation des protections et tests dédiés**.
 
 ## 📚 Documentation

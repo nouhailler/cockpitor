@@ -1,7 +1,7 @@
 # Évolution de Cockpitor inspirée de Linux Made Sane
 
 Plan proposé le 23 octobre 2026 ; tranche L0–L3 ensuite autorisée et réalisée.
-Les lots L4–L12 ne déclenchent aucune implémentation
+Le socle L4 est livré en simulation ; les lots L5–L12 ne déclenchent aucune implémentation
 ni activation de privilèges. Il complète le plan existant ; les lots ci-dessous
 restent À FAIRE sauf les capacités explicitement signalées comme acquises.
 
@@ -280,3 +280,11 @@ restent bornées : NVIDIA, NUT local, quatre disques SMART ; qualification réel
 sur ces équipements non effectuée. Contrat des modules explicite mais sans plugins
 chargeables, multi-utilisateurs, permissions distantes ou privilèges. L4–L12 restent
 à concevoir/implémenter, sans activation implicite des opérations sensibles.
+
+## Avancement L4 — 24 octobre 2026
+
+Le moteur de plans/approbations est relié à l’interface et aux lectures de cible,
+exclusivement en simulation. 179 tests backend et 26 frontend. Les critères de
+refus et l’audit sont testés ; aucun exécuteur privilégié n’existe. La qualification
+avant L5 reste ouverte : revue du futur protocole et essais d’actions réelles en VM.
+Détails et limites : [ACTIONS_SECURITY.md](ACTIONS_SECURITY.md).

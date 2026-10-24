@@ -24,6 +24,7 @@ export const navigation = [
       ["Paramètres", "☷"],
       ["Diagnostic", "⇩"],
       ["Audit", "☰"],
+      ["Actions contrôlées", "◇"],
     ],
   },
 ];

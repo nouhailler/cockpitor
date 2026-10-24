@@ -68,6 +68,11 @@ class Sessions:
                 session.touched = now
             return True
 
+    def valid_owner(self, owner: str):
+        with self.lock:
+            self.prune(self.clock())
+            return owner in self.sessions
+
     def revoke(self, token: str):
         with self.lock:
             self.sessions.pop(self.digest(token), None)

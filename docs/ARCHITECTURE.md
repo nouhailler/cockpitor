@@ -103,3 +103,13 @@ ne deviennent jamais des opérations. Une vérification locale POST /api/show ex
 du prompt ; POST /api/chat est ensuite effectué seulement après action utilisateur. Une interruption de session ferme
 l’attente de génération ; le modèle peut rester chargé dans Ollama.
 Référence : [API Chat Ollama](https://docs.ollama.com/api/chat).
+
+## Socle d’actions en simulation — L4
+
+actions.py orchestre des plans en mémoire liés au hash de session et un cycle
+préparation → approbation → simulation → résultat, avec état/audit SQLite atomiques.
+La base v3 ajoute seulement action_operations ; les plans/cibles/jetons restent volatils.
+L’empreinte HMAC de configuration est produite par les adaptateurs de lecture.
+Il n’existe pas de fonction d’exécution système à injecter ou à activer. Les futures
+opérations réelles exigeront une architecture de privilèges et une qualification distinctes.
+Voir [le modèle et les preuves](ACTIONS_SECURITY.md).

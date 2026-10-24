@@ -1,6 +1,8 @@
 """Read-only systemd/journald adapter with bounded subprocesses and exact unit names."""
 
 import asyncio
+import hashlib
+import hmac
 import json
 import re
 import time
@@ -170,6 +172,55 @@ class Services:
             "unit": unit,
             "collected_at": timestamp(),
             "properties": {k: redact(v) for k, v in properties.items() if k in PROPERTIES},
+        }
+
+    async def action_snapshot(self, unit: str, key: bytes):
+        validate_unit(unit)
+        fields = (
+            *PROPERTIES,
+            "InvocationID",
+            "NeedDaemonReload",
+            "FragmentPath",
+            "DropInPaths",
+            "ExecStart",
+            "ExecStop",
+            "ExecReload",
+            "ExecStartPre",
+            "ExecStartPost",
+            "ExecStopPost",
+            "User",
+            "Group",
+            "WorkingDirectory",
+        )
+        out, _ = await self.command(
+            "/usr/bin/systemctl",
+            "show",
+            "--no-pager",
+            "--no-ask-password",
+            "--property=" + ",".join(fields),
+            "--",
+            unit,
+        )
+        props = dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+        if (
+            props.get("Id") != unit
+            or props.get("LoadState") != "loaded"
+            or props.get("NeedDaemonReload") != "no"
+        ):
+            raise ServiceError(
+                "TARGET_UNAVAILABLE", "Identité ou configuration de la cible non confirmée", 409
+            )
+        selected = {name: props.get(name) for name in fields}
+        digest = hmac.new(
+            key, json.dumps(selected, sort_keys=True).encode(), hashlib.sha256
+        ).hexdigest()
+        return {
+            "Id": unit,
+            "LoadState": props["LoadState"],
+            "ActiveState": props.get("ActiveState"),
+            "SubState": props.get("SubState"),
+            "MainPID": props.get("MainPID"),
+            "configuration_fingerprint": digest,
         }
 
     async def logs(

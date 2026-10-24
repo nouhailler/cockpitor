@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Actions contrôlées en simulation — 24 octobre 2026
+
+- Plans typés, cibles exactes, services critiques exclus et état/configuration revérifiés.
+- Approbation ponctuelle expirante liée à la session, empreinte et jeton consommé une fois.
+- Simulation bornée, verrouillage, annulation et refus en cas de panne d’audit.
+- SQLite v3 sauvegardé avant migration : états minimaux, audit atomique et reprise en interrupted.
+- Page Actions contrôlées FR/EN et historique persistant, capture réelle ajoutée.
+- 179 tests backend et 26 frontend ; parcours cron.service simulé en navigateur.
+- Aucun exécuteur, helper privilégié ou changement de ressource ajouté. Qualification réelle avant L5 restante.
+
+
 ### Architecture, sessions, supervision et assistant — 23 octobre 2026
 
 - API répartie en routeurs, erreurs unifiées et capacités explicites sans action système.

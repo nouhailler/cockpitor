@@ -105,3 +105,14 @@ remote_host/remote_model. Cockpitor fait confiance au serveur Ollama local : ce 
 pas un pare-feu pour ce processus. Son mode OLLAMA_NO_CLOUD=1 peut renforcer cette
 frontière, à configurer côté Ollama sans modification automatique par Cockpitor.
 Référence : [mode local Ollama](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features).
+
+## Plans et simulations L4
+
+Le nouveau module autorise seulement la préparation, l’approbation, la simulation
+et l’annulation applicatives. Aucune mutation système, aucune bascule d’activation,
+aucun sudo/helper. Les configurations sont comparées par HMAC et les approbations
+restent hachées en mémoire, liées à la session et à une échéance monotone.
+L’audit est obligatoire pour chaque transition ; panne = refus, résultat inconnu ou
+interruption, jamais succès supposé. La validation du simulateur ne qualifie pas une
+exécution privilégiée. Voir [ACTIONS_SECURITY.md](ACTIONS_SECURITY.md) pour les tests
+et la barrière de validation avant L5, encore non franchie.

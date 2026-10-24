@@ -105,3 +105,15 @@ arrête la requête, sans nécessairement décharger le modèle du serveur Ollam
 Conservation facultative, désactivée initialement : vingt conversations et quarante
 messages par conversation. Ne pas saisir de secret ; le masquage n’est pas exhaustif.
 Audit permet de consulter les dernières opérations applicatives, sans leurs corps.
+
+## Actions contrôlées (simulation)
+
+Choisir un type, saisir une unité exacte déjà inventoriée ou un identifiant de
+conteneur complet avec son moteur, puis préparer le plan. Examiner la cible et
+l’instantané, cocher l’approbation, puis lancer la simulation. Chaque étape relit
+la cible ; changement ou expiration exige un nouveau plan. Le plan dure 120 s,
+l’approbation 60 s maximum et une seule utilisation. Annuler invalide le parcours.
+Les délais affichés sont ceux de la dernière réponse ; le serveur vérifie la validité.
+Quitter la page perd le jeton d’approbation ; aucune reprise automatique.
+L’historique reste disponible, sans cible ni secret. Les opérations en attente au
+redémarrage deviennent interrompues. Aucun service/conteneur n’est modifié.

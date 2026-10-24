@@ -26,10 +26,10 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 138 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 179 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
-- `npm test --prefix frontend` : 22 tests réussis.
+- `npm test --prefix frontend` : 26 tests réussis.
 - `npm run build --prefix frontend` : réussi.
 - `npm audit --prefix frontend` : zéro vulnérabilité après mise à jour de Vitest.
 
@@ -144,3 +144,12 @@ assistant Ollama sans outils/exécution, contexte consenti et conservation facul
 SMART/NVIDIA/NUT non qualifiés sur matériel réel ; routes IPv4, écoutes IPv4/IPv6.
 Le diagnostic conserve sa liste blanche et exclut conversations et informations réseau.
 MFA, multi-utilisateurs, accès distant, exécution d’actions et packaging restent absents.
+
+## L4 — 24 octobre 2026
+
+Socle de plans/approbations livré en simulation et relié à l’UI FR/EN, 179 tests
+backend et 26 frontend. Cycle réel sur cron.service sans mutation. Les tests du
+moteur et de l’audit ne constituent pas une qualification d’exécuteur privilégié :
+revue et essais en VM avant L5 toujours requis. Aucun endpoint d’exécution réelle.
+Les secrets de configuration sont représentés par HMAC ; aucun token/cible/instantané
+persisté dans le nouvel historique minimal. Détails : ACTIONS_SECURITY.md.

@@ -15,6 +15,7 @@ endpoint de mutation système n'est livré dans cette itération.
 | SQLite et alertes | IMPLÉMENTÉ | préférences, règles et événements persistants, rétention, audit et protections settings testés |
 | Diagnostic expurgé | IMPLÉMENTÉ | export confirmé, expurgé par liste blanche, borné et audité ; tests et téléchargement navigateur |
 | Français / anglais | IMPLÉMENTÉ | catalogues partagés, choix immédiat, préférence persistante, formats et erreurs localisés |
+| Moteur L4 en simulation | IMPLÉMENTÉ | plans, approbations, revalidation et audit reliés ; qualification avant exécution réelle restante |
 | Actions sensibles | ABSENT | volontairement bloquées ; conception, autorisation, confirmation et tests requis |
 | Packaging Debian/systemd | ABSENT | à tester en VM avec permissions réelles |
 | Stabilisation globale P0 | PARTIEL | contrôles locaux passants ; MVP complet non déclaré |
@@ -47,3 +48,7 @@ proposé, sans modification de code ni activation des fonctions administratives.
 et supervision vérifiées en navigateur. GPU NVIDIA seulement ; routes IPv4 ;
 qualification SMART/GPU/NUT sur matériels réels à poursuivre. L4 et toutes les actions
 administratives restent À FAIRE, soumis à leur barrière de sécurité dédiée.
+
+24 octobre 2026 : socle L4 livré exclusivement en simulation, 179 tests backend et
+26 frontend. La revue du futur exécuteur et les essais en VM jetable ne sont pas
+réalisés ; la barrière avant L5 n’est pas franchie. Voir ACTIONS_SECURITY.md.

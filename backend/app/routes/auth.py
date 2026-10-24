@@ -67,6 +67,10 @@ def create_router(app):
             )
         )
         app.state.sessions.revoke(request.headers.get("authorization", "").removeprefix("Bearer "))
+        try:
+            await app.state.actions.cleanup()
+        except StorageError:
+            pass  # Revocation must still succeed when audit storage is unavailable.
         await record(app, "session.logout")
         return {"status": "completed"}
 

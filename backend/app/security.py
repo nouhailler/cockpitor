@@ -35,6 +35,10 @@ async def secure_response(request: Request, call_next):
             request.method == "POST"
             and request.url.path
             in {
+                "/api/v1/action-plans/prepare",
+                "/api/v1/action-plans/approve",
+                "/api/v1/action-plans/simulate",
+                "/api/v1/action-plans/cancel",
                 "/api/v1/diagnostics",
                 "/api/v1/auth/sessions",
                 "/api/v1/auth/logout",

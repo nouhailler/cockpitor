@@ -20,7 +20,7 @@ def create_router(app):
         return {
             "settings": preferences.model_dump(),
             "csrf_token": app.state.csrf,
-            "storage": {"status": "available", "schema_version": 2},
+            "storage": {"status": "available", "schema_version": 3},
         }
 
     @router.put("/api/v1/settings")

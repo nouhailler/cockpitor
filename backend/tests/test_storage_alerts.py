@@ -35,7 +35,7 @@ def test_private_schema_and_settings_survive_reopen(store):
     assert operation
     assert Store(store.directory).initialize() == prefs
     with sqlite3.connect(store.path) as db:
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 3
         assert db.execute("SELECT action FROM audit_events").fetchone()[0] == "settings.update"
 
 

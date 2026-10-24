@@ -11,6 +11,8 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 
+from .action_targets import probe_target
+from .actions import ActionEngine
 from .alerts import AlertEngine
 from .assistant import Assistant
 from .auth import Sessions
@@ -48,6 +50,10 @@ async def lifespan(app: FastAPI):
     )
     app.state.sessions = Sessions(TOKEN)
     app.state.assistant = Assistant()
+    app.state.action_key = secrets.token_bytes(32)
+    app.state.actions = ActionEngine(
+        store, lambda request: probe_target(app, request), app.state.sessions.valid_owner
+    )
     app.state.store = store
     app.state.preferences = Preferences()
     app.state.storage_ready = False
@@ -133,6 +139,15 @@ async def lifespan(app: FastAPI):
                 logging.getLogger("localcockpit").warning("Inspection complémentaire indisponible")
             await asyncio.sleep(60)
 
+    async def expire_plans():
+        while True:
+            try:
+                await app.state.actions.cleanup()
+            except StorageError:
+                logging.getLogger("localcockpit").warning("Audit des simulations indisponible")
+            await asyncio.sleep(2)
+
+    actions_task = asyncio.create_task(expire_plans())
     inspection_task = asyncio.create_task(inspect_system())
     alert_task = asyncio.create_task(evaluate_alerts())
     service_task = asyncio.create_task(service_inventory())
@@ -141,13 +156,17 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        actions_task.cancel()
+        await app.state.actions.close()
         inspection_task.cancel()
         alert_task.cancel()
         service_task.cancel()
         integration_task.cancel()
         task.cancel()
         try:
-            await asyncio.gather(task, integration_task, service_task, alert_task, inspection_task)
+            await asyncio.gather(
+                task, integration_task, service_task, alert_task, inspection_task, actions_task
+            )
         except asyncio.CancelledError:
             pass
         finally:

@@ -16,6 +16,7 @@ endpoint de mutation système n'est livré dans cette itération.
 | Diagnostic expurgé | IMPLÉMENTÉ | export confirmé, expurgé par liste blanche, borné et audité ; tests et téléchargement navigateur |
 | Français / anglais | IMPLÉMENTÉ | catalogues partagés, choix immédiat, préférence persistante, formats et erreurs localisés |
 | Moteur L4 en simulation | IMPLÉMENTÉ | plans, approbations, revalidation et audit reliés ; qualification avant exécution réelle restante |
+| Transport de vérification L5 | PARTIEL | banc Unix avec identité noyau et tests locaux ; aucune intégration/exécution réelle |
 | Actions sensibles | ABSENT | volontairement bloquées ; conception, autorisation, confirmation et tests requis |
 | Packaging Debian/systemd | ABSENT | à tester en VM avec permissions réelles |
 | Stabilisation globale P0 | PARTIEL | contrôles locaux passants ; MVP complet non déclaré |
@@ -52,3 +53,9 @@ administratives restent À FAIRE, soumis à leur barrière de sécurité dédié
 24 octobre 2026 : socle L4 livré exclusivement en simulation, 179 tests backend et
 26 frontend. La revue du futur exécuteur et les essais en VM jetable ne sont pas
 réalisés ; la barrière avant L5 n’est pas franchie. Voir ACTIONS_SECURITY.md.
+
+24 octobre 2026 : transport de vérification L5 livré dans un banc isolé, avec
+SO_PEERCRED et sockets privées, messages issue/verify, bornes et annulation.
+236 tests backend et 26 frontend passent. Prochaine tranche : liaison approbation/audit,
+adaptateurs et qualification VM avec effets partiels explicites, avant toute activation.
+Voir [EXECUTOR_QUALIFICATION.md](EXECUTOR_QUALIFICATION.md).

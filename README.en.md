@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-179 backend tests and 26 frontend tests pass locally, alongside type checks,
+236 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -95,4 +95,10 @@ See [the safeguards and remaining activation gate](docs/ACTIONS_SECURITY.md).
 
 ![Approved simulation](docs/images/actions-en.jpg)
 
-- [L5 protocol preparation (no execution)](docs/EXECUTOR_QUALIFICATION.md)
+## 🔌 L5 preparation — verification transport
+
+An isolated Unix lab checks kernel-provided client UIDs, exact target grants and
+expiring single-use tickets. Private sockets, bounded frames, deadlines, concurrent
+requests and shutdown are covered by local tests. It refuses root and cannot execute
+system actions. Approval/audit integration and disposable-VM qualification remain
+pending. See [the contract and remaining tests (French)](docs/EXECUTOR_QUALIFICATION.md).

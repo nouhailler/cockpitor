@@ -1,8 +1,8 @@
 # Évolution de Cockpitor inspirée de Linux Made Sane
 
 Plan proposé le 23 octobre 2026 ; tranche L0–L3 ensuite autorisée et réalisée.
-Le socle L4 est livré en simulation ; les lots L5–L12 ne déclenchent aucune implémentation
-ni activation de privilèges. Il complète le plan existant ; les lots ci-dessous
+Le socle L4 est livré en simulation ; L5 dispose d’un banc de vérification Unix isolé.
+Les fonctions administratives des lots L5–L12 restent sans activation de privilèges. Il complète le plan existant ; les lots ci-dessous
 restent À FAIRE sauf les capacités explicitement signalées comme acquises.
 
 ## Périmètre et méthode
@@ -288,3 +288,8 @@ exclusivement en simulation. 179 tests backend et 26 frontend. Les critères de
 refus et l’audit sont testés ; aucun exécuteur privilégié n’existe. La qualification
 avant L5 reste ouverte : revue du futur protocole et essais d’actions réelles en VM.
 Détails et limites : [ACTIONS_SECURITY.md](ACTIONS_SECURITY.md).
+
+24 octobre 2026 : préparation L5 enrichie d'un transport de vérification Unix testé
+localement (UID noyau, socket privée, quotas et délais). Aucun exécuteur de mutation
+ni auxiliaire privilégié. La liaison à l'approbation/audit et la qualification VM
+restent ouvertes. Voir [le dossier L5](EXECUTOR_QUALIFICATION.md).

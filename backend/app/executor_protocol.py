@@ -6,6 +6,7 @@ A ticket proves only that this policy accepted an intent, not user approval.
 
 import hashlib
 import hmac
+import json
 import secrets
 import time
 from collections.abc import Callable
@@ -71,23 +72,26 @@ class ExecutorPolicy:
         self.clock = clock
         self.pending: dict[str, Pending] = {}
         self.reserved: set[str] = set()
+        self.closed = False
 
-    def _peer(self, peer_uid: int) -> None:
-        if type(peer_uid) is not int or peer_uid != self.client_uid:
+    def check_peer(self, peer_uid: int) -> None:
+        if self.closed or type(peer_uid) is not int or peer_uid != self.client_uid:
             raise ProtocolRejected("Peer rejected")
 
-    def issue(
-        self, peer_uid: int, operation_id: str, request: ActionRequest, snapshot: dict
-    ) -> str:
-        self._peer(peer_uid)
-        # Revalidate even if the caller constructed or mutated a Pydantic object.
+    def check_issue(self, peer_uid: int, operation_id: str, request: ActionRequest) -> None:
+        self.check_peer(peer_uid)
         request = ActionRequest.model_validate(request.model_dump())
+        ExecutorEnvelope(version=1, operation_id=operation_id, ticket="0" * 64)
         if (request.action, request.target, request.engine) not in self.grants:
             raise ProtocolRejected("Target/action not granted")
         if len(self.reserved) >= MAX_TICKETS or operation_id in self.reserved:
             raise ProtocolRejected("Operation rejected")
+
+    def issue(
+        self, peer_uid: int, operation_id: str, request: ActionRequest, snapshot: dict
+    ) -> str:
+        self.check_issue(peer_uid, operation_id, request)
         ticket = secrets.token_hex(32)
-        ExecutorEnvelope(version=1, operation_id=operation_id, ticket=ticket)
         intent = Intent(
             operation_id,
             request.action,
@@ -101,25 +105,11 @@ class ExecutorPolicy:
         )
         return ticket
 
-    def consume(self, peer_uid: int, frame: bytes, snapshot: dict) -> Intent:
-        self._peer(peer_uid)
-        if not isinstance(frame, bytes) or not 0 < len(frame) <= MAX_FRAME_BYTES:
-            raise ProtocolRejected("Frame rejected")
+    def claim(self, peer_uid: int, frame: bytes) -> Pending:
+        self.check_peer(peer_uid)
         try:
-            # Decode JSON explicitly: duplicate keys must not have last-value semantics.
-            import json
-
-            def unique(pairs):
-                result = {}
-                for key, value in pairs:
-                    if key in result:
-                        raise ValueError("Duplicate field")
-                    result[key] = value
-                return result
-
-            payload = json.loads(frame, object_pairs_hook=unique)
-            envelope = ExecutorEnvelope.model_validate(payload)
-        except (ValueError, UnicodeError):
+            envelope = ExecutorEnvelope.model_validate(decode_frame(frame))
+        except ValueError:
             raise ProtocolRejected("Frame rejected") from None
         # Consume before any subsequent verification; failures require a new operation.
         pending = self.pending.pop(envelope.operation_id, None)
@@ -131,6 +121,11 @@ class ExecutorPolicy:
             raise ProtocolRejected("Ticket rejected")
         if self.clock() >= pending.deadline:
             raise ProtocolRejected("Ticket expired")
+        return pending
+
+    def verify_snapshot(self, pending: Pending, snapshot: dict) -> Intent:
+        if self.closed or self.clock() >= pending.deadline:
+            raise ProtocolRejected("Ticket expired")
         intent = pending.intent
         request = ActionRequest.model_validate(
             {"action": intent.action, "target": intent.target, "engine": intent.engine}
@@ -138,3 +133,35 @@ class ExecutorPolicy:
         if not hmac.compare_digest(intent.fingerprint, fingerprint(request, snapshot)):
             raise ProtocolRejected("Target changed")
         return intent
+
+    def consume(self, peer_uid: int, frame: bytes, snapshot: dict) -> Intent:
+        return self.verify_snapshot(self.claim(peer_uid, frame), snapshot)
+
+    def invalidate(self) -> None:
+        """Closing a lab permanently invalidates its remaining tickets."""
+        self.pending.clear()
+        self.closed = True
+
+
+def decode_frame(frame: bytes) -> dict:
+    if not isinstance(frame, bytes) or not 0 < len(frame) <= MAX_FRAME_BYTES:
+        raise ProtocolRejected("Frame rejected")
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("Duplicate field")
+            result[key] = value
+        return result
+
+    def invalid_constant(value):
+        raise ValueError("Non-finite value")
+
+    try:
+        payload = json.loads(frame, object_pairs_hook=unique, parse_constant=invalid_constant)
+        if not isinstance(payload, dict):
+            raise TypeError("Object required")
+        return payload
+    except (ValueError, TypeError, UnicodeError, RecursionError):
+        raise ProtocolRejected("Frame rejected") from None

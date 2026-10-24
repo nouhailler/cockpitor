@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 179 tests backend et 26 tests frontend réussis localement.
+- 236 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -221,3 +221,18 @@ Les opérations sensibles restent absentes.
 - docs/EXECUTOR_QUALIFICATION.md précise les limites et la matrice VM restante.
 - Aucune VM ni Docker/Podman disponible ici : activation réelle toujours interdite.
 - Validation : 203 tests backend et 26 frontend passent ; Ruff et mypy passent.
+
+## Transport de vérification L5 — 24 octobre 2026
+
+- executor_transport.py fournit un serveur de laboratoire AF_UNIX, non raccordé à
+  FastAPI : identité Linux SO_PEERCRED, dossier propriétaire 0700 et socket 0600.
+- Requêtes issue/verify seulement, quatre connexions traitées, une requête/connexion,
+  cadre de quatre octets + JSON 2 Kio, délai global 2 s et sonde 1 s, opérations sérialisées.
+- Le client ne fournit aucun snapshot. La sonde de confiance est injectée par le
+  banc de test ; les adaptateurs réels restent à raccorder. Le ticket est consommé
+  avant la seconde sonde, même si elle échoue ou expire. Fermeture = invalidation.
+- Refus sous root, sans identité noyau, sur chemin existant ou répertoire trop ouvert.
+  Nettoyage par inode ; aucun remplacement supprimé. Pas d'entrée de lancement installée.
+- 236 tests backend et 26 frontend passent ; Ruff, format et mypy passent.
+- Prochaine étape : liaison approuvée/auditée et adaptateurs dans un banc VM jetable,
+  avec résultat inconnu en cas d'effet partiel. Aucune action réelle activable ici.

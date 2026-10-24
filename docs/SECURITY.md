@@ -116,3 +116,12 @@ L’audit est obligatoire pour chaque transition ; panne = refus, résultat inco
 interruption, jamais succès supposé. La validation du simulateur ne qualifie pas une
 exécution privilégiée. Voir [ACTIONS_SECURITY.md](ACTIONS_SECURITY.md) pour les tests
 et la barrière de validation avant L5, encore non franchie.
+
+## Banc Unix L5
+
+Le transport de vérification reste isolé et refuse root. SO_PEERCRED identifie l'UID
+Linux connecté ; il ne distingue pas les applications d'un même compte et ne prouve
+pas une approbation humaine. Répertoire 0700, socket 0600, schémas/délais/quotas et
+consommation avant seconde sonde sont testés localement. Aucun protocole de mutation
+ni adaptateur privilégié n'est fourni. L'intégration à la session, à l'approbation
+et à l'audit, puis les essais VM, restent bloquants avant activation réelle.

@@ -122,3 +122,17 @@ trames strictes/bornées, expiration, consommation sur échec, état/configurati
 rejeu, redémarrage et saturation sans éviction. Total : 203 backend et 26 frontend.
 Ces tests ne lancent aucune opération système et ne qualifient pas le transport
 Unix ou les futurs adaptateurs. Voir [la matrice restante](EXECUTOR_QUALIFICATION.md).
+
+## Transport de vérification L5 — 24 octobre 2026
+
+Total actuel : **236 tests backend et 26 frontend**, Ruff/format/mypy passants.
+`test_executor_transport.py` ajoute 32 tests sur sockets Unix locales : UID lu du
+noyau, refus avant sonde, droits/champs non autorisés, trames invalides ou lentes,
+taille annoncée avant réception du corps, rejeu concurrent, délais/erreurs des
+sondes, configuration modifiée, saturation et fermeture avec annulation.
+Les chemins existants ou symboliques sont conservés ; root, permissions trop
+ouvertes et absence de SO_PEERCRED sont refusés. Un test de politique supplémentaire
+couvre l'invalidation après consommation et avant comparaison de l'instantané.
+Ces tests nécessitent un environnement Linux non root autorisant AF_UNIX ; ne pas
+confondre une interdiction du bac à sable avec un défaut du protocole. Aucune
+mutation de service/conteneur n'est réalisée. La matrice VM demeure à compléter.

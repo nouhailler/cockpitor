@@ -113,3 +113,12 @@ L’empreinte HMAC de configuration est produite par les adaptateurs de lecture.
 Il n’existe pas de fonction d’exécution système à injecter ou à activer. Les futures
 opérations réelles exigeront une architecture de privilèges et une qualification distinctes.
 Voir [le modèle et les preuves](ACTIONS_SECURITY.md).
+
+## Préparation L5 : transport de vérification isolé
+
+executor_protocol.py et executor_transport.py sont un banc séparé, sans import dans
+les routeurs/lanceur. La politique positive et les tickets sont séparés de la
+réception Unix et de l'identité noyau. Le serveur appelle une sonde de confiance,
+jamais un snapshot client ; il sérialise sonde et politique. Aucune méthode ne
+modifie les ressources. Il n'existe pas de chemin de l'assistant vers ce banc.
+Voir [contrat, bornes et qualification restante](EXECUTOR_QUALIFICATION.md).

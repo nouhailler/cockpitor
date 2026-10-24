@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Transport de vérification L5 — 24 octobre 2026
+
+- Serveur de laboratoire Unix Linux : UID noyau SO_PEERCRED, répertoire privé et
+  socket 0600, refus des chemins existants et du lancement sous root.
+- Trames JSON strictes et bornées, délais, quatre connexions traitées maximum,
+  sondes sérialisées, consommation avant seconde lecture et arrêt avec invalidation.
+- 32 nouveaux tests sur sockets réelles et un test de fermeture de la politique ;
+  total de 236 tests backend et 26 frontend passants.
+- Aucun adaptateur de mutation, route d'exécution, auxiliaire privilégié ou liaison IA.
+  Qualification VM et liaison aux approbations/audit toujours requises.
+
 ### Préparation du protocole L5 — 24 octobre 2026
 
 - Politique isolée du futur exécuteur : droits positifs, identité attendue, tickets

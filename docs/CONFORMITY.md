@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 179 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 236 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -153,3 +153,12 @@ moteur et de l’audit ne constituent pas une qualification d’exécuteur privi
 revue et essais en VM avant L5 toujours requis. Aucun endpoint d’exécution réelle.
 Les secrets de configuration sont représentés par HMAC ; aucun token/cible/instantané
 persisté dans le nouvel historique minimal. Détails : ACTIONS_SECURITY.md.
+
+## Préparation L5 — transport de vérification
+
+Politique et serveur Unix isolés, sans intégration à l'application : 32 tests de
+transport réel local et 25 tests de politique. Les requêtes produisent uniquement
+un ticket ou une vérification ; aucune action système. Les UID viennent du noyau,
+le serveur refuse root, les permissions et les bornes sont contrôlées. La liaison
+approbation/audit et les essais VM restent non qualifiés. Total : 236 backend et
+26 frontend. Aucun P0 d'exécution privilégiée n'est déclaré acquis.

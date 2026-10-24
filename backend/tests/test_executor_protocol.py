@@ -121,3 +121,18 @@ def test_envelope_strictness(protocol, field, value):
     with pytest.raises(ProtocolRejected):
         policy.consume(1000, json.dumps(payload).encode(), snapshot)
     assert policy.consume(1000, frame, snapshot)
+
+
+def test_close_invalidates_all_tickets_and_future_issues(protocol):
+    policy, _, request, snapshot, operation, frame = protocol
+    claimed = policy.claim(1000, frame)
+    policy.issue(1000, "d" * 32, request, snapshot)
+    policy.invalidate()
+    assert not policy.pending
+    with pytest.raises(ProtocolRejected):
+        policy.verify_snapshot(claimed, snapshot)
+    with pytest.raises(ProtocolRejected):
+        policy.consume(1000, frame, snapshot)
+    with pytest.raises(ProtocolRejected):
+        policy.issue(1000, "c" * 32, request, snapshot)
+    assert operation in policy.reserved

@@ -98,3 +98,13 @@ Il n'est pas raccordé à l'application et ne remplace ni l'approbation L4, ni u
 identité obtenue du noyau, ni une lecture de cible effectuée par l'exécuteur.
 Voir [le contrat et la matrice de qualification](EXECUTOR_QUALIFICATION.md).
 La barrière avant activation demeure non franchie.
+
+## Transport de vérification L5
+
+executor_transport.py ajoute un banc Linux AF_UNIX non raccordé à l'application,
+avec identité noyau, permissions privées, limites, sondes sérialisées et invalidation
+à la fermeture. Les messages issue/verify ne produisent que des tickets et un
+résultat verified_only. Les 32 tests de transport utilisent des sockets réelles,
+avec sondes contrôlées ; aucune commande de modification n'est exécutée. Le serveur
+refuse root. Ce transport ne réalise pas encore la liaison à l'approbation/audit L4,
+ni les adaptateurs réels. La barrière d'activation reste non franchie.

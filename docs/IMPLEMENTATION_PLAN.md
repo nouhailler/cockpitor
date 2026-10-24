@@ -17,6 +17,7 @@ endpoint de mutation système n'est livré dans cette itération.
 | Français / anglais | IMPLÉMENTÉ | catalogues partagés, choix immédiat, préférence persistante, formats et erreurs localisés |
 | Moteur L4 en simulation | IMPLÉMENTÉ | plans, approbations, revalidation et audit reliés ; qualification avant exécution réelle restante |
 | Transport de vérification L5 | PARTIEL | banc Unix avec identité noyau et tests locaux ; aucune intégration/exécution réelle |
+| Adaptateurs et postconditions de fixtures | PARTIEL | logique et journal autonome testés ; vrais pilotes et VM non qualifiés |
 | Actions sensibles | ABSENT | volontairement bloquées ; conception, autorisation, confirmation et tests requis |
 | Packaging Debian/systemd | ABSENT | à tester en VM avec permissions réelles |
 | Stabilisation globale P0 | PARTIEL | contrôles locaux passants ; MVP complet non déclaré |
@@ -64,3 +65,9 @@ Voir [EXECUTOR_QUALIFICATION.md](EXECUTOR_QUALIFICATION.md).
 avec protocole v2 lié à l'empreinte approuvée. 279 tests backend et 26 frontend.
 Le lanceur conserve la simulation locale. Les adaptateurs, postconditions, gestion
 des effets partiels et qualification VM précèdent toujours toute activation.
+
+24 octobre 2026 : banc autonome d'adaptateurs/postconditions et journal persistant
+livré, 349 tests backend et 26 frontend. Pilotes injectés uniquement par les tests ;
+aucun branchement au protocole de vérification ou à la simulation de l'application.
+Prochaine tranche : vrais pilotes bornés dans un environnement jetable, réconciliation
+après effets partiels, revue des privilèges/révocation et qualification VM avant activation.

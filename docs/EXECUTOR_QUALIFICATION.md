@@ -5,6 +5,9 @@
 `backend/app/executor_client.py` sont reliés au moteur L4 dans les tests de banc.
 Le lanceur habituel n'instancie aucun client Unix et ne propose aucune activation.
 Ces modules ne contiennent ni sous-processus, ni connexion à un moteur, ni auxiliaire privilégié.
+Un banc séparé compile maintenant les opérations et vérifie leurs postconditions
+avec des pilotes de fixtures : [adaptateurs de laboratoire](ADAPTER_TRIALS.md).
+Il n'est raccordé ni au protocole v2 ni au moteur de simulation.
 
 ## Contrat proposé
 
@@ -165,3 +168,13 @@ ces essais réels n'a été déclaré réussi.
 
 La revue du transport, des privilèges minimaux, des adaptateurs et de cette matrice
 reste obligatoire avant de raccorder une route d'exécution. L'IA reste sans outil.
+
+## Avancement des adaptateurs sur fixtures
+
+La logique de commandes/requêtes fixes, les postconditions et le journal durable
+des effets potentiellement inconnus sont testés sur des ressources temporaires.
+70 tests nouveaux, 349 backend et 26 frontend au total. Le pilote de service exécute
+un programme Python de fixture à la place de systemctl ; le pilote conteneur utilise
+un serveur HTTP Unix de test. Les vrais pilotes d'entrée/sortie restent absents.
+La matrice VM ci-dessus n'est pas remplie par ces résultats, et aucune activation
+système ne découle du succès du banc. Voir ADAPTER_TRIALS.md pour les limites.

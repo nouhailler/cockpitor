@@ -122,3 +122,15 @@ annoncée, UID ou permissions de socket invalides. Il n'effectue aucun rejeu.
 client n'est instancié par le lanceur, aucun serveur ne réalise de mutation.
 La révocation distante immédiate, la preuve d'approbation à une frontière privilégiée,
 les clés d'empreinte inter-processus et les adaptateurs restent à qualifier.
+
+## Adaptateurs de fixtures et résultats inconnus
+
+Le nouveau banc autonome compose des opérations fixes, deux lectures avant envoi
+et des postconditions de génération/configuration. Il impose un journal privé
+persistant avant entrée dans le pilote ; après cette entrée, annulation/timeout
+ou réponse ambiguë ne signifie jamais absence d'effet. Les IDs restent réservés
+après redémarrage et aucune relance automatique n'existe. L'audit final doit réussir
+pour retourner verified ; sinon, la reprise classe l'intention unknown.
+Aucun pilote système par défaut n'est fourni. Ces classes ne sont pas des
+SimulationVerifier et ne doivent pas être raccordées à la simulation applicative.
+Les 70 tests de fixtures ne qualifient pas de mutation réelle. Voir ADAPTER_TRIALS.md.

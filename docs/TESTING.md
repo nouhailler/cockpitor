@@ -149,3 +149,16 @@ Trois tests de transport supplémentaires imposent v2 et l'empreinte approuvée.
 Les adaptateurs système et la révocation distante immédiate restent non qualifiés ;
 aucun start/stop/restart réel n'a été effectué. L'avertissement TestClient/httpx reste
 préexistant. Voir EXECUTOR_QUALIFICATION.md pour les preuves et limites.
+
+## Adaptateurs/postconditions sur fixtures — 24 octobre 2026
+
+349 tests backend et 26 frontend passent. test_fixture_adapters.py ajoute 70 tests :
+compilation fixe, identités/configuration, états initiaux, génération renouvelée,
+accusé insuffisant, erreurs/timeout, révocation, annulation avant/après envoi,
+concurrence, quotas, refus de rejeu après redémarrage et atomicité état/audit.
+Un vrai processus Python modifie une fixture JSON ; quatre échanges HTTP sur
+sockets Unix temporaires exercent start/restart pour les deux moteurs représentés.
+Un processus enfant sort après validation d'une intention d'envoi, puis la reprise
+classe cette intention unknown. Aucun service ni moteur réel n'est utilisé.
+L'exécution nécessite Linux non root et les sockets Unix locales. Les vrais
+pilotes, privilèges et essais en VM restent non qualifiés : voir ADAPTER_TRIALS.md.

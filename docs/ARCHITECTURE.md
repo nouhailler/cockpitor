@@ -132,3 +132,14 @@ transactionnel actions.transport_verified exige l'état simulating avant le rés
 simulated. Session et échéance sont contrôlées autour des échanges. Le client ne
 possède aucune méthode d'exécution. Le serveur n'authentifie pas indépendamment
 une approbation humaine ; une future frontière privilégiée exige une revue séparée.
+
+## Banc d'adaptateurs et journal séparé
+
+fixture_adapters.py et fixture_journal.py restent hors du graphe API/lanceur/IA.
+Les fonctions de lecture/envoi sont obligatoires et injectées par les tests :
+aucun exécuteur système ou client moteur par défaut. FixtureTrialRunner ne met
+pas en œuvre SimulationVerifier. Le journal autonome v1 conserve les intentions
+et résultats minimaux des essais ; la base principale reste v3. Deux lectures
+précèdent l'envoi unique, puis des lectures bornées vérifient la génération et
+la configuration. Une incertitude après envoi est persistée sans répétition.
+Référence : [banc et limites](ADAPTER_TRIALS.md).

@@ -298,3 +298,8 @@ restent ouvertes. Voir [le dossier L5](EXECUTOR_QUALIFICATION.md).
 l'empreinte approuvée. Les essais sont sans effet système. Prochaine tranche :
 adaptateurs/postconditions et gestion des résultats inconnus en environnement jetable,
 puis qualification VM et revue de la frontière privilégiée avant activation.
+
+24 octobre 2026 : adaptateurs/postconditions sur fixtures et journal autonome
+persistant livrés (70 tests supplémentaires). Aucun vrai pilote systemd/moteur,
+aucune activation administrative. Voir [ADAPTER_TRIALS.md](ADAPTER_TRIALS.md).
+Les essais système en VM, la réconciliation et la frontière de privilèges restent ouverts.

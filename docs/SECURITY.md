@@ -135,3 +135,14 @@ vérification doit réussir avant le succès de simulation. Ce branchement n'est
 configuré dans le lanceur et ne donne aucun droit supplémentaire. Une identité UID
 et une empreinte ne prouvent pas seules l'approbation humaine au serveur : protocole
 de privilèges, révocation distante et adaptateurs nécessitent encore revue et VM.
+
+## Essais d'adaptateurs sans privilèges
+
+Le banc de fixtures réserve les identifiants de façon durable, journalise l'intention
+avant l'appel à un pilote injecté et ne retourne verified qu'après observation et
+audit final. Un effet potentiellement commencé devient unknown lors d'une panne,
+annulation ou reprise. Le journal ne contient aucune cible ni commande et refuse
+liens, permissions trop ouvertes, versions inconnues et initialisation root.
+Aucun pilote de mutation réel, aucune route d'exécution ou installation de droits
+n'est livré. Les pilotes des tests ne touchent que des fixtures privées. Le banc
+ne constitue pas une autorisation humaine ou une frontière de privilèges de production.

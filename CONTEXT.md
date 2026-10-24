@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 279 tests backend et 26 tests frontend réussis localement.
+- 349 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -255,3 +255,22 @@ Les opérations sensibles restent absentes.
 - Prochaine tranche : adaptateurs et postconditions sur banc jetable, revue des
   privilèges/approbations indépendantes, révocation distante immédiate et qualification VM.
   Les clés d'empreinte entre processus réels restent à concevoir ; aucune action activée.
+
+## Adaptateurs/postconditions sur fixtures — 24 octobre 2026
+
+- fixture_adapters.py compile services start/stop/restart et conteneurs start/restart,
+  avec pilotes de lecture/envoi obligatoires injectés par les tests, sans défaut réel.
+- FixtureTrialRunner est distinct de SimulationVerifier : ne pas le brancher sur
+  la simulation, sous peine de masquer des effets de fixture comme absence d'effet.
+- Autorisations positives, deux lectures concordantes avant envoi et postconditions
+  strictes : configuration identique, nouvelle invocation ou date UTC de démarrage.
+- fixture_journal.py crée un journal autonome privé v1 ; la base principale reste v3.
+  États/événements atomiques, 256 IDs sans éviction, aucun détail cible/commande/token.
+  Au démarrage exclusif, prepared -> not_dispatched et dispatching -> unknown.
+- Annulation/timeout/erreur après entrée dans le pilote = unknown, jamais annulé
+  avec assurance d'absence d'effet. Audit final en panne = pas de succès ; pas de rejeu.
+- 70 tests supplémentaires avec processus Python et HTTP Unix temporaires, 349 backend
+  et 26 frontend passants. Aucun systemctl de mutation ni moteur réel utilisé.
+- Lire docs/ADAPTER_TRIALS.md. Aucune VM/KVM ni Docker/Podman disponible ; restent les
+  vrais pilotes bornés, les permissions/approbations privilégiées, la révocation
+  distante et la réconciliation des inconnus, puis la matrice VM avant activation.

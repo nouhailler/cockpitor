@@ -2,6 +2,18 @@
 
 ## Non publié
 
+### Adaptateurs et postconditions sur fixtures — 24 octobre 2026
+
+- Opérations services/conteneurs compilées à arguments et chemins fixes, sans pilote
+  système ou moteur par défaut ; autorisations positives et cibles revalidées.
+- Deux lectures avant envoi, preuve de nouvelle génération et de configuration stable
+  après opération ; un accusé seul ne constitue pas un succès.
+- Journal privé de laboratoire indépendant, états/événements transactionnels, quota
+  sans éviction, reprise inconnue après intention d'envoi et refus des rejeux persistants.
+- 70 tests supplémentaires, dont processus Python et sockets HTTP Unix de fixtures ;
+  total 349 backend et 26 frontend. Aucun appel à systemctl ou Docker/Podman réels.
+- Aucun branchement API/IA/lanceur ; qualification VM et pilotes réels toujours requis.
+
 ### Liaison approbation, audit et vérification Unix — 24 octobre 2026
 
 - Client Unix borné et contrôlé : permissions privées, identité noyau du serveur,

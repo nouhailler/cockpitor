@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 279 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 349 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -171,3 +171,12 @@ vérification et les contrôles de session/échéance bloquent les faux succès.
 de liaison sur socket réelle et trois nouveaux tests du protocole v2. Total actuel :
 279 backend, 26 frontend. Le branchement n'est pas activé dans le lanceur et ne
 qualifie ni une mutation système, ni une séparation de privilèges en production.
+
+## Adaptateurs de laboratoire
+
+70 tests nouveaux, total 349 backend et 26 frontend. Logique de commandes/requêtes
+fixes, postconditions et journal persistant vérifiés avec pilotes de fixtures.
+Processus Python et HTTP Unix réels, services/systemd et moteurs réels NON TESTÉS.
+La reprise unknown n'est pas un rollback ; aucune relance automatique ni activation
+administrative. La base applicative reste v3 ; journal autonome v1 dans les tests.
+La qualification VM, les vrais pilotes et la séparation des privilèges restent ouverts.

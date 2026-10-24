@@ -312,3 +312,5 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 | [API](docs/API.md) | Routes, unités et erreurs |
 | [Tests](docs/TESTING.md) | Vérifications et environnements |
 | [Guide utilisateur](docs/USER_GUIDE.md) | Interprétation des données |
+
+- [Préparation du protocole L5 (sans exécution)](docs/EXECUTOR_QUALIFICATION.md)

@@ -209,3 +209,15 @@ Les opérations sensibles restent absentes.
 - Lire docs/ACTIONS_SECURITY.md : le socle est livré en simulation, la barrière de
   qualification avant L5 reste non franchie. Aucun exécuteur/helper privilégié installé
   ou activable. Revue du futur exécuteur et essais en VM jetable requis avant toute action réelle.
+
+## Préparation L5 — protocole isolé, 24 octobre 2026
+
+- executor_protocol.py : politique sans transport/exécution, UID attendu, droits
+  positifs par triplet action/cible/moteur, enveloppe stricte et bornée, tickets
+  30 s à usage unique, revalidation de l'empreinte et quota sans éviction des IDs.
+- Aucun branchement aux routeurs, à l'IA ou à un auxiliaire privilégié. Les snapshots
+  et UID sont fournis par l'appelant des tests ; ils devront provenir de sondes fiables
+  et du noyau dans un futur transport. Un ticket ne prouve pas l'approbation utilisateur.
+- docs/EXECUTOR_QUALIFICATION.md précise les limites et la matrice VM restante.
+- Aucune VM ni Docker/Podman disponible ici : activation réelle toujours interdite.
+- Validation : 203 tests backend et 26 frontend passent ; Ruff et mypy passent.

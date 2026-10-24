@@ -88,3 +88,13 @@ observé à distance : courses de changement de cible, résultats inconnus aprè
 et impossibilité éventuelle d’annuler une action devront être traités séparément.
 Aucune déclaration de sécurité générale ou d’autorisation de production n’est déduite
 du succès des tests de simulation.
+
+## Préparation L5 : prototype de protocole isolé
+
+Le module executor_protocol.py ajoute une politique sans exécution ni transport :
+UID attendu, droits exacts, enveloppe stricte de 2 Kio, tickets ponctuels 30 s,
+empreinte revérifiée et identifiants non réutilisables (quota 256, refus à saturation).
+Il n'est pas raccordé à l'application et ne remplace ni l'approbation L4, ni une
+identité obtenue du noyau, ni une lecture de cible effectuée par l'exécuteur.
+Voir [le contrat et la matrice de qualification](EXECUTOR_QUALIFICATION.md).
+La barrière avant activation demeure non franchie.

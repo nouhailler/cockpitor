@@ -2,6 +2,13 @@
 
 ## Non publié
 
+### Préparation du protocole L5 — 24 octobre 2026
+
+- Politique isolée du futur exécuteur : droits positifs, identité attendue, tickets
+  expirants non rejouables et revalidation de la cible ; aucune commande exécutée.
+- 24 tests unitaires du protocole et dossier de qualification VM restant à réaliser.
+- Aucun transport ni activation des opérations sensibles ajouté.
+
 ### Actions contrôlées en simulation — 24 octobre 2026
 
 - Plans typés, cibles exactes, services critiques exclus et état/configuration revérifiés.

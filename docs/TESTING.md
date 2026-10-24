@@ -114,3 +114,11 @@ Les tests frontend imposent examen/confirmation, absence de token dans DOM/stora
 invalidation sur erreur, annulation et anglais. Parcours navigateur réel cron.service
 préparé/approuvé/simulé, sans redémarrage. Aucune VM d’exécution privilégiée qualifiée.
 Voir ACTIONS_SECURITY.md pour la portée exacte des preuves.
+
+## Préparation L5 — 24 octobre 2026
+
+`backend/tests/test_executor_protocol.py` ajoute 24 tests : droits positifs, UID,
+trames strictes/bornées, expiration, consommation sur échec, état/configuration,
+rejeu, redémarrage et saturation sans éviction. Total : 203 backend et 26 frontend.
+Ces tests ne lancent aucune opération système et ne qualifient pas le transport
+Unix ou les futurs adaptateurs. Voir [la matrice restante](EXECUTOR_QUALIFICATION.md).

@@ -94,3 +94,5 @@ Pending operations are interrupted after restart; approval tokens are never pers
 See [the safeguards and remaining activation gate](docs/ACTIONS_SECURITY.md).
 
 ![Approved simulation](docs/images/actions-en.jpg)
+
+- [L5 protocol preparation (no execution)](docs/EXECUTOR_QUALIFICATION.md)

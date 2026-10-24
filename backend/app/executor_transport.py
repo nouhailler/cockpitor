@@ -6,6 +6,7 @@ read-only dependency; callers cannot supply snapshots over the wire.
 
 import asyncio
 import contextlib
+import hmac
 import json
 import os
 import socket
@@ -17,7 +18,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .actions import ActionRequest
+from .actions import ActionRequest, fingerprint
 from .executor_protocol import (
     MAX_FRAME_BYTES,
     TICKET_SECONDS,
@@ -34,13 +35,15 @@ PROBE_SECONDS = 1.0
 
 class IssueFrame(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
-    version: int = Field(ge=1, le=1)
+    version: int = Field(ge=2, le=2)
     kind: Literal["issue"]
     operation_id: str = Field(pattern=r"^[a-f0-9]{32}$")
     request: ActionRequest
+    expected_fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
 
 
 class VerifyFrame(ExecutorEnvelope):
+    version: int = Field(ge=2, le=2)
     kind: Literal["verify"]
 
 
@@ -175,8 +178,15 @@ class VerificationServer:
             issue = IssueFrame.model_validate(frame)
             self.policy.check_issue(uid, issue.operation_id, issue.request)
             snapshot = await self._snapshot(issue.request)
+            if not hmac.compare_digest(
+                issue.expected_fingerprint, fingerprint(issue.request, snapshot)
+            ):
+                raise ProtocolRejected("Approved target changed")
             ticket = self.policy.issue(uid, issue.operation_id, issue.request, snapshot)
             return {
+                "version": 2,
+                "operation_id": issue.operation_id,
+                "fingerprint": issue.expected_fingerprint,
                 "status": "ticket_issued",
                 "ticket": ticket,
                 "expires_in_seconds": TICKET_SECONDS,
@@ -184,6 +194,7 @@ class VerificationServer:
             }
         verify = VerifyFrame.model_validate(frame)
         envelope = verify.model_dump(exclude={"kind"})
+        envelope["version"] = 1  # Internal policy envelope; the wire protocol is v2.
         claimed = self.policy.claim(uid, json.dumps(envelope).encode())
         request = ActionRequest.model_validate(
             {
@@ -194,7 +205,13 @@ class VerificationServer:
         )
         snapshot = await self._snapshot(request)
         self.policy.verify_snapshot(claimed, snapshot)
-        return {"status": "verified_only", "system_execution_enabled": False}
+        return {
+            "version": 2,
+            "operation_id": verify.operation_id,
+            "fingerprint": claimed.intent.fingerprint,
+            "status": "verified_only",
+            "system_execution_enabled": False,
+        }
 
     async def close(self) -> None:
         self.closing = True

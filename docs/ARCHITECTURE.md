@@ -122,3 +122,13 @@ réception Unix et de l'identité noyau. Le serveur appelle une sonde de confian
 jamais un snapshot client ; il sérialise sonde et politique. Aucune méthode ne
 modifie les ressources. Il n'existe pas de chemin de l'assistant vers ce banc.
 Voir [contrat, bornes et qualification restante](EXECUTOR_QUALIFICATION.md).
+
+## Liaison de vérification au moteur L4
+
+ActionEngine expose SimulationVerifier pour le banc, sans injection dans le lanceur.
+executor_client.py relie le cycle approuvé/audité au transport v2 ; l'empreinte du
+plan est exigée dès issue et retrouvée dans les deux réponses. L'événement
+transactionnel actions.transport_verified exige l'état simulating avant le résultat
+simulated. Session et échéance sont contrôlées autour des échanges. Le client ne
+possède aucune méthode d'exécution. Le serveur n'authentifie pas indépendamment
+une approbation humaine ; une future frontière privilégiée exige une revue séparée.

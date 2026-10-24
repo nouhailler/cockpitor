@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 236 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 279 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -162,3 +162,12 @@ un ticket ou une vérification ; aucune action système. Les UID viennent du noy
 le serveur refuse root, les permissions et les bornes sont contrôlées. La liaison
 approbation/audit et les essais VM restent non qualifiés. Total : 236 backend et
 26 frontend. Aucun P0 d'exécution privilégiée n'est déclaré acquis.
+
+## Liaison L4 au banc Unix
+
+Le client vérifie identité/permissions du serveur et concordance des réponses ;
+l'approbation et l'audit de début précèdent les échanges. L'audit corrélé de
+vérification et les contrôles de session/échéance bloquent les faux succès. 40 tests
+de liaison sur socket réelle et trois nouveaux tests du protocole v2. Total actuel :
+279 backend, 26 frontend. Le branchement n'est pas activé dans le lanceur et ne
+qualifie ni une mutation système, ni une séparation de privilèges en production.

@@ -58,6 +58,8 @@ def test_lifecycle_consumes_approval_and_persists_only_minimal_audit(harness):
         result = await harness.engine.simulate("owner", token)
         assert result["plan"]["status"] == "simulated"
         assert result["commands_executed"] is False and result["system_changed"] is False
+        assert result["transport_verified"] is False
+        assert harness.engine.verifier is None
         assert harness.calls == ["service.restart"] * 4
         with pytest.raises(ServiceError) as exc:
             await harness.engine.simulate("owner", token)

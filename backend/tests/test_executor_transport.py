@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 import pytest
 from app import executor_transport as transport
+from app.actions import ActionRequest, fingerprint
 from app.executor_protocol import MAX_FRAME_BYTES, ExecutorPolicy, ProtocolRejected
 from app.executor_transport import VerificationServer, read_frame, write_frame
 
@@ -38,15 +39,19 @@ async def lab(tmp_path, *, uid=None, probe=None):
 
 def issue_frame(operation="b" * 32):
     return {
-        "version": 1,
+        "version": 2,
         "kind": "issue",
         "operation_id": operation,
         "request": {"action": "service.restart", "target": "fixture.service"},
+        "expected_fingerprint": fingerprint(
+            ActionRequest(action="service.restart", target="fixture.service"),
+            {"state": "active", "configuration_fingerprint": "a" * 64},
+        ),
     }
 
 
 def verify_frame(ticket, operation="b" * 32):
-    return {"version": 1, "kind": "verify", "operation_id": operation, "ticket": ticket}
+    return {"version": 2, "kind": "verify", "operation_id": operation, "ticket": ticket}
 
 
 async def exchange(server, payload):
@@ -187,7 +192,7 @@ def test_probe_failure_burns_ticket_and_never_leaks_details(tmp_path):
     async def snapshot(_):
         if fail[0]:
             raise RuntimeError("secret fixture data")
-        return {"state": "active"}
+        return {"state": "active", "configuration_fingerprint": "a" * 64}
 
     async def run():
         async with lab(tmp_path, probe=snapshot) as (server, _, _):
@@ -209,7 +214,7 @@ def test_slow_probe_and_expiry_during_probe(tmp_path, monkeypatch):
     async def snapshot(_):
         if delay[0]:
             await asyncio.sleep(1)
-        return {"state": "active"}
+        return {"state": "active", "configuration_fingerprint": "a" * 64}
 
     async def run():
         async with lab(tmp_path, probe=snapshot) as (server, _, _):
@@ -223,7 +228,7 @@ def test_slow_probe_and_expiry_during_probe(tmp_path, monkeypatch):
 
             async def expire(_):
                 now[0] = 30
-                return {"state": "active"}
+                return {"state": "active", "configuration_fingerprint": "a" * 64}
 
             server.probe = expire
             assert (await exchange(server, verify_frame(ticket, "c" * 32)))["status"] == "rejected"
@@ -410,5 +415,24 @@ def test_failed_start_cleans_only_its_own_socket(tmp_path, monkeypatch):
             assert server.path.exists()
             with pytest.raises(ProtocolRejected):
                 await other.start()
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize("change", ["v1", "missing_fingerprint", "wrong_fingerprint"])
+def test_wire_v2_requires_the_approved_fingerprint(tmp_path, change):
+    async def run():
+        async with lab(tmp_path) as (server, calls, _):
+            frame = issue_frame()
+            if change == "v1":
+                frame["version"] = 1
+            elif change == "missing_fingerprint":
+                del frame["expected_fingerprint"]
+            else:
+                frame["expected_fingerprint"] = "0" * 64
+            assert (await exchange(server, frame))["status"] == "rejected"
+            assert len(calls) == (1 if change == "wrong_fingerprint" else 0)
+            assert not server.policy.pending
+            assert not server.policy.reserved
 
     asyncio.run(run())

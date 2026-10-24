@@ -293,3 +293,8 @@ Détails et limites : [ACTIONS_SECURITY.md](ACTIONS_SECURITY.md).
 localement (UID noyau, socket privée, quotas et délais). Aucun exécuteur de mutation
 ni auxiliaire privilégié. La liaison à l'approbation/audit et la qualification VM
 restent ouvertes. Voir [le dossier L5](EXECUTOR_QUALIFICATION.md).
+
+24 octobre 2026 : client et liaison approbation/audit au banc Unix livrés ; v2 exige
+l'empreinte approuvée. Les essais sont sans effet système. Prochaine tranche :
+adaptateurs/postconditions et gestion des résultats inconnus en environnement jetable,
+puis qualification VM et revue de la frontière privilégiée avant activation.

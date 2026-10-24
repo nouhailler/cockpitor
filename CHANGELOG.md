@@ -2,6 +2,19 @@
 
 ## Non publié
 
+### Liaison approbation, audit et vérification Unix — 24 octobre 2026
+
+- Client Unix borné et contrôlé : permissions privées, identité noyau du serveur,
+  schémas stricts, identifiant/empreinte concordants, aucun repli ni rejeu automatique.
+- Protocole réseau v2 : empreinte approuvée obligatoire dès l'émission du ticket ;
+  anciennes requêtes v1 refusées. Politique interne inchangée.
+- Vérificateur optionnel du moteur de simulation, contrôles de session/échéance
+  autour de chaque échange et événement corrélé actions.transport_verified obligatoire.
+- 40 tests de liaison sur sockets réelles et trois tests v2 ; total 279 backend et
+  26 frontend. Schéma SQLite v3 conservé, erreur du client traduite FR/EN.
+- Liaison limitée au banc : aucun branchement dans le lanceur, ni mutation système.
+  Adaptateurs, révocation distante et qualification VM restent à traiter.
+
 ### Transport de vérification L5 — 24 octobre 2026
 
 - Serveur de laboratoire Unix Linux : UID noyau SO_PEERCRED, répertoire privé et

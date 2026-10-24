@@ -10,7 +10,7 @@ import time
 import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -98,6 +98,16 @@ class Plan:
     task: asyncio.Task | None = None
 
 
+class SimulationVerifier(Protocol):
+    async def verify(
+        self,
+        operation_id: str,
+        request: ActionRequest,
+        expected_fingerprint: str,
+        checkpoint: Callable[[], None],
+    ) -> None: ...
+
+
 class ActionEngine:
     def __init__(
         self,
@@ -105,7 +115,9 @@ class ActionEngine:
         probe: Callable[[ActionRequest], Awaitable[dict]],
         valid: Callable[[str], bool],
         clock=time.monotonic,
+        verifier: SimulationVerifier | None = None,
     ):
+        self.verifier = verifier
         self.store, self.probe, self.valid, self.clock = store, probe, valid, clock
         self.plans: dict[str, Plan] = {}
         self.lock = asyncio.Lock()
@@ -228,18 +240,30 @@ class ActionEngine:
             plan.task = None
             self.running = None
 
+    def checkpoint(self, plan):
+        self.policy(plan.owner)
+        if self.clock() >= plan.deadline:
+            fail("PLAN_EXPIRED", "Plan ou approbation expiré")
+
     async def run(self, plan):
         try:
             async with asyncio.timeout(SIMULATION_SECONDS):
                 await self.check(plan)
                 await asyncio.sleep(0)  # Cancellation checkpoint; deliberately no executor.
-                self.policy(plan.owner)
+                if self.verifier is not None:
+                    await self.verifier.verify(
+                        plan.id, plan.request, plan.fingerprint, lambda: self.checkpoint(plan)
+                    )
+                    self.checkpoint(plan)
+                    await asyncio.to_thread(self.store.action_verification, plan.id)
+                self.checkpoint(plan)
                 await self.transition(plan, "simulated")
                 self.policy(plan.owner)
                 return {
                     "plan": self.view(plan),
                     "commands_executed": False,
                     "system_changed": False,
+                    "transport_verified": self.verifier is not None,
                 }
         except asyncio.CancelledError as exc:
             if plan.status not in TERMINAL:
@@ -249,9 +273,9 @@ class ActionEngine:
             if plan.status not in TERMINAL:
                 await self.transition(plan, "failed")
             raise ServiceError("ACTION_TIMEOUT", "Délai des contrôles dépassé", 504) from exc
-        except ServiceError:
+        except ServiceError as exc:
             if plan.status not in TERMINAL:
-                await self.transition(plan, "failed")
+                await self.transition(plan, "expired" if exc.code == "PLAN_EXPIRED" else "failed")
             raise
         except StorageError:
             plan.approval_hash = None

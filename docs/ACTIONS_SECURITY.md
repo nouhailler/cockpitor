@@ -108,3 +108,17 @@ résultat verified_only. Les 32 tests de transport utilisent des sockets réelle
 avec sondes contrôlées ; aucune commande de modification n'est exécutée. Le serveur
 refuse root. Ce transport ne réalise pas encore la liaison à l'approbation/audit L4,
 ni les adaptateurs réels. La barrière d'activation reste non franchie.
+
+## Liaison approbation/audit au banc Unix
+
+Le vérificateur de simulation est maintenant injectable dans ActionEngine pour le
+banc. L'approbation et l'audit simulating précèdent tout échange ; session/échéance
+sont contrôlées autour de chaque échange et après audit de vérification. Le protocole
+réseau v2 lie les deux sondes à l'empreinte du plan approuvé, puis l'audit
+transactionnel actions.transport_verified précède le succès final. Toute panne
+ou révocation bloque ce succès. Le client refuse réponses incohérentes, exécution
+annoncée, UID ou permissions de socket invalides. Il n'effectue aucun rejeu.
+40 tests de liaison utilisent de vraies sockets avec sondes contrôlées. Aucun
+client n'est instancié par le lanceur, aucun serveur ne réalise de mutation.
+La révocation distante immédiate, la preuve d'approbation à une frontière privilégiée,
+les clés d'empreinte inter-processus et les adaptateurs restent à qualifier.

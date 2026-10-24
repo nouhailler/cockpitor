@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 236 tests backend et 26 tests frontend réussis localement.
+- 279 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -236,3 +236,22 @@ Les opérations sensibles restent absentes.
 - 236 tests backend et 26 frontend passent ; Ruff, format et mypy passent.
 - Prochaine étape : liaison approuvée/auditée et adaptateurs dans un banc VM jetable,
   avec résultat inconnu en cas d'effet partiel. Aucune action réelle activable ici.
+
+## Liaison approbation/audit/Unix — 24 octobre 2026
+
+- ActionEngine accepte un SimulationVerifier optionnel, absent du lanceur habituel.
+  Vérification seulement après consommation de l'approbation et audit simulating.
+- executor_client.py exige dossier 0700/socket 0600 du serveur non root, UID noyau,
+  messages et réponses stricts, empreinte/identifiant concordants, délais 2,5 s.
+- Transport réseau v2 : expected_fingerprint obligatoire à l'émission ; v1 refusé.
+  Les deux sondes doivent retrouver le plan approuvé. Aucun snapshot brut transmis.
+- actions.transport_verified est transactionnel et exige status=simulating ; pas de
+  cible/token/session persisté. SQLite v3 conservé. Dernier contrôle session/échéance
+  avant audit final ; toute panne bloque le succès et reprise interrupted si nécessaire.
+- Le résultat de simulation ajoute transport_verified, false par défaut ; toutes
+  les indications d'effet système restent false. Erreur du client localisée FR/EN.
+- 279 tests backend et 26 frontend passent. 40 tests de liaison, 35 de transport,
+  25 de politique. Le banc utilise des sockets réelles et des sondes contrôlées.
+- Prochaine tranche : adaptateurs et postconditions sur banc jetable, revue des
+  privilèges/approbations indépendantes, révocation distante immédiate et qualification VM.
+  Les clés d'empreinte entre processus réels restent à concevoir ; aucune action activée.

@@ -198,7 +198,8 @@ application/json et un corps réellement lu de 2 Kio maximum.
 - POST /action-plans/approve : plan_id, fingerprint et confirmed exactement true.
   Retour : plan et approval_token ponctuel. Le token n’est présent dans aucune liste/historique.
 - POST /action-plans/simulate : plan_id et approval_token ; retourne plan et
-  commands_executed=false/system_changed=false. L’approbation est consommée avant simulation.
+  commands_executed=false/system_changed=false et transport_verified=false dans le
+  lanceur habituel. L’approbation est consommée avant simulation.
 - POST /action-plans/cancel : plan_id de la session courante ; annulation auditable.
 - GET /action-plans : seuls les plans de la session courante encore présents en mémoire.
 - GET /operations : limit 1–200, offset >=0 ; id/action/status/created_at/updated_at, sans cible.
@@ -210,3 +211,9 @@ Codes : PLAN_EXPIRED, TARGET_CHANGED, APPROVAL_REQUIRED (409), APPROVAL_INVALID 
 PLAN_NOT_FOUND (404), ACTION_BUSY/PLAN_LIMIT (429), ACTION_TIMEOUT (504), stockage (503).
 Les transitions terminales et la reprise après interruption sont décrites dans
 [ACTIONS_SECURITY.md](ACTIONS_SECURITY.md). Aucune route d’exécution réelle n’est autorisée.
+
+Le vérificateur Unix peut être injecté dans le seul banc de simulation ; ce n'est
+pas une option de l'API ou du lanceur. Son succès produit l'événement corrélé
+`actions.transport_verified`, sans effet système. L'erreur client expurgée
+`ACTION_VERIFICATION_FAILED` (503) est localisée FR/EN. Aucun endpoint Unix, ticket
+ni chemin de socket n'est configurable depuis une requête web.

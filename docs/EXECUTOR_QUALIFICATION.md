@@ -1,9 +1,10 @@
 # Préparation L5 — protocole et qualification
 
 État au 24 octobre 2026 : politique et transport de vérification testés,
-**aucune exécution activée**. `backend/app/executor_protocol.py` et
-`backend/app/executor_transport.py` ne sont raccordés à aucun routeur ni lanceur.
-Ils ne contiennent ni sous-processus, ni connexion à un moteur, ni auxiliaire privilégié.
+**aucune exécution activée**. La politique, le transport et le nouveau client
+`backend/app/executor_client.py` sont reliés au moteur L4 dans les tests de banc.
+Le lanceur habituel n'instancie aucun client Unix et ne propose aucune activation.
+Ces modules ne contiennent ni sous-processus, ni connexion à un moteur, ni auxiliaire privilégié.
 
 ## Contrat proposé
 
@@ -29,15 +30,19 @@ coopérative à l'annulation, comme toute limite asyncio. Une réponse de refus 
 fermeture disposent chacune d'au plus 100 ms de nettoyage supplémentaires. Les
 connexions surnuméraires sont fermées immédiatement ; un client refusé avant
 lecture peut observer une fermeture/réinitialisation plutôt qu'une réponse JSON.
-Le JSON v1 refuse champs supplémentaires, doublons, constantes non finies, types
+Le JSON réseau v2 refuse champs supplémentaires, doublons, constantes non finies, types
 implicites et versions inconnues. Aucun instantané n'est accepté depuis le client.
 
 Le protocole se déroule ainsi :
 
-1. L'application valide session, approbation L4 et audit de début. Cette liaison
-   n'est pas encore implémentée et un ticket de protocole ne prouve aucun consentement.
+1. L'application valide session, approbation L4 et audit de début avant tout appel
+   au client Unix. La liaison est implémentée par injection explicite d'un vérificateur
+   de simulation et testée sur le banc ; elle n'est pas configurée dans le lanceur.
+   Un ticket seul ne prouve aucun consentement.
 2. L'exécuteur relit lui-même la cible, vérifie un droit positif puis réserve un
    identifiant d'opération et émet un ticket aléatoire de 256 bits valable 30 s.
+   Dès la première lecture, son empreinte doit égaler celle du plan approuvé ; une
+   simple stabilité entre les deux lectures ne suffirait pas.
    Seule son empreinte est conservée. La sonde est une dépendance de confiance du
    serveur, appelée après vérification des droits. Les tests fournissent une sonde
    contrôlée ; les adaptateurs de lecture réels restent à raccorder et qualifier.
@@ -65,26 +70,76 @@ mode 0600. Tout chemin existant, y compris une socket ou un lien pendant, est
 refusé sans suppression. Le nettoyage ne supprime que la socket créée, reconnue
 par son type, périphérique et inode ; un remplacement est conservé.
 Le démarrage sous root ou sans SO_PEERCRED est refusé. Il n'existe ni commande
-de lancement installée, ni variable d'activation, ni liaison à FastAPI ou à l'IA.
+de lancement installée, ni variable d'activation, ni configuration Unix dans FastAPI, ni liaison à l'IA.
 
 Deux messages sont reconnus :
 
-- `issue` : version 1, identifiant d'opération et requête d'action typée ; réponse
-  `ticket_issued` avec ticket et durée 30 s.
-- `verify` : version 1, identifiant et ticket ; réponse `verified_only` après nouvelle
-  sonde et comparaison. La réponse ne renvoie ni cible ni instantané.
+- `issue` : version 2, identifiant d'opération, requête d'action typée et
+  `expected_fingerprint` du plan approuvé ; réponse `ticket_issued` avec ticket,
+  durée 30 s, version, identifiant et empreinte concordants.
+- `verify` : version 2, identifiant et ticket ; réponse `verified_only` après nouvelle
+  sonde et comparaison, avec la même version, le même identifiant et l'empreinte.
+  La réponse ne renvoie ni cible ni instantané.
+
+La version réseau 1 est refusée, sans repli automatique : elle ne liait pas
+l'émission à l'empreinte approuvée. L'enveloppe interne de la politique reste v1 ;
+elle n'est pas acceptée telle quelle par le transport v2.
 
 Toutes les réponses portent `system_execution_enabled: false`. Les erreurs sont
 réduites à `rejected`, sans exception, secret, ticket ni donnée de sonde. Les appels
 n'exécutent jamais l'intention vérifiée. Les mêmes UID restent une frontière de
 confiance commune ; cette politique n'isole pas des programmes malveillants du même
-compte. La liaison à l'approbation L4, l'audit de l'exécuteur, les privilèges minimaux
-et les opérations réelles restent à implémenter avant activation.
+compte. L'audit propre d'un futur exécuteur, les privilèges minimaux et les opérations
+réelles restent à implémenter avant activation. Le serveur ne vérifie pas lui-même
+une approbation humaine : cette responsabilité reste dans le moteur applicatif.
+Avant d'en faire un exécuteur privilégié, la frontière de confiance de cette
+approbation doit être revue indépendamment.
 
-Validation : 32 tests de transport sur sockets Unix locales et 25 tests de politique,
+Validation : 35 tests de transport sur sockets Unix locales et 25 tests de politique,
 dont fermeture, saturation, rejeu concurrent, trames lentes/tronquées, changements de
 configuration, sonde en panne, refus root et absence de SO_PEERCRED. Aucun service
 ni conteneur n'est modifié. Ces preuves ne qualifient pas un exécuteur privilégié.
+
+## Liaison au moteur et audit — banc de simulation
+
+Le moteur L4 conserve ses contrôles d'origine : session propriétaire, approbation
+ponctuelle, relecture de cible et validation transactionnelle de `actions.simulating`
+avant tout échange Unix. Sans vérificateur injecté, son comportement habituel reste
+local. Avec le client de banc, la simulation :
+
+1. Contrôle la session et l'échéance avant connexion, avant envoi et après réponse
+   de chaque échange. Le client vérifie le dossier/socket privés et l'UID noyau du
+   serveur, puis impose des réponses strictes et concordantes avec le plan.
+2. Reçoit une vérification sans effet système, puis enregistre
+   `actions.transport_verified`, corrélé au même identifiant d'opération. L'écriture
+   SQL exige l'état `simulating` et prend le verrou d'écriture avant l'audit.
+3. Revérifie session/échéance et ne termine en `simulated` qu'après audit final.
+   Une panne d'audit ne produit aucun succès. Les opérations non terminales sont
+   reclassées `interrupted` à la reprise, comme en L4.
+
+Le résultat ajoute `transport_verified` (false dans le lanceur habituel).
+`commands_executed`, `system_changed` et `system_execution_enabled` restent false.
+L'audit conserve uniquement le type d'événement, la date et l'identifiant corrélé ;
+ni cible, session, ticket Unix, jeton d'approbation ni instantané. Schéma SQLite v3
+inchangé. L'erreur client est expurgée et disponible en français/anglais.
+
+Le client n'accepte pas de serveur root, ne réessaie pas et ne dégrade pas le
+protocole. Ses échanges ont chacun une limite de 2,5 s, plus 100 ms de fermeture.
+L'annulation ferme le client ; une sonde distante déjà démarrée peut continuer
+jusqu'à son délai, sans effet système. Un ticket émis dont la réponse n'est plus
+utilisée reste inutilisable après son expiration et occupe sa réservation bornée.
+Il n'existe pas encore de révocation distante immédiate par session : ce point est
+bloquant avant toute possibilité d'exécution.
+
+Les empreintes du moteur et de la sonde distante doivent être comparables. Les
+sondes contrôlées du banc le garantissent ; une future séparation en processus
+réels devra concevoir la gestion des clés HMAC et des instantanés sans transmettre
+les secrets au client. Aucun adaptateur réel n'est déclaré qualifié par ces tests.
+
+40 tests dans `test_executor_bridge.py` couvrent le parcours complet sur socket,
+l'absence de transport avant approbation/audit, les réponses falsifiées, révocations,
+échéances, annulation, panne d'audit et reprise. Avec les autres suites : 279 tests
+backend et 26 frontend passants.
 
 ## Matrice avant activation — à réaliser en VM jetable
 

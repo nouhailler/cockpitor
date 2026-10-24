@@ -277,7 +277,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **236 tests backend et 26 tests frontend
+Validation locale de cette version : **279 tests backend et 26 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -317,6 +317,7 @@ Les tests d’intégration utilisent des services simulés, sans clé externe.
 
 Un banc Unix isolé vérifie l'UID du client via le noyau Linux, les droits explicites
 par cible et les tickets expirants à usage unique. Sockets privées, messages bornés,
-délais, concurrence et fermeture sont testés. Il refuse root et ne peut exécuter
-aucune action. La liaison aux approbations/audit et la qualification VM restent à
-réaliser. Voir [le contrat et les essais restants](docs/EXECUTOR_QUALIFICATION.md).
+délais, concurrence et fermeture sont testés. Le client est relié au cycle
+approbation/audit sur ce banc et exige l'empreinte du plan dans les deux lectures.
+Il ne peut exécuter aucune action et n'est pas activé dans le lanceur habituel.
+Les adaptateurs et la qualification VM restent à réaliser. Voir [le contrat et les essais restants](docs/EXECUTOR_QUALIFICATION.md).

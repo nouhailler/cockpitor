@@ -335,6 +335,16 @@ class Store:
                 raise StorageError("Opération interrompue ou déjà modifiée")
             self._action_audit(db, operation_id, status)
 
+    def action_verification(self, operation_id):
+        with self.connection() as db:
+            changed = db.execute(
+                "UPDATE action_operations SET updated_at=? WHERE id=? AND status='simulating'",
+                (timestamp(), operation_id),
+            ).rowcount
+            if changed != 1:
+                raise StorageError("Opération interrompue ou déjà modifiée")
+            self._action_audit(db, operation_id, "transport_verified")
+
     def operations(self, limit, offset):
         with self.connection() as db:
             rows = db.execute(

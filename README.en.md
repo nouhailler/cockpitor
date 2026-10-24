@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-236 backend tests and 26 frontend tests pass locally, alongside type checks,
+279 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -99,6 +99,7 @@ See [the safeguards and remaining activation gate](docs/ACTIONS_SECURITY.md).
 
 An isolated Unix lab checks kernel-provided client UIDs, exact target grants and
 expiring single-use tickets. Private sockets, bounded frames, deadlines, concurrent
-requests and shutdown are covered by local tests. It refuses root and cannot execute
-system actions. Approval/audit integration and disposable-VM qualification remain
-pending. See [the contract and remaining tests (French)](docs/EXECUTOR_QUALIFICATION.md).
+requests and shutdown are covered by local tests. The client is linked to the
+approval/audit lifecycle in this lab and requires the approved fingerprint on both
+reads. It cannot execute system actions and is not enabled in the regular launcher.
+System adapters and disposable-VM qualification remain pending. See [the contract and remaining tests (French)](docs/EXECUTOR_QUALIFICATION.md).

@@ -445,5 +445,6 @@
   "rejected": "Refusé",
   "interrupted": "Interrompu",
   "Annulation non confirmée ; consultez l’historique": "Annulation non confirmée ; consultez l’historique",
-  "Simulation échouée ; consultez l’historique": "Simulation échouée ; consultez l’historique"
+  "Simulation échouée ; consultez l’historique": "Simulation échouée ; consultez l’historique",
+  "Vérification Unix refusée ou indisponible": "Vérification Unix refusée ou indisponible"
 }

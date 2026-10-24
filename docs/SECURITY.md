@@ -125,3 +125,13 @@ pas une approbation humaine. Répertoire 0700, socket 0600, schémas/délais/quo
 consommation avant seconde sonde sont testés localement. Aucun protocole de mutation
 ni adaptateur privilégié n'est fourni. L'intégration à la session, à l'approbation
 et à l'audit, puis les essais VM, restent bloquants avant activation réelle.
+
+## Vérification liée à l'approbation — banc uniquement
+
+Le moteur peut injecter un client de vérification après approbation consommée et
+audit de début validé. Permissions/UID du serveur et réponses concordantes sont
+contrôlés ; l'empreinte approuvée est obligatoire en protocole v2. L'audit de
+vérification doit réussir avant le succès de simulation. Ce branchement n'est pas
+configuré dans le lanceur et ne donne aucun droit supplémentaire. Une identité UID
+et une empreinte ne prouvent pas seules l'approbation humaine au serveur : protocole
+de privilèges, révocation distante et adaptateurs nécessitent encore revue et VM.

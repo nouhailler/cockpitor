@@ -136,3 +136,16 @@ couvre l'invalidation après consommation et avant comparaison de l'instantané.
 Ces tests nécessitent un environnement Linux non root autorisant AF_UNIX ; ne pas
 confondre une interdiction du bac à sable avec un défaut du protocole. Aucune
 mutation de service/conteneur n'est réalisée. La matrice VM demeure à compléter.
+
+## Liaison approbation/audit/Unix — 24 octobre 2026
+
+279 tests backend et 26 frontend passent, ainsi que Ruff/format/mypy, lint et build
+frontend. test_executor_bridge.py ajoute 40 tests avec le vrai moteur L4, sa base
+SQLite temporaire et un serveur Unix réel : audit avant échanges, approbation et
+propriétaire, empreinte distante différente, session/échéance après chaque lecture
+et après audit, annulation, timeout, audit interrompu et reprise. Les réponses
+fausses ou trop permissives du serveur sont refusées côté client ; erreurs expurgées.
+Trois tests de transport supplémentaires imposent v2 et l'empreinte approuvée.
+Les adaptateurs système et la révocation distante immédiate restent non qualifiés ;
+aucun start/stop/restart réel n'a été effectué. L'avertissement TestClient/httpx reste
+préexistant. Voir EXECUTOR_QUALIFICATION.md pour les preuves et limites.

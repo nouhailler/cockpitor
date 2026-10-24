@@ -59,3 +59,8 @@ SO_PEERCRED et sockets privées, messages issue/verify, bornes et annulation.
 236 tests backend et 26 frontend passent. Prochaine tranche : liaison approbation/audit,
 adaptateurs et qualification VM avec effets partiels explicites, avant toute activation.
 Voir [EXECUTOR_QUALIFICATION.md](EXECUTOR_QUALIFICATION.md).
+
+24 octobre 2026 : liaison L4 approbation/audit au client Unix réalisée sur banc,
+avec protocole v2 lié à l'empreinte approuvée. 279 tests backend et 26 frontend.
+Le lanceur conserve la simulation locale. Les adaptateurs, postconditions, gestion
+des effets partiels et qualification VM précèdent toujours toute activation.

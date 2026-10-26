@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Réconciliation sans envoi et blocage persistant — 26 octobre 2026
+
+- Les essais préparés/en cours/inconnus bloquent une nouvelle réservation de la même
+  cible pour tous les verbes, par empreinte opaque persistante et transaction SQL.
+- Réconciliation en lecture seule liée à l'observation d'origine : deux lectures
+  concordantes, audit obligatoire et état reconciled distinct du succès initial.
+- Journal de banc v2 avec sauvegarde v1, gestion prudente des anciens inconnus et
+  refus en cas de clé perdue ; base applicative v3 inchangée.
+- 30 tests nouveaux, 379 backend et 26 frontend passants ; aucun nouvel envoi lors
+  d'une réconciliation. Pas d'activation système ou de pilote réel.
+
 ### Adaptateurs et postconditions sur fixtures — 24 octobre 2026
 
 - Opérations services/conteneurs compilées à arguments et chemins fixes, sans pilote

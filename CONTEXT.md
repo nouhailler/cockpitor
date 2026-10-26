@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 349 tests backend et 26 tests frontend réussis localement.
+- 379 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -274,3 +274,22 @@ Les opérations sensibles restent absentes.
 - Lire docs/ADAPTER_TRIALS.md. Aucune VM/KVM ni Docker/Podman disponible ; restent les
   vrais pilotes bornés, les permissions/approbations privilégiées, la révocation
   distante et la réconciliation des inconnus, puis la matrice VM avant activation.
+
+## Réconciliation et blocage par cible — 26 octobre 2026
+
+- Journal de banc v2 (sauvegarde privée avant migration v1) ; base applicative v3 inchangée.
+  Deux empreintes persistées : ressource HMAC et plan approuvé. Aucun nom/baseline brut.
+- Un essai prepared/dispatching/unknown bloque tous les verbes sur la même cible,
+  transactionnellement et entre instances. Même ID de conteneur sur moteurs différents
+  = ressources distinctes. IDs toujours réservés, limite 256 et 1024 événements.
+- reconcile_fixture réalise uniquement des lectures, exige la requête et l'observation
+  originale liées au journal, puis deux observations concordantes de la postcondition.
+- L'état reconciled libère la cible après audit atomique, sans effacer unknown ni
+  prétendre prouver la causalité. Aucun nouvel envoi, aucune réutilisation d'approbation.
+- Baseline perdue, lecture instable, session révoquée, timeout ou audit en panne = blocage
+  conservé. Ancien inconnu v1 non lié = blocage de toutes les cibles du journal.
+- Clé HMAC privée persistée avec contrôle d'intégrité ; aucune régénération silencieuse.
+- 30 tests nouveaux, 379 backend et 26 frontend passent, contrôles/build passants.
+  Voir docs/FIXTURE_RECONCILIATION.md. Banc toujours hors API/lanceur/IA/protocole Unix.
+- Restent les vrais pilotes bornés et la VM, la frontière d'approbation privilégiée,
+  la révocation distante et les clés inter-processus réels avant toute activation.

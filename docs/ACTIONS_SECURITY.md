@@ -134,3 +134,14 @@ pour retourner verified ; sinon, la reprise classe l'intention unknown.
 Aucun pilote système par défaut n'est fourni. Ces classes ne sont pas des
 SimulationVerifier et ne doivent pas être raccordées à la simulation applicative.
 Les 70 tests de fixtures ne qualifient pas de mutation réelle. Voir ADAPTER_TRIALS.md.
+
+## Réconciliation et interdiction des relances — 26 octobre 2026
+
+Le banc ajoute une empreinte opaque de ressource et un blocage SQL persistant des
+nouveaux essais sur les cibles prepared/dispatching/unknown, quel que soit le verbe.
+La réconciliation ne dispose d'aucun chemin d'envoi : observation d'origine liée,
+deux lectures concordantes, puis état/événement reconciled atomiques. Une panne ou
+révocation laisse le blocage. L'ancien résultat unknown reste dans l'historique,
+sans preuve de causalité ni reprise d'approbation. Les inconnus v1 sans liaison
+restent bloquants globalement. Voir FIXTURE_RECONCILIATION.md ; activation réelle
+et qualification VM toujours absentes.

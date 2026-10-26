@@ -162,3 +162,14 @@ Un processus enfant sort après validation d'une intention d'envoi, puis la repr
 classe cette intention unknown. Aucun service ni moteur réel n'est utilisé.
 L'exécution nécessite Linux non root et les sockets Unix locales. Les vrais
 pilotes, privilèges et essais en VM restent non qualifiés : voir ADAPTER_TRIALS.md.
+
+## Réconciliation et réservation par cible — 26 octobre 2026
+
+379 tests backend et 26 frontend passent, Ruff/mypy/format et build frontend passants.
+30 nouveaux tests dans test_fixture_reconciliation.py : lectures sans nouvel envoi,
+preuves liées à l'essai, chaque postcondition, blocage inter-verbes après réouverture,
+lectures changeantes/timeout/révocation/annulation, audit échoué, réservations SQL
+concurrentes et deux réconciliateurs concurrents. Migration v1 sauvegardée et rollback,
+anciens inconnus non liés et clé perdue/corrompue refusés. Le test de version future
+utilise maintenant v3 pour le journal autonome ; la base applicative reste v3.
+Ces résultats ne qualifient aucun pilote système : voir FIXTURE_RECONCILIATION.md.

@@ -71,3 +71,9 @@ livré, 349 tests backend et 26 frontend. Pilotes injectés uniquement par les t
 aucun branchement au protocole de vérification ou à la simulation de l'application.
 Prochaine tranche : vrais pilotes bornés dans un environnement jetable, réconciliation
 après effets partiels, revue des privilèges/révocation et qualification VM avant activation.
+
+26 octobre 2026 : réconciliation en lecture seule et blocage durable par cible sur
+le banc, journal v2 migré après sauvegarde ; 379 backend et 26 frontend passants.
+Le résultat reconciled ne déclenche rien et ne remplace aucune approbation. Le
+banc reste distinct des ressources réelles ; pilotes bornés, révocation distante,
+frontière privilégiée et essais VM restent à réaliser avant activation.

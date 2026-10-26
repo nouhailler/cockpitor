@@ -143,3 +143,13 @@ et résultats minimaux des essais ; la base principale reste v3. Deux lectures
 précèdent l'envoi unique, puis des lectures bornées vérifient la génération et
 la configuration. Une incertitude après envoi est persistée sans répétition.
 Référence : [banc et limites](ADAPTER_TRIALS.md).
+
+## Réconciliation de banc
+
+Le journal autonome v2 réserve un HMAC de famille/cible/moteur, indépendamment du
+verbe, et l'empreinte du plan. La réservation transactionnelle refuse les cibles
+non résolues entre instances. reconcile_fixture n'appelle que observe ; deux
+lectures identiques et la postcondition de l'observation d'origine précèdent le
+passage unknown -> reconciled et son événement dans la même transaction. La clé
+reste dans le journal privé ; aucune baseline n'est persistée. Hors graphe API/IA.
+Voir [migration, preuves et limites](FIXTURE_RECONCILIATION.md).

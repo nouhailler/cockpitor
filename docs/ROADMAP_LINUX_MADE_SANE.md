@@ -303,3 +303,7 @@ puis qualification VM et revue de la frontière privilégiée avant activation.
 persistant livrés (70 tests supplémentaires). Aucun vrai pilote systemd/moteur,
 aucune activation administrative. Voir [ADAPTER_TRIALS.md](ADAPTER_TRIALS.md).
 Les essais système en VM, la réconciliation et la frontière de privilèges restent ouverts.
+
+26 octobre 2026 : blocage durable par cible et réconciliation sans nouvel envoi sur
+fixtures livrés. La réconciliation des pilotes réels et leurs essais VM restent
+non qualifiés. Voir [FIXTURE_RECONCILIATION.md](FIXTURE_RECONCILIATION.md).

@@ -4,13 +4,19 @@ Only the adapter qualification lab creates this ledger. Nothing installs or
 connects it to the web app, the verification transport or a privileged helper.
 """
 
+import hashlib
+import hmac
+import json
 import os
 import re
+import secrets
 import sqlite3
 import stat
+import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
+from .actions import ActionRequest
 from .system import timestamp
 
 MAX_TRIALS = 256
@@ -64,10 +70,18 @@ class FixtureJournal:
             finally:
                 os.close(fd)
             with self.connection() as db:
-                db.execute("BEGIN IMMEDIATE")
                 version = db.execute("PRAGMA user_version").fetchone()[0]
-                if version not in {0, 1}:
+                if version not in {0, 1, 2}:
                     raise JournalError("Unsupported trial journal")
+                if version == 1:
+                    backup = self.directory / f"backup-trials-v1-{uuid.uuid4().hex}.sqlite3"
+                    backup_fd = os.open(backup, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o600)
+                    os.close(backup_fd)
+                    with sqlite3.connect(backup) as copy:
+                        db.backup(copy)
+                db.execute("BEGIN IMMEDIATE")
+                if db.execute("PRAGMA user_version").fetchone()[0] != version:
+                    raise JournalError("Trial journal changed during startup")
                 if version == 0:
                     if db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchone():
                         raise JournalError("Not an empty trial journal")
@@ -78,6 +92,18 @@ class FixtureJournal:
                         "CREATE TABLE events(sequence INTEGER PRIMARY KEY, trial_id TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL)"
                     )
                     db.execute("PRAGMA user_version=1")
+                if version in {0, 1}:
+                    db.execute("ALTER TABLE trials ADD COLUMN resource_digest TEXT")
+                    db.execute("ALTER TABLE trials ADD COLUMN approved_fingerprint TEXT")
+                    db.execute("CREATE TABLE metadata(name TEXT PRIMARY KEY, value BLOB NOT NULL)")
+                    resource_key = secrets.token_bytes(32)
+                    db.execute("INSERT INTO metadata VALUES ('resource_key', ?)", (resource_key,))
+                    db.execute(
+                        "INSERT INTO metadata VALUES ('key_digest', ?)",
+                        (hashlib.sha256(resource_key).digest(),),
+                    )
+                    db.execute("PRAGMA user_version=2")
+                self._resource_key(db)
                 rows = db.execute(
                     "SELECT id,status FROM trials WHERE status IN ('prepared','dispatching')"
                 ).fetchall()
@@ -98,7 +124,28 @@ class FixtureJournal:
             (trial_id, status, timestamp()),
         )
 
-    def reserve(self, trial_id, action):
+    @staticmethod
+    def _resource_key(db):
+        row = db.execute("SELECT value FROM metadata WHERE name='resource_key'").fetchone()
+        if row is None or not isinstance(row[0], bytes) or len(row[0]) != 32:
+            raise JournalError("Resource key unavailable")
+        digest = db.execute("SELECT value FROM metadata WHERE name='key_digest'").fetchone()
+        if (
+            digest is None
+            or not isinstance(digest[0], bytes)
+            or not hmac.compare_digest(digest[0], hashlib.sha256(row[0]).digest())
+        ):
+            raise JournalError("Resource key integrity not confirmed")
+        return row[0]
+
+    def _resource(self, db, request):
+        payload = json.dumps(
+            [request.action.split(".")[0], request.target, request.engine],
+            separators=(",", ":"),
+        ).encode()
+        return hmac.new(self._resource_key(db), payload, hashlib.sha256).hexdigest()
+
+    def reserve(self, trial_id, action, *, request=None, approved_fingerprint=None):
         if not isinstance(trial_id, str) or not re.fullmatch(r"[a-f0-9]{32}", trial_id):
             raise JournalError("Invalid trial identifier")
         if action not in {
@@ -109,12 +156,31 @@ class FixtureJournal:
             "container.restart",
         }:
             raise JournalError("Invalid trial action")
+        if request is not None:
+            request = ActionRequest.model_validate(request.model_dump())
+            if (
+                request.action != action
+                or not isinstance(approved_fingerprint, str)
+                or not re.fullmatch(r"[a-f0-9]{64}", approved_fingerprint)
+            ):
+                raise JournalError("Invalid trial binding")
+        elif approved_fingerprint is not None:
+            raise JournalError("Request required for binding")
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
+            self._resource_key(db)
+            resource = self._resource(db, request) if request is not None else None
+            blocked = db.execute(
+                "SELECT 1 FROM trials WHERE status IN ('prepared','dispatching','unknown') AND (resource_digest IS NULL OR resource_digest=? OR ? IS NULL) LIMIT 1",
+                (resource, resource),
+            ).fetchone()
+            if blocked:
+                raise JournalError("Resource has an unresolved trial")
             if db.execute("SELECT count(*) FROM trials").fetchone()[0] >= MAX_TRIALS:
                 raise JournalError("Trial journal full")
             db.execute(
-                "INSERT INTO trials VALUES (?,?,?,?)", (trial_id, action, "prepared", timestamp())
+                "INSERT INTO trials VALUES (?,?,?,?,?,?)",
+                (trial_id, action, "prepared", timestamp(), resource, approved_fingerprint),
             )
             self._event(db, trial_id, "prepared")
 
@@ -150,3 +216,32 @@ class FixtureJournal:
                     (trial_id,),
                 ).fetchall()
             ]
+
+    def require_unknown(self, trial_id, request, approved_fingerprint):
+        request = ActionRequest.model_validate(request.model_dump())
+        with self.connection() as db:
+            self._bound_unknown(db, trial_id, request, approved_fingerprint)
+
+    def _bound_unknown(self, db, trial_id, request, approved_fingerprint):
+        row = db.execute("SELECT * FROM trials WHERE id=?", (trial_id,)).fetchone()
+        if (
+            row is None
+            or row["status"] != "unknown"
+            or row["action"] != request.action
+            or row["resource_digest"] != self._resource(db, request)
+            or not isinstance(approved_fingerprint, str)
+            or row["approved_fingerprint"] != approved_fingerprint
+        ):
+            raise JournalError("Unknown trial binding not confirmed")
+
+    def reconcile(self, trial_id, request, approved_fingerprint):
+        # The fixture controller must first confirm the postcondition using reads only.
+        request = ActionRequest.model_validate(request.model_dump())
+        with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
+            self._bound_unknown(db, trial_id, request, approved_fingerprint)
+            db.execute(
+                "UPDATE trials SET status='reconciled',updated_at=? WHERE id=?",
+                (timestamp(), trial_id),
+            )
+            self._event(db, trial_id, "reconciled")

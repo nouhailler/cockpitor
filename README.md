@@ -277,7 +277,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **349 tests backend et 26 tests frontend
+Validation locale de cette version : **379 tests backend et 26 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -326,3 +326,8 @@ Les [adaptateurs de laboratoire et leurs postconditions](docs/ADAPTER_TRIALS.md)
 exercent désormais des fixtures privées : commandes/requêtes fixes, preuve d'état
 final et journal persistant des résultats inconnus. Les pilotes système réels et
 la qualification VM restent requis ; aucune action sensible n'est activée.
+
+La [réconciliation en lecture seule](docs/FIXTURE_RECONCILIATION.md) peut désormais
+confirmer l'état d'une fixture après interruption. Les résultats inconnus bloquent
+les nouveaux essais sur la cible, même après redémarrage ; aucune opération n'est
+relancée automatiquement.

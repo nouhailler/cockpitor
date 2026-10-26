@@ -220,7 +220,9 @@ class FixtureTrialRunner:
         if not re.fullmatch(r"[a-f0-9]{64}", expected_fingerprint):
             raise ValueError("Invalid expected fingerprint")
         async with self.lock:
-            self.journal.reserve(trial_id, request.action)
+            self.journal.reserve(
+                trial_id, request.action, request=request, approved_fingerprint=expected_fingerprint
+            )
             status, attempted = "prepared", False
             adapter = self.service if request.action.startswith("service.") else self.container
             try:
@@ -273,3 +275,68 @@ class FixtureTrialRunner:
                 )
                 self.journal.transition(trial_id, status, result)
                 return TrialResult(trial_id, result)
+
+    async def reconcile_fixture(
+        self,
+        trial_id: str,
+        request: ActionRequest,
+        before: dict,
+        checkpoint: Callable[[], None],
+    ) -> "ReconciliationResult":
+        request = ActionRequest.model_validate(request.model_dump())
+        if (
+            request.action,
+            request.target,
+            request.engine,
+        ) not in self.grants or self.lock.locked():
+            raise ValueError("Fixture reconciliation refused")
+        async with self.lock:
+            adapter = self.service if request.action.startswith("service.") else self.container
+            model = (
+                ServiceObservation
+                if request.action.startswith("service.")
+                else ContainerObservation
+            )
+            baseline = model.model_validate(before)
+            if (
+                (
+                    isinstance(baseline, ServiceObservation)
+                    and (baseline.unit != request.target or baseline.needs_reload)
+                )
+                or (
+                    isinstance(baseline, ContainerObservation)
+                    and (baseline.id != request.target or baseline.engine != request.engine)
+                )
+                or not adapter.ready(request, baseline)
+            ):
+                raise ValueError("Invalid original observation")
+            approved = fingerprint(request, baseline.model_dump())
+            self.journal.require_unknown(trial_id, request, approved)
+            try:
+                checkpoint()
+                async with asyncio.timeout(READ_SECONDS):
+                    first = await adapter.observe(request)
+                checkpoint()
+                if not adapter.satisfied(request, baseline, first):
+                    return ReconciliationResult(trial_id, "unconfirmed")
+                async with asyncio.timeout(READ_SECONDS):
+                    second = await adapter.observe(request)
+                checkpoint()
+                if not adapter.satisfied(request, baseline, second) or not hmac.compare_digest(
+                    fingerprint(request, first.model_dump()),
+                    fingerprint(request, second.model_dump()),
+                ):
+                    return ReconciliationResult(trial_id, "unconfirmed")
+                self.journal.reconcile(trial_id, request, approved)
+                return ReconciliationResult(trial_id, "reconciled")
+            except JournalError:
+                raise
+            except Exception:  # noqa: BLE001 — failed reads never release an uncertainty fence
+                return ReconciliationResult(trial_id, "unconfirmed")
+
+
+@dataclass(frozen=True)
+class ReconciliationResult:
+    trial_id: str
+    status: Literal["reconciled", "unconfirmed"]
+    scope: Literal["fixture_only"] = "fixture_only"

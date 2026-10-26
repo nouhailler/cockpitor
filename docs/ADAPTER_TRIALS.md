@@ -1,6 +1,6 @@
 # L5 — adaptateurs et postconditions sur banc de fixtures
 
-État au 24 octobre 2026 : logique d'adaptateurs et journal de qualification livrés.
+État au 26 octobre 2026 : logique d'adaptateurs et journal de qualification livrés.
 **Aucune action sur systemd, Docker ou Podman réels n'est activée ou qualifiée.**
 La machine de développement ne possède ni VM/KVM ni moteur Docker/Podman.
 
@@ -76,9 +76,11 @@ vérification métier ou garantie de retour arrière n'est déduite de ces postc
 
 `fixture_journal.py` crée seulement sur demande explicite `fixture-trials.sqlite3`,
 dans un dossier propriétaire 0700, fichier 0600, sans liens symboliques. Root est
-refusé à l'initialisation. Le schéma de ce journal est v1 ; la base de l'application
+refusé à l'initialisation. Le schéma de ce journal est v2 (migration v1 sauvegardée) ; la base de l'application
 reste en v3. Aucun nom de cible, instantané, jeton ou commande n'est persisté :
-identifiant, type d'action, état, date et événements corrélés seulement.
+identifiant, type d'action, état, date, empreintes opaques et événements corrélés.
+La liaison persistante à la cible et à l'empreinte d'origine empêche une nouvelle
+réservation tant qu'un résultat reste inconnu.
 
 État et événement sont écrits dans la même transaction, avec contrôle de l'état
 précédent. L'essai est soit `not_dispatched`, `verified`, soit `unknown`.
@@ -88,11 +90,12 @@ Un journal déjà ouvert par un banc actif ne doit pas être initialisé par un 
 processus ; la coordination de déploiement reste hors périmètre.
 
 Les 256 identifiants ne sont jamais évincés : saturation et doublons sont refusés,
-même après redémarrage. Au plus trois événements par essai, soit 768 événements.
+même après redémarrage. Au plus quatre événements par essai avec réconciliation, soit 1024 événements.
 Aucune relance automatique, aucun retour arrière automatique et aucune promesse
 qu'une annulation a annulé l'effet. Une erreur d'audit final laisse l'intention
-`dispatching` ; la reprise la classe inconnue. La réconciliation des résultats
-inconnus avant de nouvelles actions réelles reste bloquante avant activation.
+`dispatching` ; la reprise la classe inconnue. La [réconciliation en lecture seule](FIXTURE_RECONCILIATION.md) peut lever le blocage
+du banc si l'observation d'origine et deux nouvelles lectures concordent. Elle ne
+qualifie pas la réconciliation de ressources réelles avant activation.
 
 ## Preuves et limites
 
@@ -107,7 +110,7 @@ reprise après sortie abrupte d'un processus enfant. Un processus Python modifie
 fichier JSON temporaire ; quatre essais HTTP Unix contrôlés exercent les combinaisons
 Docker/Podman et start/restart, sans moteur réel.
 
-Total du projet : 349 tests backend et 26 frontend passants ; lint, types, formatage
+Total du projet : 379 tests backend et 26 frontend passants ; lint, types, formatage
 et build passants. Ces essais ne remplacent pas la [matrice VM](EXECUTOR_QUALIFICATION.md).
 Il reste à implémenter/qualifier les vrais pilotes bornés, les privilèges minimaux,
 la révocation distante, les clés inter-processus et la réconciliation après effets

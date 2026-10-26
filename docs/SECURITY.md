@@ -146,3 +146,14 @@ liens, permissions trop ouvertes, versions inconnues et initialisation root.
 Aucun pilote de mutation réel, aucune route d'exécution ou installation de droits
 n'est livré. Les pilotes des tests ne touchent que des fixtures privées. Le banc
 ne constitue pas une autorisation humaine ou une frontière de privilèges de production.
+
+## Blocage des ressources incertaines sur le banc
+
+Une cible en cours ou inconnue ne peut pas être réservée pour un autre verbe. La
+liaison utilise un HMAC persistant, sans nom de cible en clair, et le contrôle est
+transactionnel entre instances. La réconciliation lit uniquement et ne lève le
+blocage qu'après lien exact à l'essai, postcondition stable et audit validé. Elle
+ne prouve pas quel acteur a produit l'état observé et ne vaut pas nouvelle approbation.
+Une clé manquante ou un ancien inconnu non lié provoque le refus, sans forçage.
+La frontière reste celle d'un journal privé sous le même UID, sans protection
+contre son propriétaire malveillant. Aucun accès système privilégié n'est ajouté.

@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-349 backend tests and 26 frontend tests pass locally, alongside type checks,
+379 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -108,3 +108,7 @@ System adapters and disposable-VM qualification remain pending. See [the contrac
 private test resources with fixed commands/requests, state confirmation and a
 durable journal for unknown outcomes. Real system drivers and disposable-VM
 qualification remain pending; sensitive actions are still disabled.
+
+[Read-only fixture reconciliation (French)](docs/FIXTURE_RECONCILIATION.md) can now
+confirm a fixture's state after interruption. Unknown outcomes block new trials
+on the same target across restarts; reconciliation never resends an operation.

@@ -178,3 +178,13 @@ un programme Python de fixture à la place de systemctl ; le pilote conteneur ut
 un serveur HTTP Unix de test. Les vrais pilotes d'entrée/sortie restent absents.
 La matrice VM ci-dessus n'est pas remplie par ces résultats, et aucune activation
 système ne découle du succès du banc. Voir ADAPTER_TRIALS.md pour les limites.
+
+## Réconciliation sur fixtures — 26 octobre 2026
+
+Le banc dispose maintenant d'un blocage durable par cible et d'une réconciliation
+sans envoi, liée à l'observation d'origine. Un résultat inconnu bloque les verbes
+sur cette cible jusqu'à deux lectures concordantes et un audit de résolution.
+Le journal autonome v2 migre v1 après sauvegarde ; la base applicative reste v3.
+30 tests supplémentaires, 379 backend et 26 frontend au total. Les ressources et
+pilotes réels ne sont pas qualifiés par ce résultat : la matrice VM reste ouverte.
+Voir [FIXTURE_RECONCILIATION.md](FIXTURE_RECONCILIATION.md).

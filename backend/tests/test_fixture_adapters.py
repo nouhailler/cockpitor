@@ -546,12 +546,12 @@ def test_private_journal_rejects_unsafe_paths_or_schema(tmp_path, kind):
         journal.path.chmod(0o644)
     else:
         with journal.connection() as db:
-            db.execute("PRAGMA user_version=2")
+            db.execute("PRAGMA user_version=3")
     with pytest.raises(JournalError):
         journal.initialize()
     if kind == "future_schema":
         with journal.connection() as db:
-            assert db.execute("PRAGMA user_version").fetchone()[0] == 2
+            assert db.execute("PRAGMA user_version").fetchone()[0] == 3
 
 
 def test_journal_state_and_audit_rollback_together(lab):

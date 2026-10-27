@@ -16,6 +16,7 @@ from .executor_transport import peer_uid, read_frame, write_frame
 from .services import ServiceError
 
 CLIENT_SECONDS = 2.5
+REVOCATION_CLEANUP_SECONDS = 0.3
 
 
 class VerificationError(ServiceError):
@@ -41,6 +42,10 @@ class ReplyBase(BaseModel):
 
 class VerifiedReply(ReplyBase):
     status: Literal["verified_only"]
+
+
+class RevokedReply(ReplyBase):
+    status: Literal["revoked"]
 
 
 class IssuedReply(ReplyBase):
@@ -70,7 +75,9 @@ class VerificationClient:
         ):
             raise ProtocolRejected("Private server required")
 
-    async def _exchange(self, payload: dict, checkpoint: Callable[[], None]) -> dict:
+    async def _exchange(
+        self, payload: dict, checkpoint: Callable[[], None], *, check_after=True
+    ) -> dict:
         writer = None
         try:
             async with asyncio.timeout(CLIENT_SECONDS):
@@ -82,7 +89,8 @@ class VerificationClient:
                 checkpoint()
                 await write_frame(writer, payload)
                 reply = decode_frame(await read_frame(reader))
-                checkpoint()
+                if check_after:
+                    checkpoint()
                 return reply
         except (OSError, TimeoutError, ValueError, asyncio.IncompleteReadError):
             raise VerificationError() from None
@@ -92,6 +100,20 @@ class VerificationClient:
                 with contextlib.suppress(Exception):
                     async with asyncio.timeout(0.1):
                         await writer.wait_closed()
+
+    async def revoke(self, operation_id: str, ticket: str, expected_fingerprint: str) -> None:
+        payload = await self._exchange(
+            {"version": 2, "kind": "revoke", "operation_id": operation_id, "ticket": ticket},
+            lambda: None,  # Revocation reduces capability even after session invalidation.
+        )
+        try:
+            reply = RevokedReply.model_validate(payload)
+            if reply.operation_id != operation_id or not hmac.compare_digest(
+                reply.fingerprint, expected_fingerprint
+            ):
+                raise ValueError("Revocation reply mismatch")
+        except ValueError:
+            raise VerificationError() from None
 
     async def verify(
         self,
@@ -110,6 +132,7 @@ class VerificationClient:
                 "expected_fingerprint": expected_fingerprint,
             },
             checkpoint,
+            check_after=False,
         )
         try:
             ticket = IssuedReply.model_validate(issued)
@@ -119,21 +142,31 @@ class VerificationClient:
                 raise ValueError("Reply mismatch")
         except ValueError:
             raise VerificationError() from None
-        verified = await self._exchange(
-            {
-                "version": 2,
-                "kind": "verify",
-                "operation_id": operation_id,
-                "ticket": ticket.ticket,
-            },
-            checkpoint,
-        )
+        complete = False
         try:
-            reply = VerifiedReply.model_validate(verified)
-            if reply.operation_id != operation_id or not hmac.compare_digest(
-                reply.fingerprint, expected_fingerprint
-            ):
-                raise ValueError("Reply mismatch")
-        except ValueError:
-            raise VerificationError() from None
-        checkpoint()
+            checkpoint()
+            verified = await self._exchange(
+                {
+                    "version": 2,
+                    "kind": "verify",
+                    "operation_id": operation_id,
+                    "ticket": ticket.ticket,
+                },
+                checkpoint,
+            )
+            try:
+                reply = VerifiedReply.model_validate(verified)
+                if reply.operation_id != operation_id or not hmac.compare_digest(
+                    reply.fingerprint, expected_fingerprint
+                ):
+                    raise ValueError("Reply mismatch")
+            except ValueError:
+                raise VerificationError() from None
+            checkpoint()
+            complete = True
+        finally:
+            if not complete:
+                # Best effort only: preserve the original failure/cancellation, no orphan task.
+                with contextlib.suppress(VerificationError, TimeoutError, asyncio.CancelledError):
+                    async with asyncio.timeout(REVOCATION_CLEANUP_SECONDS):
+                        await self.revoke(operation_id, ticket.ticket, expected_fingerprint)

@@ -1,6 +1,6 @@
 """Linux Unix-socket verification lab. No system execution or application wiring.
 
-The only replies are tickets or verification results. Probe is a trusted,
+Replies describe tickets, verifications or revocations. Probe is a trusted,
 read-only dependency; callers cannot supply snapshots over the wire.
 """
 
@@ -45,6 +45,11 @@ class IssueFrame(BaseModel):
 class VerifyFrame(ExecutorEnvelope):
     version: int = Field(ge=2, le=2)
     kind: Literal["verify"]
+
+
+class RevokeFrame(ExecutorEnvelope):
+    version: int = Field(ge=2, le=2)
+    kind: Literal["revoke"]
 
 
 def peer_uid(writer: asyncio.StreamWriter) -> int:
@@ -151,8 +156,12 @@ class VerificationServer:
                 uid = peer_uid(writer)
                 self.policy.check_peer(uid)
                 frame = decode_frame(await read_frame(reader))
-                async with self.lock:
-                    reply = await self._dispatch(uid, frame)
+                if frame.get("kind") == "revoke":
+                    # Synchronous policy update must not wait behind a slow probe.
+                    reply = self._revoke(uid, frame)
+                else:
+                    async with self.lock:
+                        reply = await self._dispatch(uid, frame)
                 await write_frame(writer, reply)
         except asyncio.CancelledError:
             raise
@@ -172,6 +181,19 @@ class VerificationServer:
     async def _snapshot(self, request: ActionRequest) -> dict:
         async with asyncio.timeout(PROBE_SECONDS):
             return await self.probe(request)
+
+    def _revoke(self, uid: int, frame: dict) -> dict:
+        revoke = RevokeFrame.model_validate(frame)
+        envelope = revoke.model_dump(exclude={"kind"})
+        envelope["version"] = 1
+        intent = self.policy.revoke(uid, json.dumps(envelope).encode())
+        return {
+            "version": 2,
+            "operation_id": intent.operation_id,
+            "fingerprint": intent.fingerprint,
+            "status": "revoked",
+            "system_execution_enabled": False,
+        }
 
     async def _dispatch(self, uid: int, frame: dict) -> dict:
         if frame.get("kind") == "issue":
@@ -203,15 +225,18 @@ class VerificationServer:
                 "engine": claimed.intent.engine,
             }
         )
-        snapshot = await self._snapshot(request)
-        self.policy.verify_snapshot(claimed, snapshot)
-        return {
-            "version": 2,
-            "operation_id": verify.operation_id,
-            "fingerprint": claimed.intent.fingerprint,
-            "status": "verified_only",
-            "system_execution_enabled": False,
-        }
+        try:
+            snapshot = await self._snapshot(request)
+            self.policy.verify_snapshot(claimed, snapshot)
+            return {
+                "version": 2,
+                "operation_id": verify.operation_id,
+                "fingerprint": claimed.intent.fingerprint,
+                "status": "verified_only",
+                "system_execution_enabled": False,
+            }
+        finally:
+            self.policy.abandon(claimed)
 
     async def close(self) -> None:
         self.closing = True

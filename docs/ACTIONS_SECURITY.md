@@ -145,3 +145,13 @@ révocation laisse le blocage. L'ancien résultat unknown reste dans l'historiqu
 sans preuve de causalité ni reprise d'approbation. Les inconnus v1 sans liaison
 restent bloquants globalement. Voir FIXTURE_RECONCILIATION.md ; activation réelle
 et qualification VM toujours absentes.
+
+## Révocation ponctuelle — 27 octobre 2026
+
+Le banc peut invalider un ticket connu, en attente ou consommé pour une lecture,
+sans attendre le verrou de la sonde. UID et secret sont requis ; l'accusé est strict
+et une vérification déjà terminée n'est pas déclarée annulée. Le client tente un
+nettoyage borné après réception d'un ticket si sa tâche échoue ou est annulée.
+Ce n'est pas encore une révocation indépendante de tous les tickets d'une session :
+perte de réponse ou saturation peut laisser la révocation non confirmée. Aucun
+audit privilégié ni effet système nouveau. Référence : TICKET_REVOCATION.md.

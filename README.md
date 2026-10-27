@@ -277,7 +277,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **379 tests backend et 26 tests frontend
+Validation locale de cette version : **399 tests backend et 26 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -331,3 +331,7 @@ La [réconciliation en lecture seule](docs/FIXTURE_RECONCILIATION.md) peut déso
 confirmer l'état d'une fixture après interruption. Les résultats inconnus bloquent
 les nouveaux essais sur la cible, même après redémarrage ; aucune opération n'est
 relancée automatiquement.
+
+Le banc Unix propose aussi la [révocation ponctuelle de tickets](docs/TICKET_REVOCATION.md),
+y compris pendant une lecture. Le client tente un nettoyage borné en cas d'annulation ;
+une révocation non confirmée ou tardive ne vaut jamais annulation d'un effet.

@@ -1,6 +1,6 @@
 """Unconnected executor protocol prototype. Never performs system operations.
 
-The future Unix transport must obtain peer_uid from SO_PEERCRED, never JSON.
+The Unix lab transport supplies peer_uid from SO_PEERCRED, never JSON.
 A ticket proves only that this policy accepted an intent, not user approval.
 """
 
@@ -72,6 +72,8 @@ class ExecutorPolicy:
         self.clock = clock
         self.pending: dict[str, Pending] = {}
         self.reserved: set[str] = set()
+        self.claimed: dict[str, Pending] = {}
+        self.revoked: dict[str, Pending] = {}
         self.closed = False
 
     def check_peer(self, peer_uid: int) -> None:
@@ -121,9 +123,37 @@ class ExecutorPolicy:
             raise ProtocolRejected("Ticket rejected")
         if self.clock() >= pending.deadline:
             raise ProtocolRejected("Ticket expired")
+        self.claimed[envelope.operation_id] = pending
         return pending
 
+    def revoke(self, peer_uid: int, frame: bytes) -> Intent:
+        self.check_peer(peer_uid)
+        try:
+            envelope = ExecutorEnvelope.model_validate(decode_frame(frame))
+        except ValueError:
+            raise ProtocolRejected("Frame rejected") from None
+        identifier = envelope.operation_id
+        pending = (
+            self.pending.get(identifier)
+            or self.claimed.get(identifier)
+            or self.revoked.get(identifier)
+        )
+        if pending is None or not hmac.compare_digest(
+            pending.ticket_hash, hashlib.sha256(envelope.ticket.encode()).digest()
+        ):
+            raise ProtocolRejected("Revocation rejected")
+        self.pending.pop(identifier, None)
+        self.claimed.pop(identifier, None)
+        self.revoked[identifier] = pending
+        return pending.intent
+
+    def abandon(self, pending: Pending) -> None:
+        if self.claimed.get(pending.intent.operation_id) is pending:
+            self.claimed.pop(pending.intent.operation_id)
+
     def verify_snapshot(self, pending: Pending, snapshot: dict) -> Intent:
+        if self.claimed.pop(pending.intent.operation_id, None) is not pending:
+            raise ProtocolRejected("Ticket no longer active")
         if self.closed or self.clock() >= pending.deadline:
             raise ProtocolRejected("Ticket expired")
         intent = pending.intent
@@ -140,6 +170,8 @@ class ExecutorPolicy:
     def invalidate(self) -> None:
         """Closing a lab permanently invalidates its remaining tickets."""
         self.pending.clear()
+        self.claimed.clear()
+        self.revoked.clear()
         self.closed = True
 
 

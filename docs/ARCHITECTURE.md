@@ -153,3 +153,12 @@ lectures identiques et la postcondition de l'observation d'origine précèdent l
 passage unknown -> reconciled et son événement dans la même transaction. La clé
 reste dans le journal privé ; aucune baseline n'est persistée. Hors graphe API/IA.
 Voir [migration, preuves et limites](FIXTURE_RECONCILIATION.md).
+
+## Révocation du banc Unix
+
+Le message revoke v2 modifie la politique en synchronisme sur la boucle du serveur,
+sans verrou de sonde. Les capacités consommées restent suivies jusqu'à validation,
+abandon ou révocation, et ne sont validables qu'une fois. Le client dispose d'une
+révocation explicite et d'un nettoyage limité après réception du ticket. Les marques
+restent volatiles et bornées aux 256 IDs ; aucun nouveau stockage/API n'est ajouté.
+Une révocation de session indépendante du transport client reste à concevoir.

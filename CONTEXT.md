@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 379 tests backend et 26 tests frontend réussis localement.
+- 399 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -293,3 +293,18 @@ Les opérations sensibles restent absentes.
   Voir docs/FIXTURE_RECONCILIATION.md. Banc toujours hors API/lanceur/IA/protocole Unix.
 - Restent les vrais pilotes bornés et la VM, la frontière d'approbation privilégiée,
   la révocation distante et les clés inter-processus réels avant toute activation.
+
+## Révocation ponctuelle de tickets — 27 octobre 2026
+
+- executor_protocol.py suit les capacités consommées et les marques de révocation,
+  bornées par les 256 IDs réservés ; verify_snapshot n'est validable qu'une fois.
+- revoke v2 sur le transport : UID noyau et secret exact requis, idempotent, sans
+  attendre le verrou de sonde. Une lecture encore en cours ne peut plus être validée.
+- executor_client.py expose revoke et un nettoyage borné à 300 ms après réception
+  d'un ticket valide si le parcours échoue ou est annulé. L'erreur initiale est conservée.
+- Limites : admission 4 connexions partagée ; absence d'accusé = révocation non confirmée.
+  Ticket non reçu = pas de révocation possible par ce client, expiration 30 s toujours.
+  Pas de révocation globale par session indépendante du client, ni retour arrière.
+- 20 nouveaux tests, 399 backend et 26 frontend passent, contrôles/build passants.
+- Lire docs/TICKET_REVOCATION.md. Aucun branchement au lanceur, à l'IA ou aux pilotes
+  de fixtures ; vrais pilotes, frontière privilégiée et qualification VM toujours requis.

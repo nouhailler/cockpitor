@@ -75,7 +75,7 @@ par son type, périphérique et inode ; un remplacement est conservé.
 Le démarrage sous root ou sans SO_PEERCRED est refusé. Il n'existe ni commande
 de lancement installée, ni variable d'activation, ni configuration Unix dans FastAPI, ni liaison à l'IA.
 
-Deux messages sont reconnus :
+Trois messages sont reconnus :
 
 - `issue` : version 2, identifiant d'opération, requête d'action typée et
   `expected_fingerprint` du plan approuvé ; réponse `ticket_issued` avec ticket,
@@ -83,6 +83,11 @@ Deux messages sont reconnus :
 - `verify` : version 2, identifiant et ticket ; réponse `verified_only` après nouvelle
   sonde et comparaison, avec la même version, le même identifiant et l'empreinte.
   La réponse ne renvoie ni cible ni instantané.
+
+- `revoke` : version 2, identifiant et ticket exact ; réponse `revoked` si la
+  capacité en attente/en lecture est invalidée, idempotente si déjà révoquée.
+  Cette mise à jour n'attend pas le verrou des sondes, mais partage l'admission
+  limitée aux connexions du banc. Une révocation après vérification terminée est refusée.
 
 La version réseau 1 est refusée, sans repli automatique : elle ne liait pas
 l'émission à l'empreinte approuvée. L'enveloppe interne de la politique reste v1 ;
@@ -128,8 +133,10 @@ inchangé. L'erreur client est expurgée et disponible en français/anglais.
 
 Le client n'accepte pas de serveur root, ne réessaie pas et ne dégrade pas le
 protocole. Ses échanges ont chacun une limite de 2,5 s, plus 100 ms de fermeture.
-L'annulation ferme le client ; une sonde distante déjà démarrée peut continuer
-jusqu'à son délai, sans effet système. Un ticket émis dont la réponse n'est plus
+L'annulation ferme le client ; après réception d'un ticket valide, le client tente
+une révocation ponctuelle avec nettoyage borné. Une sonde distante déjà démarrée
+peut continuer jusqu'à son délai, sans effet système, mais un ticket révoqué ne
+peut plus être validé. Un ticket émis dont la réponse n'est plus
 utilisée reste inutilisable après son expiration et occupe sa réservation bornée.
 Il n'existe pas encore de révocation distante immédiate par session : ce point est
 bloquant avant toute possibilité d'exécution.
@@ -188,3 +195,11 @@ Le journal autonome v2 migre v1 après sauvegarde ; la base applicative reste v3
 30 tests supplémentaires, 379 backend et 26 frontend au total. Les ressources et
 pilotes réels ne sont pas qualifiés par ce résultat : la matrice VM reste ouverte.
 Voir [FIXTURE_RECONCILIATION.md](FIXTURE_RECONCILIATION.md).
+
+## Révocation ponctuelle — 27 octobre 2026
+
+La révocation de tickets reçus est disponible et testée, sans attendre une sonde
+lente et sans prétendre annuler une vérification déjà terminée. Elle ne remplace
+pas la révocation globale par session indépendante du client, notamment lorsqu'un
+ticket n'a pas été reçu. 20 tests nouveaux, 399 backend et 26 frontend au total.
+Voir [TICKET_REVOCATION.md](TICKET_REVOCATION.md) pour les délais et limites.

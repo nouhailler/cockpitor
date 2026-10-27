@@ -157,3 +157,12 @@ ne prouve pas quel acteur a produit l'état observé et ne vaut pas nouvelle app
 Une clé manquante ou un ancien inconnu non lié provoque le refus, sans forçage.
 La frontière reste celle d'un journal privé sous le même UID, sans protection
 contre son propriétaire malveillant. Aucun accès système privilégié n'est ajouté.
+
+## Révocation de tickets connus
+
+Le banc exige UID et ticket exact pour révoquer une capacité en attente/en lecture.
+La révocation contourne uniquement le verrou de sonde, pas la limite d'admission.
+Le client tente un nettoyage après réception du ticket ; aucune confirmation n'est
+inventée si le serveur est indisponible. Un ticket non reçu reste soumis à expiration,
+et une vérification terminée n'est pas annulable. La révocation globale par session
+reste bloquante avant toute exécution privilégiée. Voir TICKET_REVOCATION.md.

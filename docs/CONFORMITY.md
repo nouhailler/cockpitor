@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 379 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 399 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -188,3 +188,10 @@ lectures concordantes liées à l'essai ; audit atomique de résolution. 30 test
 nouveaux, total 379 backend et 26 frontend. Journal autonome v2 migré après sauvegarde,
 base applicative v3 conservée. Ni causalité prouvée ni autorisation privilégiée
 n'est déduite d'un état reconciled. Qualification VM toujours ouverte.
+
+## Révocation ponctuelle — 27 octobre 2026
+
+20 nouveaux tests de politique, client et sockets Unix, total 399 backend et
+26 frontend. La révocation connue bloque la validation d'une lecture en cours ;
+son échec ou son arrivée tardive ne constitue pas une preuve d'annulation. Le canal
+global de révocation par session et la qualification privilégiée/VM restent ouverts.

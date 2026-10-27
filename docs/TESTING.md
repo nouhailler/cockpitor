@@ -173,3 +173,11 @@ concurrentes et deux réconciliateurs concurrents. Migration v1 sauvegardée et 
 anciens inconnus non liés et clé perdue/corrompue refusés. Le test de version future
 utilise maintenant v3 pour le journal autonome ; la base applicative reste v3.
 Ces résultats ne qualifient aucun pilote système : voir FIXTURE_RECONCILIATION.md.
+
+## Révocation ponctuelle — 27 octobre 2026
+
+399 tests backend et 26 frontend passent. 20 nouveaux tests dans
+`test_executor_revocation.py` : UID/secret, idempotence, usage unique, lecture révoquée,
+concurrence sur socket réelle, client annulé, nettoyage indisponible ou expiré sans
+masquer l'erreur initiale et refus de révocation tardive. Aucun effet système.
+Lint, types, formatage et build passent. Référence : TICKET_REVOCATION.md.

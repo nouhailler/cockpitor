@@ -2,6 +2,16 @@
 
 ## Non publié
 
+### Révocation ponctuelle Unix — 27 octobre 2026
+
+- Message revoke v2 authentifié par UID et ticket ; invalidation d'une lecture
+  en cours sans attendre le verrou de sonde, accusé strict et rejeu refusé.
+- Validation unique des capacités consommées et nettoyage des lectures interrompues.
+- Client : tentative bornée de révocation après réception du ticket lors d'un échec
+  ou d'une annulation, sans masquer l'erreur initiale ni relance automatique.
+- 20 tests nouveaux, 399 backend et 26 frontend passants. Révocation globale par
+  session et qualification VM encore absentes ; aucune action système activée.
+
 ### Réconciliation sans envoi et blocage persistant — 26 octobre 2026
 
 - Les essais préparés/en cours/inconnus bloquent une nouvelle réservation de la même

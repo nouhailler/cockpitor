@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-379 backend tests and 26 frontend tests pass locally, alongside type checks,
+399 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -112,3 +112,7 @@ qualification remain pending; sensitive actions are still disabled.
 [Read-only fixture reconciliation (French)](docs/FIXTURE_RECONCILIATION.md) can now
 confirm a fixture's state after interruption. Unknown outcomes block new trials
 on the same target across restarts; reconciliation never resends an operation.
+
+The Unix lab also supports [per-ticket revocation (French)](docs/TICKET_REVOCATION.md),
+including during a read. Client cancellation attempts bounded cleanup; an unconfirmed
+or late revocation never implies that an effect was undone.

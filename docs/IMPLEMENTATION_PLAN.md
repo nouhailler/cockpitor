@@ -77,3 +77,8 @@ le banc, journal v2 migré après sauvegarde ; 379 backend et 26 frontend passan
 Le résultat reconciled ne déclenche rien et ne remplace aucune approbation. Le
 banc reste distinct des ressources réelles ; pilotes bornés, révocation distante,
 frontière privilégiée et essais VM restent à réaliser avant activation.
+
+27 octobre 2026 : révocation ponctuelle de tickets Unix et nettoyage borné du client
+livrés, 399 tests backend et 26 frontend. Les lectures en cours sont invalidables,
+mais pas une vérification déjà terminée. Révocation globale par session, vrais pilotes,
+preuve d'approbation privilégiée et VM restent requis avant activation réelle.

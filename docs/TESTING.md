@@ -181,3 +181,13 @@ Ces résultats ne qualifient aucun pilote système : voir FIXTURE_RECONCILIATION
 concurrence sur socket réelle, client annulé, nettoyage indisponible ou expiré sans
 masquer l'erreur initiale et refus de révocation tardive. Aucun effet système.
 Lint, types, formatage et build passent. Référence : TICKET_REVOCATION.md.
+
+## Révocation globale par session sur banc — 27 octobre 2026
+
+420 tests backend et 26 frontend passent, contrôles/build passants. 21 nouveaux tests
+utilisent Sessions et de vraies sockets Unix temporaires : retrait ciblé de tous les
+tickets, réponse perdue, expirations, sonde/émission en cours, autorité indisponible,
+scopes invalides, rattachement incohérent, saturation réseau, arrêt du moniteur,
+absence de repli et intégration au cycle ActionEngine/audit. Aucun effet système.
+La référence d'autorité est dans le même processus ; sa séparation réelle n'est pas
+qualifiée par ces résultats. Voir SESSION_TICKET_REVOCATION.md.

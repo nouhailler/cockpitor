@@ -147,6 +147,12 @@ class ExecutorPolicy:
         self.revoked[identifier] = pending
         return pending.intent
 
+    def invalidate_operation(self, operation_id: str) -> None:
+        """Trusted server-side invalidation only; never exposed as a wire message."""
+        pending = self.pending.pop(operation_id, None) or self.claimed.pop(operation_id, None)
+        if pending is not None:
+            self.revoked[operation_id] = pending
+
     def abandon(self, pending: Pending) -> None:
         if self.claimed.get(pending.intent.operation_id) is pending:
             self.claimed.pop(pending.intent.operation_id)

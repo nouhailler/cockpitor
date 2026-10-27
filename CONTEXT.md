@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 399 tests backend et 26 tests frontend réussis localement.
+- 420 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -308,3 +308,19 @@ Les opérations sensibles restent absentes.
 - 20 nouveaux tests, 399 backend et 26 frontend passent, contrôles/build passants.
 - Lire docs/TICKET_REVOCATION.md. Aucun branchement au lanceur, à l'IA ou aux pilotes
   de fixtures ; vrais pilotes, frontière privilégiée et qualification VM toujours requis.
+
+## Révocation globale de session sur banc — 27 octobre 2026
+
+- session_verification.py ajoute SessionVerificationServer avec référence Sessions
+  de confiance dans le même processus, hors lanceur/API/IA. Contrôle nominal 50 ms
+  indépendant du client, du verrou de sonde et de l'admission des connexions.
+- Issue v2 exige session_scope ; registre opération/scope immuable et borné aux
+  256 IDs. Session contrôlée avant/après lectures ; panne d'autorité = refus.
+- Déconnexion/expiration invalide les tickets en attente/en lecture de cette session,
+  sans ticket reçu ni nouveau message client. Les autres sessions restent utilisables.
+- Client optionnellement associé au scope ; ActionEngine fournit owner au vérificateur,
+  et le client refuse une association incohérente avant IO. Pas de repli non protégé.
+- 21 tests nouveaux, 420 backend et 26 frontend passent, contrôles et build passants.
+- La référence Sessions n'est pas un canal inter-processus réel ni une preuve
+  d'approbation humaine à une frontière privilégiée. Restent ce canal, les clés,
+  les pilotes bornés et la qualification VM. Voir docs/SESSION_TICKET_REVOCATION.md.

@@ -162,3 +162,12 @@ abandon ou révocation, et ne sont validables qu'une fois. Le client dispose d'u
 révocation explicite et d'un nettoyage limité après réception du ticket. Les marques
 restent volatiles et bornées aux 256 IDs ; aucun nouveau stockage/API n'est ajouté.
 Une révocation de session indépendante du transport client reste à concevoir.
+
+## Banc Unix lié à Sessions
+
+SessionVerificationServer dérive du transport de vérification, avec Sessions injecté
+et registre de scopes borné aux IDs réservés. Un moniteur nominal de 50 ms retire
+les capacités d'une session invalidée sans admission réseau ni verrou de sonde.
+Les lectures contrôlent aussi l'autorité avant/après. Le client reçoit un scope
+explicite et le moteur lui fournit son propriétaire pour comparaison avant IO.
+Aucune instance dans l'API/lanceur : l'autorité inter-processus reste à concevoir.

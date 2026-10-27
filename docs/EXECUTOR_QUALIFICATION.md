@@ -138,8 +138,9 @@ une révocation ponctuelle avec nettoyage borné. Une sonde distante déjà dém
 peut continuer jusqu'à son délai, sans effet système, mais un ticket révoqué ne
 peut plus être validé. Un ticket émis dont la réponse n'est plus
 utilisée reste inutilisable après son expiration et occupe sa réservation bornée.
-Il n'existe pas encore de révocation distante immédiate par session : ce point est
-bloquant avant toute possibilité d'exécution.
+Le serveur de session décrit plus bas ajoute une invalidation autonome par session
+sur le banc. Son autorité reste dans le même processus ; le canal authentifié
+vers un futur exécuteur séparé reste bloquant avant toute possibilité d'exécution.
 
 Les empreintes du moteur et de la sonde distante doivent être comparables. Les
 sondes contrôlées du banc le garantissent ; une future séparation en processus
@@ -203,3 +204,13 @@ lente et sans prétendre annuler une vérification déjà terminée. Elle ne rem
 pas la révocation globale par session indépendante du client, notamment lorsqu'un
 ticket n'a pas été reçu. 20 tests nouveaux, 399 backend et 26 frontend au total.
 Voir [TICKET_REVOCATION.md](TICKET_REVOCATION.md) pour les délais et limites.
+
+## Autorité de session de laboratoire — 27 octobre 2026
+
+SessionVerificationServer complète le banc avec une référence Sessions de confiance
+et une surveillance autonome, sans ticket reçu ou message client nécessaire à la
+révocation. Scope exigé, registre borné, contrôles autour des lectures et liaison au
+propriétaire applicatif sont testés ; 21 nouveaux tests, 420 backend et 26 frontend.
+Ce n'est pas encore un canal entre processus réels ou une preuve d'approbation
+privilégiée. La matrice VM et les pilotes restent ouverts. Voir
+[SESSION_TICKET_REVOCATION.md](SESSION_TICKET_REVOCATION.md).

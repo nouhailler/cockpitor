@@ -82,3 +82,8 @@ frontière privilégiée et essais VM restent à réaliser avant activation.
 livrés, 399 tests backend et 26 frontend. Les lectures en cours sont invalidables,
 mais pas une vérification déjà terminée. Révocation globale par session, vrais pilotes,
 preuve d'approbation privilégiée et VM restent requis avant activation réelle.
+
+27 octobre 2026 : révocation par session indépendante du client implémentée sur le
+banc avec autorité Sessions dans le même processus, 420 backend et 26 frontend.
+La séparation authentifiée de cette autorité en processus réels, les pilotes et
+la VM restent requis avant toute activation ; aucune action système ajoutée.

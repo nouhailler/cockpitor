@@ -105,6 +105,8 @@ class SimulationVerifier(Protocol):
         request: ActionRequest,
         expected_fingerprint: str,
         checkpoint: Callable[[], None],
+        *,
+        owner: str | None = None,
     ) -> None: ...
 
 
@@ -252,7 +254,11 @@ class ActionEngine:
                 await asyncio.sleep(0)  # Cancellation checkpoint; deliberately no executor.
                 if self.verifier is not None:
                     await self.verifier.verify(
-                        plan.id, plan.request, plan.fingerprint, lambda: self.checkpoint(plan)
+                        plan.id,
+                        plan.request,
+                        plan.fingerprint,
+                        lambda: self.checkpoint(plan),
+                        owner=plan.owner,
                     )
                     self.checkpoint(plan)
                     await asyncio.to_thread(self.store.action_verification, plan.id)

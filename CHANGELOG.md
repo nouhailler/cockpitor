@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Révocation de session sur le banc Unix — 27 octobre 2026
+
+- Serveur de laboratoire avec autorité Sessions de confiance et contrôle périodique
+  indépendant des clients et de l'admission des connexions.
+- Scope obligatoire dans ce mode, lien immuable opération/session, vérifications
+  autour des sondes et liaison au propriétaire ActionEngine côté client.
+- Révocation de tous les tickets de la session après déconnexion/expiration, même
+  si le client a perdu la réponse. Autorité indisponible : refus et invalidation.
+- 21 tests nouveaux, 420 backend et 26 frontend passants. Autorité encore dans le
+  même processus de banc ; séparation privilégiée et qualification VM non réalisées.
+
 ### Révocation ponctuelle Unix — 27 octobre 2026
 
 - Message revoke v2 authentifié par UID et ticket ; invalidation d'une lecture

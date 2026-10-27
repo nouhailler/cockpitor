@@ -43,7 +43,10 @@ fermer sa connexion. Son échec n'est pas transformé en succès.
 Cette garantie reste **ponctuelle** : si la connexion est interrompue avant réception
 et validation du ticket, le client ne connaît pas le secret à révoquer. Le ticket
 reste alors soumis à son expiration de 30 s et à l'invalidation au redémarrage.
-Il n'existe pas encore de canal indépendant révoquant tous les tickets d'une session.
+Le serveur de laboratoire lié à Sessions peut désormais invalider tous les tickets
+sans dépendre du client : voir [SESSION_TICKET_REVOCATION.md](SESSION_TICKET_REVOCATION.md).
+Il utilise une référence d'autorité dans le même processus, pas encore un canal
+indépendant authentifié entre services réels.
 Un ticket déjà vérifié ou consommé par un échec est inutilisable, mais ne peut pas
 nécessairement produire un accusé de révocation. Le client n'assimile pas ce refus
 à une preuve de retour arrière.
@@ -69,7 +72,14 @@ Total : 399 tests backend et 26 frontend passants, lint/types/format/build passa
 .venv/bin/pytest -q backend/tests/test_executor_revocation.py
 ```
 
-Restent la révocation globale par session indépendante du client, la preuve
+Restent le canal d'autorité authentifié entre processus réels, la preuve
 d'approbation à une frontière privilégiée, les vrais pilotes bornés et les essais
 systemd/Docker/Podman en VM jetable. Aucun de ces points n'est déclaré qualifié
 par les tests ponctuels ci-dessus.
+
+## Complément : autorité de session
+
+Le nouveau serveur de session complète la révocation ponctuelle par une surveillance
+autonome des sessions du banc, sans nouveau message client ni besoin du ticket reçu.
+Ce mode est explicite et reste hors lanceur. Total actuel : 420 tests backend et
+26 frontend. La qualification d'une autorité séparée/privilégiée reste ouverte.

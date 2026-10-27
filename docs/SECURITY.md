@@ -164,5 +164,15 @@ Le banc exige UID et ticket exact pour révoquer une capacité en attente/en lec
 La révocation contourne uniquement le verrou de sonde, pas la limite d'admission.
 Le client tente un nettoyage après réception du ticket ; aucune confirmation n'est
 inventée si le serveur est indisponible. Un ticket non reçu reste soumis à expiration,
-et une vérification terminée n'est pas annulable. La révocation globale par session
-reste bloquante avant toute exécution privilégiée. Voir TICKET_REVOCATION.md.
+et une vérification terminée n'est pas annulable. Le nouveau banc de session complète
+ce point ; son canal d'autorité inter-processus reste bloquant avant toute exécution
+privilégiée. Voir SESSION_TICKET_REVOCATION.md.
+
+## Sessions comme autorité de laboratoire
+
+SessionVerificationServer utilise une référence Sessions fiable, vérifiée autour des
+lectures et par moniteur autonome. Un client absent ne maintient donc pas une capacité
+d'une session invalide. Les scopes viennent du contrôleur de banc et ne constituent
+pas une preuve d'approbation humaine ; UID et scope ne séparent pas les programmes
+malveillants du même compte. L'autorité inter-processus, ses pannes et sa frontière
+privilégiée doivent encore être conçues et qualifiées en VM avant activation réelle.

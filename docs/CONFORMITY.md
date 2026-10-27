@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 399 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 420 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -195,3 +195,10 @@ n'est déduite d'un état reconciled. Qualification VM toujours ouverte.
 26 frontend. La révocation connue bloque la validation d'une lecture en cours ;
 son échec ou son arrivée tardive ne constitue pas une preuve d'annulation. Le canal
 global de révocation par session et la qualification privilégiée/VM restent ouverts.
+
+## Autorité de session sur banc — 27 octobre 2026
+
+21 nouveaux tests, 420 backend et 26 frontend au total. Révocation globale des
+tickets liée à Sessions, indépendante des messages clients, avec autorité dans le
+même processus de laboratoire. Scope immuable, propriétaire comparé et refus en cas
+de panne. Aucun canal privilégié inter-processus ni pilote système réel qualifié.

@@ -277,7 +277,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **399 tests backend et 26 tests frontend
+Validation locale de cette version : **420 tests backend et 26 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -335,3 +335,8 @@ relancée automatiquement.
 Le banc Unix propose aussi la [révocation ponctuelle de tickets](docs/TICKET_REVOCATION.md),
 y compris pendant une lecture. Le client tente un nettoyage borné en cas d'annulation ;
 une révocation non confirmée ou tardive ne vaut jamais annulation d'un effet.
+
+Le [banc lié aux sessions](docs/SESSION_TICKET_REVOCATION.md) peut aussi invalider
+tous les tickets d'une session expirée ou révoquée, même après perte de réponse
+côté client. Cette autorité reste dans le processus de test ; aucun auxiliaire
+privilégié ou accès système réel n'est activé.

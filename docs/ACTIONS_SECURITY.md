@@ -155,3 +155,12 @@ nettoyage borné après réception d'un ticket si sa tâche échoue ou est annul
 Ce n'est pas encore une révocation indépendante de tous les tickets d'une session :
 perte de réponse ou saturation peut laisser la révocation non confirmée. Aucun
 audit privilégié ni effet système nouveau. Référence : TICKET_REVOCATION.md.
+
+## Autorité de session du banc
+
+Le nouveau mode utilise Sessions comme autorité de confiance dans le même processus.
+Les associations opération/session sont obligatoires et immuables ; le moniteur
+invalide en attente/en lecture sans dépendre du client ou d'une connexion disponible.
+Les contrôles autour des sondes et la liaison au propriétaire sont également requis.
+Pas d'activation dans le lanceur, pas de preuve d'approbation indépendante ni de
+canal privilégié réel. Référence : SESSION_TICKET_REVOCATION.md.

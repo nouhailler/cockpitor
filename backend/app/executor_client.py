@@ -3,6 +3,7 @@
 import asyncio
 import contextlib
 import hmac
+import re
 import stat
 from collections.abc import Callable
 from pathlib import Path
@@ -55,11 +56,16 @@ class IssuedReply(ReplyBase):
 
 
 class VerificationClient:
-    def __init__(self, path: Path, server_uid: int):
+    def __init__(self, path: Path, server_uid: int, *, session_scope: str | None = None):
         if type(server_uid) is not int or server_uid <= 0:
             raise ValueError("Non-root server UID required")
+        if session_scope is not None and (
+            not isinstance(session_scope, str) or not re.fullmatch(r"[a-f0-9]{64}", session_scope)
+        ):
+            raise ValueError("Invalid session scope")
         self.path = path
         self.server_uid = server_uid
+        self.session_scope = session_scope
 
     def _private_path(self) -> None:
         parent, entry = self.path.parent.lstat(), self.path.lstat()
@@ -121,7 +127,15 @@ class VerificationClient:
         request: ActionRequest,
         expected_fingerprint: str,
         checkpoint: Callable[[], None],
+        *,
+        owner: str | None = None,
     ) -> None:
+        if (
+            self.session_scope is not None
+            and owner is not None
+            and not hmac.compare_digest(self.session_scope, owner)
+        ):
+            raise VerificationError()
         # Validate replies and preserve the caller's session/expiry failures unchanged.
         issued = await self._exchange(
             {
@@ -130,6 +144,7 @@ class VerificationClient:
                 "operation_id": operation_id,
                 "request": request.model_dump(),
                 "expected_fingerprint": expected_fingerprint,
+                **({"session_scope": self.session_scope} if self.session_scope is not None else {}),
             },
             checkpoint,
             check_after=False,

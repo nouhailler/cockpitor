@@ -176,3 +176,12 @@ d'une session invalide. Les scopes viennent du contrôleur de banc et ne constit
 pas une preuve d'approbation humaine ; UID et scope ne séparent pas les programmes
 malveillants du même compte. L'autorité inter-processus, ses pannes et sa frontière
 privilégiée doivent encore être conçues et qualifiées en VM avant activation réelle.
+
+## RPC d'autorité en lecture seule
+
+Le mode distant du banc interroge un autre processus via socket privée et UID noyau,
+avec nonce frais, taille/types/délais bornés. Panne, réponse incohérente ou lot incomplet
+ne donnent pas de permission ; aucun cache positif ni repli vers une autorité locale.
+La frontière reste le même UID non privilégié. Le canal ne constitue ni une preuve
+d'approbation humaine indépendante, ni une transaction atomique avec un futur effet
+système. Comptes/privilèges minimaux et VM restent à qualifier avant activation.

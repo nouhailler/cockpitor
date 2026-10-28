@@ -87,3 +87,8 @@ preuve d'approbation privilégiée et VM restent requis avant activation réelle
 banc avec autorité Sessions dans le même processus, 420 backend et 26 frontend.
 La séparation authentifiée de cette autorité en processus réels, les pilotes et
 la VM restent requis avant toute activation ; aucune action système ajoutée.
+
+28 octobre 2026 : autorité Sessions dans un processus distinct via RPC Unix borné,
+20 tests nouveaux, 440 backend et 26 frontend au total. Canal testé entre processus
+non privilégiés ; restent preuve d'approbation, séparation de privilèges, vrais
+pilotes bornés et qualification VM avant toute activation système.

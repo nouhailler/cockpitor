@@ -214,3 +214,13 @@ propriétaire applicatif sont testés ; 21 nouveaux tests, 420 backend et 26 fro
 Ce n'est pas encore un canal entre processus réels ou une preuve d'approbation
 privilégiée. La matrice VM et les pilotes restent ouverts. Voir
 [SESSION_TICKET_REVOCATION.md](SESSION_TICKET_REVOCATION.md).
+
+## Canal vers une autorité séparée — 28 octobre 2026
+
+Le canal Unix de contrôle des sessions est implémenté et testé avec une autorité
+dans un autre processus Python non privilégié : UID, nonce, schémas stricts, bornes,
+absence de cache positif, révocation et panne de processus. 20 tests nouveaux,
+440 backend et 26 frontend au total. Le mode local historique reste distinct.
+Ce canal ne qualifie pas une approbation privilégiée indépendante ni les pilotes
+système. Séparation de privilèges et matrice VM toujours ouvertes. Référence :
+[REMOTE_SESSION_AUTHORITY.md](REMOTE_SESSION_AUTHORITY.md).

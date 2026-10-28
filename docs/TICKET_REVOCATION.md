@@ -83,3 +83,9 @@ Le nouveau serveur de session complète la révocation ponctuelle par une survei
 autonome des sessions du banc, sans nouveau message client ni besoin du ticket reçu.
 Ce mode est explicite et reste hors lanceur. Total actuel : 420 tests backend et
 26 frontend. La qualification d'une autorité séparée/privilégiée reste ouverte.
+
+## Complément du 28 octobre : autorité séparée
+
+La surveillance des sessions peut maintenant utiliser un RPC Unix vers un processus
+Python distinct, sans cache positif ou repli local. Il s'agit du banc non privilégié,
+pas d'une qualification d'auxiliaire root. Voir REMOTE_SESSION_AUTHORITY.md.

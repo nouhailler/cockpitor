@@ -171,3 +171,13 @@ les capacités d'une session invalidée sans admission réseau ni verrou de sond
 Les lectures contrôlent aussi l'autorité avant/après. Le client reçoit un scope
 explicite et le moteur lui fournit son propriétaire pour comparaison avant IO.
 Aucune instance dans l'API/lanceur : l'autorité inter-processus reste à concevoir.
+
+## Autorité de session distante du banc
+
+session_authority.py propose un service Unix en lecture seule et son client, avec
+nonce, scopes opaques et états strictement booléens. Les contrôles de session du
+vérificateur sont asynchrones pour accepter le mode distant, sans modifier l'API.
+Le moniteur consulte des lots bornés sans résultats partiels ou cache positif ;
+la panne invalide toutes les capacités connues. Aucun Sessions local de repli dans
+ce mode. Tests avec autorité dans un vrai processus enfant ; comptes privilégiés,
+preuve d'approbation et pilotes réels restent hors périmètre. Voir REMOTE_SESSION_AUTHORITY.md.

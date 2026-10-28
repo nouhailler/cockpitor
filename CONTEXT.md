@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 420 tests backend et 26 tests frontend réussis localement.
+- 440 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -324,3 +324,18 @@ Les opérations sensibles restent absentes.
 - La référence Sessions n'est pas un canal inter-processus réel ni une preuve
   d'approbation humaine à une frontière privilégiée. Restent ce canal, les clés,
   les pilotes bornés et la qualification VM. Voir docs/SESSION_TICKET_REVOCATION.md.
+
+## Autorité de session en processus séparé — 28 octobre 2026
+
+- session_authority.py ajoute serveur/client RPC en lecture seule et
+  RemoteSessionVerificationServer ; aucun lancement dans l'application.
+- Autorité seule propriétaire de Sessions ; contrôles asynchrones, socket privée,
+  UID noyau aux deux extrémités, nonce 128 bits et schémas stricts. Même UID non root.
+- Contrôle de 16 scopes/lot, maximum 256, 2 Kio, 200 ms/RPC et 400 ms/ensemble hors
+  nettoyage. Pas de cache positif ou résultats partiels utilisés comme permission.
+- Moniteur distant et contrôles autour des sondes ; panne d'autorité invalide tous
+  les tickets connus, sans repli vers Sessions local. Anciennes capacités non restaurées.
+- 20 tests nouveaux avec processus enfant réellement distinct, crash, révocation,
+  expiration, nonce rejoué, mauvais UID et panne lente. 440 backend et 26 frontend.
+- Lire docs/REMOTE_SESSION_AUTHORITY.md : canal entre processus non privilégiés testé,
+  pas encore séparation de privilèges, approbation indépendante ou VM de pilotes réels.

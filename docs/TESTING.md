@@ -191,3 +191,12 @@ scopes invalides, rattachement incohérent, saturation réseau, arrêt du monite
 absence de repli et intégration au cycle ActionEngine/audit. Aucun effet système.
 La référence d'autorité est dans le même processus ; sa séparation réelle n'est pas
 qualifiée par ces résultats. Voir SESSION_TICKET_REVOCATION.md.
+
+## Autorité de session séparée — 28 octobre 2026
+
+440 tests backend et 26 frontend passent, avec lint/types/format/build passants.
+20 tests nouveaux dans test_remote_session_authority.py : autorité dans un autre
+PID, révocation/expiration, crash pendant sonde, réponses rejouées/falsifiées, UID,
+requêtes non modifiantes, lots partiels et timeout sans cache. La fixture de test
+contrôle l'enfant par stdin sans exposer cette commande dans le RPC du produit.
+Aucun effet système réel ni compte privilégié. Voir REMOTE_SESSION_AUTHORITY.md.

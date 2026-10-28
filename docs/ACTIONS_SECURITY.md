@@ -164,3 +164,12 @@ invalide en attente/en lecture sans dépendre du client ou d'une connexion dispo
 Les contrôles autour des sondes et la liaison au propriétaire sont également requis.
 Pas d'activation dans le lanceur, pas de preuve d'approbation indépendante ni de
 canal privilégié réel. Référence : SESSION_TICKET_REVOCATION.md.
+
+## Autorité de session par RPC — 28 octobre 2026
+
+Le banc distant vérifie l'identité Unix et le nonce de l'autorité séparée ; aucune
+autorisation positive n'est mise en cache. Absence de réponse, panne ou lot partiel
+échoué ne devient jamais permission. Le moniteur invalide les tickets connus et
+les lectures sont contrôlées autour de leurs sondes. Les essais utilisent deux
+processus non privilégiés sous le même UID : ils ne prouvent pas une isolation
+contre ce compte ou une approbation humaine indépendante. Voir REMOTE_SESSION_AUTHORITY.md.

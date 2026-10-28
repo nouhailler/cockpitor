@@ -77,3 +77,13 @@ absence de repli et parcours réel Sessions/ActionEngine/audit/socket de test.
 
 Total : 420 tests backend et 26 frontend passants, lint/types/format/build passants.
 Les sondes sont contrôlées ; aucun service ni conteneur réel n'est modifié.
+
+## Complément du 28 octobre : processus séparé
+
+Le nouveau RemoteSessionVerificationServer consulte une autorité par RPC Unix
+privé, au lieu d'une référence Sessions locale. UID, nonce, types, délais et panne
+sont testés, y compris avec une autorité dans un processus enfant. Ce mode ne se
+replie pas vers l'autorité locale et ne conserve pas d'autorisation positive en cache.
+Les paragraphes ci-dessus décrivent le mode local historique. Voir
+[REMOTE_SESSION_AUTHORITY.md](REMOTE_SESSION_AUTHORITY.md) pour le mode distant
+non privilégié et les limites de la preuve. Total actuel : 440 backend et 26 frontend.

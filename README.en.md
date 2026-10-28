@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-420 backend tests and 26 frontend tests pass locally, alongside type checks,
+440 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -121,3 +121,8 @@ The [session-aware lab (French)](docs/SESSION_TICKET_REVOCATION.md) also invalid
 all tickets belonging to an expired or revoked session, even after a lost client
 reply. Its authority remains inside the test process; no privileged helper or
 real system action is enabled.
+
+A [separate-process session authority (French)](docs/REMOTE_SESSION_AUTHORITY.md)
+now serves the lab over private Unix RPC without positive permission caching.
+An unavailable authority blocks verification; no system driver or privileged
+helper is enabled.

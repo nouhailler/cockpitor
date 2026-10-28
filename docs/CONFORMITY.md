@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 420 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 440 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -202,3 +202,11 @@ global de révocation par session et la qualification privilégiée/VM restent o
 tickets liée à Sessions, indépendante des messages clients, avec autorité dans le
 même processus de laboratoire. Scope immuable, propriétaire comparé et refus en cas
 de panne. Aucun canal privilégié inter-processus ni pilote système réel qualifié.
+
+## Autorité distante non privilégiée — 28 octobre 2026
+
+20 nouveaux tests, total 440 backend et 26 frontend. RPC Unix avec UID, nonce et
+réponses strictes, absence de cache positif ou permission partielle, invalidation
+en cas de panne. Autorité réellement exécutée dans un processus distinct lors des
+essais. Séparation de privilèges, preuve d'approbation indépendante et qualification
+systemd/Docker/Podman en VM non déclarées acquises.

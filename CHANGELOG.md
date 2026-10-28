@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Autorité de session séparée — 28 octobre 2026
+
+- RPC Unix en lecture seule : UID du pair, chemins privés, nonce par requête,
+  schémas stricts, lots bornés et réponses sans jetons bruts.
+- Vérificateur distant sans cache positif ni repli local : panne, délai dépassé
+  ou résultat partiel invalide les tickets connus ; contrôle des sessions asynchrone.
+- 20 tests nouveaux, dont une autorité dans un processus Python réellement distinct ;
+  total 440 backend et 26 frontend passants.
+- Aucun pilote système, compte privilégié ou lancement par l'application. Séparation
+  de privilèges et qualification VM toujours non réalisées.
+
 ### Révocation de session sur le banc Unix — 27 octobre 2026
 
 - Serveur de laboratoire avec autorité Sessions de confiance et contrôle périodique

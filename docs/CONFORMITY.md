@@ -26,7 +26,7 @@ puis inventaire conteneurs. Il ne déclare pas l'achèvement de la version 1.0.
 - `ruff check backend scripts` : réussi.
 - `ruff format --check backend scripts` : réussi.
 - `mypy backend/app` : réussi.
-- `pytest -q` : 440 tests réussis, un avertissement de dépréciation TestClient/httpx.
+- `pytest -q` : 465 tests réussis, un avertissement de dépréciation TestClient/httpx.
 - `npm run lint --prefix frontend` : réussi, TypeScript strict.
 - `npm run format:check --prefix frontend` : réussi.
 - `npm test --prefix frontend` : 26 tests réussis.
@@ -210,3 +210,10 @@ réponses strictes, absence de cache positif ou permission partielle, invalidati
 en cas de panne. Autorité réellement exécutée dans un processus distinct lors des
 essais. Séparation de privilèges, preuve d'approbation indépendante et qualification
 systemd/Docker/Podman en VM non déclarées acquises.
+
+## Préparation de qualification VM — 28 octobre 2026
+
+Précontrôle de prérequis en lecture seule et rapport privé FR/EN : 25 nouveaux tests,
+465 backend et 26 frontend au total. Un résultat prerequisites_met garde qualified=false
+et system_execution_enabled=false. La matrice d'actions réelles n'est ni exécutée,
+ni validée par ce résultat ; pilotes et privilèges restent à qualifier en VM jetable.

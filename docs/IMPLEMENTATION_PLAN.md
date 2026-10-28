@@ -92,3 +92,8 @@ la VM restent requis avant toute activation ; aucune action système ajoutée.
 20 tests nouveaux, 440 backend et 26 frontend au total. Canal testé entre processus
 non privilégiés ; restent preuve d'approbation, séparation de privilèges, vrais
 pilotes bornés et qualification VM avant toute activation système.
+
+28 octobre 2026 : kit exécutable de précontrôle VM en lecture seule livré, 465 backend
+et 26 frontend. Il bloque les environnements inconnus et n'accorde aucun droit.
+Les véritables essais attendent une VM jetable accessible et la revue des pilotes
+bornés/privilèges ; la matrice de qualification reste ouverte.

@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 440 tests backend et 26 tests frontend réussis localement.
+- 465 tests backend et 26 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -339,3 +339,21 @@ Les opérations sensibles restent absentes.
   expiration, nonce rejoué, mauvais UID et panne lente. 440 backend et 26 frontend.
 - Lire docs/REMOTE_SESSION_AUTHORITY.md : canal entre processus non privilégiés testé,
   pas encore séparation de privilèges, approbation indépendante ou VM de pilotes réels.
+
+## Kit précontrôle VM — 28 octobre 2026
+
+- scripts/qualification_preflight.py et backend/app/qualification_preflight.py :
+  CLI en lecture seule, profils all/systemd/docker/podman, JSON FR/EN.
+- VM non conteneur, Debian, compte non root, systemd PID1/running/version, Python
+  >=3.11, commit identifiable et checkout propre requis. Inconnu = refus.
+- Les sockets moteurs sont exclusivement explicites ; seul GET /version est émis
+  après validation du socle. Versions sélectionnées, aucune ressource/identité exportée.
+- qualified et system_execution_enabled toujours false, même si les prérequis passent.
+  Sortie 0 = prérequis observés, 2 = bloqué/arguments invalides, 3 = sauvegarde échouée.
+- --output exige nouveau fichier absolu dans dossier privé 0700 ; fichier 0600,
+  pas d'écrasement. qualification-reports/ ignoré par Git.
+- Commandes de lecture fixes, 2 s, sorties 4 Kio ; nettoyage du groupe de processus
+  de lecture sur dépassement, y compris descendants. Aucun sudo/installateur/modification.
+- 25 tests nouveaux, 465 backend et 26 frontend, contrôles/build passants. Lire
+  docs/VM_QUALIFICATION_KIT.md ; accès à une VM jetable encore nécessaire pour les
+  vrais essais, avec revue des pilotes et privilèges avant start/stop/restart réel.

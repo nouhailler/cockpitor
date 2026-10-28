@@ -446,5 +446,17 @@
   "interrupted": "Interrupted",
   "Annulation non confirmée ; consultez l’historique": "Cancellation not confirmed; check history",
   "Simulation échouée ; consultez l’historique": "Simulation failed; check history",
-  "Vérification Unix refusée ou indisponible": "Unix verification rejected or unavailable"
+  "Vérification Unix refusée ou indisponible": "Unix verification rejected or unavailable",
+  "Compte non privilégié": "Unprivileged account",
+  "Distribution Debian": "Debian distribution",
+  "Machine virtuelle détectée": "Virtual machine detected",
+  "Hors conteneur": "Outside a container",
+  "systemd comme PID 1": "systemd as PID 1",
+  "Gestionnaire systemd disponible": "systemd manager available",
+  "Version systemd lisible": "systemd version readable",
+  "Version Python compatible": "Compatible Python version",
+  "Révision Git identifiable": "Identifiable Git revision",
+  "Sources sans modification locale": "Checkout without local changes",
+  "API moteur accessible · docker": "Engine API available · docker",
+  "API moteur accessible · podman": "Engine API available · podman"
 }

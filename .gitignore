@@ -21,3 +21,6 @@ frontend/dist/
 .localcockpit/
 *.sqlite3
 *.sqlite3-*
+
+# Private VM prerequisite reports
+qualification-reports/

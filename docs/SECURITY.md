@@ -185,3 +185,11 @@ ne donnent pas de permission ; aucun cache positif ni repli vers une autorité l
 La frontière reste le même UID non privilégié. Le canal ne constitue ni une preuve
 d'approbation humaine indépendante, ni une transaction atomique avec un futur effet
 système. Comptes/privilèges minimaux et VM restent à qualifier avant activation.
+
+## Précontrôle non autorisant
+
+Le kit de préparation VM ne contient aucun chemin d'exécution sensible. Les faits
+inconnus bloquent, la socket moteur doit être explicite et les données exportées
+sont en liste blanche. Un rapport n'est pas signé et ne prouve pas la nature jetable
+de la machine ; aucun pilote ne le consomme pour accorder un droit. qualified reste
+false même si les prérequis sont réunis. Voir VM_QUALIFICATION_KIT.md.

@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Kit de préparation à la qualification VM — 28 octobre 2026
+
+- Précontrôle CLI en lecture seule : VM/non-conteneur, Debian, compte non root,
+  systemd, Python et révision propre ; profils systemd/docker/podman/all.
+- Version moteur en GET uniquement, sockets explicitement choisies et ignorées si
+  environnement inadapté. Aucun installateur, droit ou opération sensible.
+- JSON FR/EN expurgé, rapport privé nouveau sans écrasement ; prérequis disponibles
+  ne signifient jamais qualified=true ou activation système.
+- 25 tests nouveaux, 465 backend et 26 frontend passants. Qualification réelle
+  et revue des pilotes/privilèges toujours requises sur VM jetable.
+
 ### Autorité de session séparée — 28 octobre 2026
 
 - RPC Unix en lecture seule : UID du pair, chemins privés, nonce par requête,

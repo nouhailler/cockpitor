@@ -224,3 +224,12 @@ absence de cache positif, révocation et panne de processus. 20 tests nouveaux,
 Ce canal ne qualifie pas une approbation privilégiée indépendante ni les pilotes
 système. Séparation de privilèges et matrice VM toujours ouvertes. Référence :
 [REMOTE_SESSION_AUTHORITY.md](REMOTE_SESSION_AUTHORITY.md).
+
+## Précontrôle VM exécutable — 28 octobre 2026
+
+Le kit vérifie en lecture seule les prérequis de l'environnement, des sources et
+des versions moteurs explicitement configurés. Profil et JSON FR/EN, sans identité
+ou sortie brute. qualified/system_execution_enabled restent false, même quand les
+prérequis passent. 25 tests nouveaux, 465 backend et 26 frontend au total.
+La matrice VM ci-dessus n'est pas remplie par le kit ; pilotes et privilèges doivent
+être revus séparément. Voir [VM_QUALIFICATION_KIT.md](VM_QUALIFICATION_KIT.md).

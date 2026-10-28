@@ -173,3 +173,12 @@ autorisation positive n'est mise en cache. Absence de réponse, panne ou lot par
 les lectures sont contrôlées autour de leurs sondes. Les essais utilisent deux
 processus non privilégiés sous le même UID : ils ne prouvent pas une isolation
 contre ce compte ou une approbation humaine indépendante. Voir REMOTE_SESSION_AUTHORITY.md.
+
+## Préparation des essais VM
+
+Le précontrôle ne sait que lire des faits et produire un rapport de prérequis ;
+aucun résultat ne vaut autorisation ou qualification. Les commandes sont fixes et
+bornées, et les moteurs ne sont contactés en GET qu'après validation du socle et
+sélection explicite des sockets. Il n'installe rien et ne modifie ni permissions,
+services, conteneurs ou groupes. La réalité jetable de la VM et les pilotes restent
+soumis à revue et essais distincts. Voir VM_QUALIFICATION_KIT.md.

@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-440 backend tests and 26 frontend tests pass locally, alongside type checks,
+465 backend tests and 26 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -126,3 +126,13 @@ A [separate-process session authority (French)](docs/REMOTE_SESSION_AUTHORITY.md
 now serves the lab over private Unix RPC without positive permission caching.
 An unavailable authority blocks verification; no system driver or privileged
 helper is enabled.
+
+The [VM preparation kit (French)](docs/VM_QUALIFICATION_KIT.md) provides a read-only
+prerequisite check:
+
+```sh
+.venv/bin/python scripts/qualification_preflight.py --profile all --language en
+```
+
+Observed prerequisites never mean real-operation qualification. The tool enables
+no sensitive action and does not install a VM, engines or privilege grants.

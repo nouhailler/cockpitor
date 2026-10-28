@@ -277,7 +277,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **440 tests backend et 26 tests frontend
+Validation locale de cette version : **465 tests backend et 26 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.
@@ -344,3 +344,13 @@ privilégié ou accès système réel n'est activé.
 Le banc prend maintenant en charge une [autorité de session dans un processus séparé](docs/REMOTE_SESSION_AUTHORITY.md),
 consultée par RPC Unix privé sans cache positif. Une autorité indisponible bloque
 les vérifications ; cela n'active ni pilote système ni auxiliaire privilégié.
+
+Le [kit de préparation VM](docs/VM_QUALIFICATION_KIT.md) fournit un précontrôle
+exécutable en lecture seule :
+
+```sh
+.venv/bin/python scripts/qualification_preflight.py --profile all --language fr
+```
+
+Son rapport distingue les prérequis de la qualification réelle ; il n'active
+aucune opération sensible et ne prépare pas automatiquement une VM ou ses droits.

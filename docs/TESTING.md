@@ -200,3 +200,12 @@ PID, révocation/expiration, crash pendant sonde, réponses rejouées/falsifiée
 requêtes non modifiantes, lots partiels et timeout sans cache. La fixture de test
 contrôle l'enfant par stdin sans exposer cette commande dans le RPC du produit.
 Aucun effet système réel ni compte privilégié. Voir REMOTE_SESSION_AUTHORITY.md.
+
+## Précontrôle VM — 28 octobre 2026
+
+465 tests backend et 26 frontend passent. 25 nouveaux tests du précontrôle couvrent
+les faits absents, refus des environnements non adaptés, profils, choix explicite
+des sockets, absence de contact moteur avant validation, commande libre refusée,
+nettoyage des processus et descendants, version moteur en GET sur socket de fixture,
+JSON FR/EN expurgé et sauvegarde privée sans écrasement. Les faits positifs de VM
+sont simulés ; aucun vrai moteur/VM n'est déclaré qualifié. Voir VM_QUALIFICATION_KIT.md.

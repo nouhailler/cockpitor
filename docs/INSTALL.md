@@ -58,3 +58,11 @@ Le lot L4 ne nécessite aucune installation supplémentaire : aucun helper privi
 sudoers, groupe système ou accès moteur n’est créé. La migration v3 sauvegarde la
 base avant ajout de l’historique minimal des simulations. Les plans non terminés
 sont invalidés au redémarrage/rétablissement du stockage, sans restauration d’approbation.
+
+## Préparer la qualification en VM
+
+Le [kit de préparation](VM_QUALIFICATION_KIT.md) peut être exécuté avec le Python
+du projet. Il ne crée pas de VM, n'installe pas de moteur et ne modifie aucun droit.
+Les sockets de versions moteurs exigent des arguments explicites ; les rapports
+optionnels sont privés dans qualification-reports/ (ignoré par Git). Un précontrôle
+vert ne remplace pas les essais d'actions et n'active aucune fonction sensible.

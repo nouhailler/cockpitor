@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 
 from ..errors import error
+from ..health import availability
 from ..modules import MODULES
 from ..system import timestamp
 
@@ -12,6 +13,7 @@ def create_router(app):
     def health():
         return {
             "status": "ok",
+            **availability(app.state),
             "version": "0.1.0",
             "release_date": None,
             "checked_at": timestamp(),

@@ -77,3 +77,56 @@ it("does not invent dates from invalid metadata", async () => {
   await screen.findByRole("alert");
   expect(document.querySelector("time")).toBeNull();
 });
+
+it.each(["fr", "en"] as const)(
+  "summarizes cached module states and environment in %s",
+  async (lang) => {
+    setLanguage(lang);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          ...health,
+          environment: {
+            os: "Linux",
+            kernel_version: "6.12.113",
+            python_version: "3.13.5",
+          },
+          modules: [
+            { id: "system", status: "available" },
+            { id: "docker", status: "disabled" },
+            { id: "ollama", status: "stale" },
+            { id: "services", status: "collecting" },
+          ],
+        }),
+      })),
+    );
+    render(<SystemSettingsView token="session" />);
+    await screen.findByRole("heading", {
+      name: lang === "fr" ? "Disponibilité des modules" : "Module availability",
+    });
+    expect(screen.getByText("6.12.113")).toBeTruthy();
+    expect(
+      screen.getByText(lang === "fr" ? "Non configuré" : "Not configured"),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(lang === "fr" ? "Données anciennes" : "Stale data"),
+    ).toBeTruthy();
+  },
+);
+it("rejects unknown module metadata instead of rendering it", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        ...health,
+        modules: [{ id: "untrusted", status: "available" }],
+      }),
+    })),
+  );
+  render(<SystemSettingsView token="session" />);
+  await screen.findByRole("alert");
+  expect(screen.queryByRole("table")).toBeNull();
+});

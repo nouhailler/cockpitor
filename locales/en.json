@@ -485,5 +485,12 @@
   "Stockage local": "Local storage",
   "État des opérations système": "System operation status",
   "Désactivées": "Disabled",
-  "Réponse de vérification invalide": "Invalid availability response"
+  "Réponse de vérification invalide": "Invalid availability response",
+  "Environnement d’exécution": "Runtime environment",
+  "Système d’exploitation": "Operating system",
+  "Version du noyau": "Kernel version",
+  "Disponibilité des modules": "Module availability",
+  "Résumé des dernières collectes. Vérifier maintenant ne relance pas les sondes et n’active aucune intégration.": "Summary of recent samples. Check now does not restart probes or enable integrations.",
+  "Non configuré": "Not configured",
+  "Module": "Module"
 }

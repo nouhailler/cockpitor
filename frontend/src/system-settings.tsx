@@ -2,7 +2,29 @@ import React, { useEffect, useState } from "react";
 import { api } from "./api";
 import { getLocale, t, useLanguage } from "./i18n";
 
+const moduleLabels: Record<string, string> = {
+  system: "Système",
+  monitoring: "Supervision",
+  services: "Services",
+  ollama: "Ollama",
+  openwebui: "OpenWebUI",
+  docker: "Docker",
+  podman: "Podman",
+};
+const statusLabels: Record<string, string> = {
+  available: "Disponible",
+  unavailable: "Indisponible",
+  disabled: "Non configuré",
+  collecting: "En attente",
+  stale: "Données anciennes",
+};
 type Health = {
+  environment?: {
+    os: string;
+    kernel_version: string | null;
+    python_version: string;
+  };
+  modules?: { id: string; status: string }[];
   version: string;
   release_date: string | null;
   checked_at: string;
@@ -32,6 +54,30 @@ export function SystemSettingsView({ token }: { token: string }) {
           ) ||
           typeof data.read_only !== "boolean" ||
           !["available", "unavailable"].includes(data.storage?.status)
+        )
+          throw new Error(t("Réponse de vérification invalide"));
+        if (
+          data.environment &&
+          (typeof data.environment.os !== "string" ||
+            typeof data.environment.python_version !== "string" ||
+            !(
+              data.environment.kernel_version === null ||
+              typeof data.environment.kernel_version === "string"
+            ))
+        )
+          throw new Error(t("Réponse de vérification invalide"));
+        if (
+          data.modules &&
+          (!Array.isArray(data.modules) ||
+            data.modules.length > 7 ||
+            new Set(data.modules.map((row) => row?.id)).size !==
+              data.modules.length ||
+            data.modules.some(
+              (row) =>
+                !row ||
+                !Object.prototype.hasOwnProperty.call(moduleLabels, row.id) ||
+                !Object.prototype.hasOwnProperty.call(statusLabels, row.status),
+            ))
         )
           throw new Error(t("Réponse de vérification invalide"));
         if (!controller.signal.aborted) setHealth(data);
@@ -93,6 +139,47 @@ export function SystemSettingsView({ token }: { token: string }) {
           <dt>{t("État des opérations système")}</dt>
           <dd>{t(health.read_only ? "Désactivées" : "Indisponible")}</dd>
         </dl>
+      )}
+      {health?.environment && (
+        <section aria-label={t("Environnement d’exécution")}>
+          <h3>{t("Environnement d’exécution")}</h3>
+          <dl>
+            <dt>{t("Système d’exploitation")}</dt>
+            <dd>{health.environment.os}</dd>
+            <dt>{t("Version du noyau")}</dt>
+            <dd>{health.environment.kernel_version || t("Indisponible")}</dd>
+            <dt>Python</dt>
+            <dd>{health.environment.python_version}</dd>
+          </dl>
+        </section>
+      )}
+      {health?.modules && (
+        <section aria-label={t("Disponibilité des modules")}>
+          <h3>{t("Disponibilité des modules")}</h3>
+          <p>
+            {t(
+              "Résumé des dernières collectes. Vérifier maintenant ne relance pas les sondes et n’active aucune intégration.",
+            )}
+          </p>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>{t("Module")}</th>
+                  <th>{t("État")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {health.modules.map((module) => (
+                  <tr key={module.id}>
+                    <td>{t(moduleLabels[module.id] || "Indisponible")}</td>
+                    <td>{t(statusLabels[module.status] || "Indisponible")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
     </section>
   );

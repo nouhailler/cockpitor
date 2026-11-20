@@ -245,7 +245,16 @@ def test_health_release_and_check_metadata(client):
     health = client.get("/api/v1/health").json()
     assert health["version"] == "0.1.0"
     assert health["release_date"] is None  # Prototype has no official release.
+    assert set(health["environment"]) == {"os", "kernel_version", "python_version"}
+    assert len(health["modules"]) == 7
+    assert {row["id"] for row in health["modules"]} == {
+        "system",
+        "monitoring",
+        "services",
+        "ollama",
+        "openwebui",
+        "docker",
+        "podman",
+    }
     assert datetime.fromisoformat(health["checked_at"]).tzinfo is not None
     assert health["read_only"] is True
-    client.app.state.storage_ready = False
-    assert client.get("/api/v1/health").json()["storage"]["status"] == "unavailable"

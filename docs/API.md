@@ -234,3 +234,13 @@ non publié) et `checked_at` (horodatage UTC du contrôle de disponibilité). `s
 reflète l’état connu du stockage ; aucune qualification système ni mise à jour
 n’est déclenchée. L’interface conserve la dernière réponse réussie en cas d’échec
 et la signale comme ancienne. Ces métadonnées ne sont pas des dates de tests CI.
+
+### Résumé des modules et environnement
+
+GET /api/v1/health ajoute `environment` (os, kernel_version, python_version) et
+`modules` (sept lignes id/status). Les statuts sont available, unavailable,
+disabled, collecting ou stale. La fraîcheur est de 15 secondes pour system,
+90 pour monitoring et 40 pour les autres sources. Pour Docker/Podman, l’horodatage
+commun provient du dernier inventaire ; les autres sources gardent leur propre date.
+Aucune sonde supplémentaire n’est lancée. Un moteur absent d’un inventaire existant
+est unavailable, et non disabled : la configuration absente doit être observée.

@@ -485,5 +485,12 @@
   "Stockage local": "Stockage local",
   "État des opérations système": "État des opérations système",
   "Désactivées": "Désactivées",
-  "Réponse de vérification invalide": "Réponse de vérification invalide"
+  "Réponse de vérification invalide": "Réponse de vérification invalide",
+  "Environnement d’exécution": "Environnement d’exécution",
+  "Système d’exploitation": "Système d’exploitation",
+  "Version du noyau": "Version du noyau",
+  "Disponibilité des modules": "Disponibilité des modules",
+  "Résumé des dernières collectes. Vérifier maintenant ne relance pas les sondes et n’active aucune intégration.": "Résumé des dernières collectes. Vérifier maintenant ne relance pas les sondes et n’active aucune intégration.",
+  "Non configuré": "Non configuré",
+  "Module": "Module"
 }

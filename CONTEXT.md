@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 470 tests backend et 36 tests frontend réussis localement.
+- 477 tests backend et 39 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -382,3 +382,17 @@ Les opérations sensibles restent absentes.
   en la signalant comme ancienne. Le bouton Vérifier maintenant relance la lecture.
 - 470 tests backend et 36 frontend passants ; lint, types, format et build passants.
   Aucune opération système sensible activée.
+
+## Environnement et disponibilité des modules — 20 novembre 2026
+
+- Paramètres système affiche OS, version numérique du noyau et Python, puis un
+  tableau FR/EN pour Système, Supervision, Services, Ollama, OpenWebUI, Docker et Podman.
+- GET /health résume exclusivement les collectes partagées : aucun lancement de
+  sonde, connexion moteur, changement de configuration ou opération privilégiée.
+- États distincts : disponible, indisponible, non configuré, en attente et données
+  anciennes. Une collecte absente ou ancienne ne devient jamais disponible ; dates
+  invalides/futures refusées par le contrôle de fraîcheur existant.
+- Liste blanche de sortie sans identités, chemins, adresses ou erreurs brutes des
+  modules. Frontend : validation des identifiants et états avant affichage.
+- 477 tests backend et 39 frontend passants ; types, format, lint et build passants.
+  Les opérations système restent désactivées et la qualification VM reste à réaliser.

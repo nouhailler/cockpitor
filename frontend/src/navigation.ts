@@ -19,6 +19,13 @@ export const navigation = [
     ],
   },
   {
+    group: "Données locales",
+    entries: [
+      ["Fichiers", "▤"],
+      ["Sauvegardes", "◫"],
+    ],
+  },
+  {
     group: "Application",
     entries: [
       ["Paramètres", "☷"],

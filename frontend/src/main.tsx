@@ -18,6 +18,8 @@ import { LoginView } from "./login";
 import { MonitoringView, AuditView } from "./monitoring";
 import { ActionsView } from "./actions";
 import { AssistantView } from "./assistant";
+import { FilesView } from "./files";
+import { BackupsView } from "./backups";
 import { SystemSettingsView } from "./system-settings";
 import { navigation } from "./navigation";
 export { api } from "./api";
@@ -560,6 +562,14 @@ export function App() {
         )}
         {page === "Services" && (
           <ServicesView token={token} refresh={refresh} />
+        )}
+        {page === "Fichiers" && <FilesView token={token} />}
+        {page === "Sauvegardes" && (
+          <BackupsView
+            token={token}
+            csrf={csrf}
+            onRestored={applyPreferences}
+          />
         )}
         {page === "Paramètres système" && <SystemSettingsView token={token} />}
         {page === "Paramètres" && (

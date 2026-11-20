@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-477 backend tests and 39 frontend tests pass locally, alongside type checks,
+514 backend tests and 44 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -151,3 +151,14 @@ refreshes local availability; it does not run tests or look for updates.
 System settings also shows the operating system, kernel, Python and cached module
 availability. Missing, unconfigured and stale observations remain explicit.
 Opening the page or checking availability does not trigger new probes.
+
+## ▤ Files and preference backups
+
+**Menu → Local data** provides opt-in, read-only file browsing and preference
+backups. No directory is exposed automatically. Text previews are redacted;
+original downloads are bounded. Restores require a reviewed diff, confirmation,
+audit and a private recovery copy. File/system/secret backups are not implemented.
+See [configuration and limits](docs/FILES_BACKUPS.md) and the
+[next extension stages](docs/EXTENSIONS_DELIVERY_PLAN.md).
+
+![File explorer with an explicitly temporary validation folder](docs/images/files-fr.jpg)

@@ -133,12 +133,21 @@ class Store:
                 raise StorageError("Configuration absente")
             return Preferences.model_validate_json(row[0])
 
-    def save(self, preferences: Preferences) -> str:
+    def save(
+        self,
+        preferences: Preferences,
+        *,
+        expected: Preferences | None = None,
+        restoring: bool = False,
+    ) -> str:
         operation = str(uuid.uuid4())
         with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
             previous = Preferences.model_validate_json(
                 db.execute("SELECT value FROM settings WHERE id=1").fetchone()[0]
             )
+            if expected is not None and previous != expected:
+                raise StorageError("Configuration modifiée depuis l’aperçu")
             new_rules = {r.id: r for r in preferences.rules}
             changed = [r.id for r in previous.rules if new_rules.get(r.id) != r]
             for rule_id in changed:
@@ -149,7 +158,7 @@ class Store:
             db.execute("UPDATE settings SET value=? WHERE id=1", (preferences.model_dump_json(),))
             db.execute(
                 "INSERT INTO audit_events VALUES (?, ?, ?)",
-                (operation, "settings.update", timestamp()),
+                (operation, "backups.restore" if restoring else "settings.update", timestamp()),
             )
             db.execute(
                 "DELETE FROM audit_events WHERE id NOT IN (SELECT id FROM audit_events ORDER BY rowid DESC LIMIT 1000)"
@@ -214,7 +223,12 @@ class Store:
             }
 
     def audit(self, operation_id: str, action: str):
-        if action not in {"diagnostics.export", "session.login", "session.logout"}:
+        if action not in {
+            "diagnostics.export",
+            "session.login",
+            "session.logout",
+            "backups.export",
+        }:
             raise StorageError("Action audit non autorisée")
         with self.connection() as db:
             db.execute(

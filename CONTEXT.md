@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 477 tests backend et 39 tests frontend réussis localement.
+- 514 tests backend et 44 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -396,3 +396,20 @@ Les opérations sensibles restent absentes.
   modules. Frontend : validation des identifiants et états avant affichage.
 - 477 tests backend et 39 frontend passants ; types, format, lint et build passants.
   Les opérations système restent désactivées et la qualification VM reste à réaliser.
+
+## Fichiers locaux et restauration des préférences — 20 novembre 2026
+
+- Menu Données locales : explorateur sur racines explicitement configurées, liste
+  et filtre bornés, aperçu texte expurgé, téléchargement original limité à 1 Mio.
+- Traversées, symlinks de tous les ancêtres, liens physiques et fichiers spéciaux
+  refusés ; données privées applicatives exclues. Aucun dossier exposé par défaut.
+- Export audité des préférences, import JSON strict, aperçu des différences lié à
+  la session 120 s, confirmation et copie privée avant restauration transactionnelle.
+- Comparaison des réglages en transaction, audit atomique, révocation et rejeu
+  refusés. 20 copies de récupération maximum, sans suppression automatique.
+- Base applicative v3 inchangée, aucune écriture des fichiers explorés ni configuration
+  système restaurée. La langue/thème/fréquence sont appliqués après restauration.
+- 514 tests backend et 44 frontend passent ; lint, types, format et build passants.
+  Navigateur : instance temporaire, export audité et restauration fr→en réels.
+- Voir FILES_BACKUPS.md et EXTENSIONS_DELIVERY_PLAN.md : SSH/SFTP, catalogue,
+  tâches, administration et accès distant/notifications restent des lots à réaliser.

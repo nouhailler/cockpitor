@@ -41,6 +41,21 @@ La page présente aussi le système d’exploitation, le noyau, Python et la dis
 des modules. Les données anciennes et les intégrations non configurées sont
 signalées ; aucune sonde supplémentaire n’est déclenchée par cette lecture.
 
+## ▤ Fichiers et sauvegardes
+
+**Menu → Données locales** donne accès aux fichiers de racines explicitement
+configurées (aucun dossier exposé par défaut) et aux sauvegardes des préférences.
+Aperçu texte expurgé, téléchargement original borné ; restauration des préférences
+avec différences, confirmation, audit et copie de récupération privée.
+Les sauvegardes de fichiers, du système et des secrets restent à réaliser.
+
+Voir [la configuration et les limites](docs/FILES_BACKUPS.md) et
+[l’ordre des extensions suivantes](docs/EXTENSIONS_DELIVERY_PLAN.md).
+
+![Explorateur réel avec dossier temporaire de validation](docs/images/files-fr.jpg)
+
+*Capture de validation : dossier et contenu temporaires, aucun fichier personnel exposé.*
+
 ## ✨ Fonctionnalités
 
 | Module | Disponible aujourd’hui |
@@ -293,7 +308,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **477 tests backend et 39 tests frontend
+Validation locale de cette version : **514 tests backend et 44 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.

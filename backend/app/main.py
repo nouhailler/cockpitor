@@ -16,8 +16,10 @@ from .actions import ActionEngine
 from .alerts import AlertEngine
 from .assistant import Assistant
 from .auth import Sessions
+from .backups import Backups
 from .containers import ContainerError, Containers
 from .errors import error
+from .files import FileBrowser
 from .integrations import ai_status, container_status
 from .monitoring import inspect
 from .preferences import Preferences
@@ -55,6 +57,8 @@ async def lifespan(app: FastAPI):
         store, lambda request: probe_target(app, request), app.state.sessions.valid_owner
     )
     app.state.store = store
+    app.state.files = FileBrowser(os.environ.get("LOCALCOCKPIT_FILE_ROOTS", "[]"), store.directory)
+    app.state.backups = Backups(store)
     app.state.preferences = Preferences()
     app.state.storage_ready = False
     app.state.storage_error = "Initialisation du stockage en cours"

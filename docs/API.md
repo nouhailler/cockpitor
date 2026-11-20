@@ -244,3 +244,21 @@ disabled, collecting ou stale. La fraîcheur est de 15 secondes pour system,
 commun provient du dernier inventaire ; les autres sources gardent leur propre date.
 Aucune sonde supplémentaire n’est lancée. Un moteur absent d’un inventaire existant
 est unavailable, et non disabled : la configuration absente doit être observée.
+
+## Fichiers et sauvegardes des préférences
+
+- GET /files/options : racines id/label uniquement ; aucune racine par défaut.
+- GET /files?root=<id>&path=<relatif>&q=<filtre> : 500 entrées maximum.
+- GET /files/preview?root=<id>&path=<relatif> : UTF-8 expurgé, 16 Kio maximum.
+- GET /files/download?root=<id>&path=<relatif> : pièce jointe binaire, 1 Mio maximum.
+- POST /backups/export {confirmed:true} : enveloppe JSON des préférences, audit requis.
+- POST /backups/prepare {backup:<texte JSON>} : plan_id, expires_seconds et différences.
+- POST /backups/restore {plan_id,confirmed:true} : restauration des préférences,
+  copie de récupération et audit atomique ; system_changed=false.
+- GET /backups : identifiants des copies privées de récupération, limite 20.
+- GET /backups/snapshot?id=<32 hex> : enveloppe de la copie à examiner/réimporter.
+
+Toutes les routes exigent une session ; POST exige origine exacte, CSRF et JSON.
+Corps limité à 64 Kio ; enveloppe importée à 32 Kio. Un plan dure 120 s, est lié à
+la session et aux réglages précédents, sans réutilisation. Aucun endpoint d’édition,
+de suppression, d’extraction d’archive ou de restauration système. Voir FILES_BACKUPS.md.

@@ -6,7 +6,7 @@ import {
   LanguagePicker,
   setLanguage,
 } from "./i18n";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./style.css";
 import { DiagnosticView } from "./diagnostics";
 import { SettingsView, AlertsView, type Preferences } from "./preferences";
@@ -18,6 +18,7 @@ import { LoginView } from "./login";
 import { MonitoringView, AuditView } from "./monitoring";
 import { ActionsView } from "./actions";
 import { AssistantView } from "./assistant";
+import { SystemSettingsView } from "./system-settings";
 import { navigation } from "./navigation";
 export { api } from "./api";
 import { ServicesView } from "./services";
@@ -30,6 +31,16 @@ export function App() {
   const [token, setToken] = useState("");
   const [csrf, setCsrf] = useState("");
   const [sessionNotice, setSessionNotice] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menuClose = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (menuOpen) menuClose.current?.focus();
+  }, [menuOpen]);
+  function closeMenu() {
+    setMenuOpen(false);
+    menuButton.current?.focus();
+  }
   const [page, setPage] = useState("Vue d’ensemble");
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [history, setHistory] = useState<History>([]);
@@ -181,6 +192,7 @@ export function App() {
       setHistory([]);
       setProcesses([]);
       setModule(null);
+      setMenuOpen(false);
       setSessionNotice(t("Session expirée ; reconnectez-vous."));
     }
     window.addEventListener("session-expired", expired);
@@ -206,6 +218,7 @@ export function App() {
       <LoginView
         notice={sessionNotice}
         onLogin={(value, protection) => {
+          setMenuOpen(false);
           setToken(value);
           setCsrf(protection);
           setError("");
@@ -217,27 +230,46 @@ export function App() {
     ? Date.now() - Date.parse(metrics.collected_at) > 15000
     : false;
   return (
-    <div className="layout">
-      <aside>
+    <div className={`layout ${menuOpen ? "menu-open" : "menu-closed"}`}>
+      <aside
+        id="application-menu"
+        hidden={!menuOpen}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeMenu();
+          }
+        }}
+      >
         <div className="brand">◈ LocalCockpit</div>
+        <button ref={menuClose} onClick={closeMenu}>
+          {t("Fermer le menu")}
+        </button>
         <LanguagePicker />
         <span className="eyebrow">{t("ESPACE PERSONNEL")}</span>
         <nav aria-label={t("Navigation principale")}>
           {navigation.map((group) => (
-            <React.Fragment key={group.group}>
-              <span className="nav-group">{t(group.group)}</span>
+            <section
+              className="navigation-category"
+              key={group.group}
+              aria-label={t(group.group)}
+            >
+              <h2 className="nav-group">{t(group.group)}</h2>
               {group.entries.map(([p, icon]) => (
                 <button
                   key={p}
                   className={page === p ? "active" : ""}
                   aria-current={page === p ? "page" : undefined}
-                  onClick={() => setPage(p)}
+                  onClick={() => {
+                    setPage(p);
+                    closeMenu();
+                  }}
                 >
                   <span>{icon}</span>
                   {t(p)}
                 </button>
               ))}
-            </React.Fragment>
+            </section>
           ))}
         </nav>
         <div className="aside-bottom">
@@ -264,6 +296,14 @@ export function App() {
       </aside>
       <main>
         <header>
+          <button
+            ref={menuButton}
+            aria-expanded={menuOpen}
+            aria-controls="application-menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span aria-hidden="true">☰</span> {t("Menu")}
+          </button>
           <span>
             {t("POSTE LOCAL /")} {metrics?.hostname || t("Connexion")}
             {preferencesError && <small> · {t(preferencesError)}</small>}
@@ -521,6 +561,7 @@ export function App() {
         {page === "Services" && (
           <ServicesView token={token} refresh={refresh} />
         )}
+        {page === "Paramètres système" && <SystemSettingsView token={token} />}
         {page === "Paramètres" && (
           <SettingsView
             token={token}

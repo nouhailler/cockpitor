@@ -220,3 +220,17 @@ sont simulés ; aucun vrai moteur/VM n'est déclaré qualifié. Voir VM_QUALIFIC
   supplémentaire ; dates invalides/futures signalées comme anciennes.
 - 469 tests backend et 32 frontend passants ; lint, types, format et build passants.
   Aucune opération système activée ; qualification réelle toujours en attente de VM.
+
+## Menu hamburger et paramètres système — 20 novembre 2026
+
+- Navigation repliée par défaut, catégories Observer / Intégrations / Application,
+  fermeture après sélection, bouton dédié et Échap ; retour du focus au déclencheur.
+  Menu dans le flux de la page, avec rubriques verticales sur mobile ; libellés FR/EN.
+- Nouvelle page Paramètres système : version, date de sortie (non publiée pour le
+  prototype), date du dernier contrôle de disponibilité réussi, stockage et lecture seule.
+- GET /health ajoute release_date (null) et checked_at (UTC). Ce contrôle expose
+  l’état applicatif connu ; il ne consulte aucun catalogue de mises à jour et ne
+  remplace pas les tests ou la qualification VM. Un échec conserve la date précédente
+  en la signalant comme ancienne. Le bouton Vérifier maintenant relance la lecture.
+- 470 tests backend et 36 frontend passants ; lint, types, format et build passants.
+  Aucune opération système sensible activée.

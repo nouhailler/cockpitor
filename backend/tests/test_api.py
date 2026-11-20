@@ -237,3 +237,15 @@ def test_alerts_filters_and_storage_failure_do_not_break_system(client, monkeypa
     assert client.get("/api/v1/settings").status_code == 503
     assert client.get("/api/v1/health").status_code == 200
     assert client.get("/api/v1/health").json()["read_only"] is True
+
+
+def test_health_release_and_check_metadata(client):
+    from datetime import datetime
+
+    health = client.get("/api/v1/health").json()
+    assert health["version"] == "0.1.0"
+    assert health["release_date"] is None  # Prototype has no official release.
+    assert datetime.fromisoformat(health["checked_at"]).tzinfo is not None
+    assert health["read_only"] is True
+    client.app.state.storage_ready = False
+    assert client.get("/api/v1/health").json()["storage"]["status"] == "unavailable"

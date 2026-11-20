@@ -63,6 +63,7 @@ it("switches login and every navigation label without changing route identifiers
     target: { value: "test" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Open cockpit →" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Menu" }));
   expect(
     await screen.findByRole("button", { name: "▦ Overview" }),
   ).toBeTruthy();

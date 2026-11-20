@@ -471,5 +471,19 @@
   "Ces suggestions remplissent la question sans envoyer de données.": "Ces suggestions remplissent la question sans envoyer de données.",
   "Quels contrôles en lecture seule proposer pour une machine lente ?": "Quels contrôles en lecture seule proposer pour une machine lente ?",
   "Comment distinguer une pression mémoire d’une utilisation CPU élevée ?": "Comment distinguer une pression mémoire d’une utilisation CPU élevée ?",
-  "Explique les observations jointes, leurs limites et les vérifications utiles.": "Explique les observations jointes, leurs limites et les vérifications utiles."
+  "Explique les observations jointes, leurs limites et les vérifications utiles.": "Explique les observations jointes, leurs limites et les vérifications utiles.",
+  "Menu": "Menu",
+  "Fermer le menu": "Fermer le menu",
+  "Paramètres système": "Paramètres système",
+  "Version de l’application": "Version de l’application",
+  "Date de sortie": "Date de sortie",
+  "Non publiée (prototype)": "Non publiée (prototype)",
+  "Date de la dernière vérification": "Date de la dernière vérification",
+  "Vérifier maintenant": "Vérifier maintenant",
+  "Vérification de disponibilité en cours…": "Vérification de disponibilité en cours…",
+  "Ce contrôle vérifie la disponibilité de l’application et du stockage local. Il ne valide ni les mises à jour, ni les tests, ni les opérations système.": "Ce contrôle vérifie la disponibilité de l’application et du stockage local. Il ne valide ni les mises à jour, ni les tests, ni les opérations système.",
+  "Stockage local": "Stockage local",
+  "État des opérations système": "État des opérations système",
+  "Désactivées": "Désactivées",
+  "Réponse de vérification invalide": "Réponse de vérification invalide"
 }

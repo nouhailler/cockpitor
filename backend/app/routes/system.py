@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query
 
 from ..errors import error
 from ..modules import MODULES
+from ..system import timestamp
 
 
 def create_router(app):
@@ -12,6 +13,8 @@ def create_router(app):
         return {
             "status": "ok",
             "version": "0.1.0",
+            "release_date": None,
+            "checked_at": timestamp(),
             "read_only": True,
             "settings_writable": True,
             "storage": {"status": "available" if app.state.storage_ready else "unavailable"},

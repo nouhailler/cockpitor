@@ -29,6 +29,15 @@ la machine et de l’instant de collecte ; aucune donnée de démonstration n’
 
 </details>
 
+## ☰ Navigation et paramètres système
+
+Le bouton **Menu** ouvre les fonctionnalités par catégorie : **Observer**,
+**Intégrations** et **Application**. La rubrique **Application → Paramètres système**
+affiche la version, la date de sortie et le dernier contrôle de disponibilité.
+Le prototype n’ayant pas de sortie officielle, la date indique **Non publiée**.
+**Vérifier maintenant** relance le contrôle local ; sa date ne correspond pas à
+une validation des tests ni à une recherche de mises à jour.
+
 ## ✨ Fonctionnalités
 
 | Module | Disponible aujourd’hui |
@@ -281,7 +290,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **469 tests backend et 32 tests frontend
+Validation locale de cette version : **470 tests backend et 36 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.

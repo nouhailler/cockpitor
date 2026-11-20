@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-469 backend tests and 32 frontend tests pass locally, alongside type checks,
+470 backend tests and 36 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -140,3 +140,10 @@ prerequisite check:
 
 Observed prerequisites never mean real-operation qualification. The tool enables
 no sensitive action and does not install a VM, engines or privilege grants.
+
+## ☰ Navigation and system settings
+
+**Menu** groups features into **Observe**, **Integrations** and **Application**.
+**Application → System settings** shows the version, release date and last
+successful availability check. The prototype is **Unreleased**. **Check now**
+refreshes local availability; it does not run tests or look for updates.

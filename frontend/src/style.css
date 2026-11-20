@@ -550,3 +550,27 @@ pre {
     overflow-wrap: anywhere;
   }
 }
+
+/* Disclosure navigation stays in document flow, including on small screens. */
+.layout.menu-closed {
+  grid-template-columns: minmax(0, 1fr);
+}
+aside[hidden] {
+  display: none;
+}
+.navigation-category {
+  display: grid;
+  gap: 7px;
+}
+.navigation-category .nav-group {
+  font-weight: 600;
+}
+@media (max-width: 760px) {
+  #application-menu nav {
+    display: grid;
+    overflow-x: hidden;
+  }
+  #application-menu nav button {
+    white-space: normal;
+  }
+}

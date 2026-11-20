@@ -226,3 +226,11 @@ POST /ai/context exige une collecte datant d’au plus 15 secondes. Lors de POST
 appartenance à la session. Une date future de plus de cinq secondes est refusée.
 Le refus utilise AI_CONTEXT_EXPIRED (422), localisé FR/EN, avant tout appel Ollama.
 Un message sans context_id reste utilisable sans joindre les métriques.
+
+### Métadonnées de disponibilité
+
+GET /api/v1/health, authentifié, ajoute `release_date` (date ISO ou null : prototype
+non publié) et `checked_at` (horodatage UTC du contrôle de disponibilité). `storage`
+reflète l’état connu du stockage ; aucune qualification système ni mise à jour
+n’est déclenchée. L’interface conserve la dernière réponse réussie en cas d’échec
+et la signale comme ancienne. Ces métadonnées ne sont pas des dates de tests CI.

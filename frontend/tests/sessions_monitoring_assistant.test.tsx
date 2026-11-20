@@ -54,6 +54,19 @@ it("exchanges the bootstrap, uses the session only and revokes it on logout", as
     { target: { value: "bootstrap-private" } },
   );
   fireEvent.click(screen.getByText("Ouvrir le cockpit →"));
+  const menu = await screen.findByRole("button", { name: "Menu" });
+  expect(menu.getAttribute("aria-expanded")).toBe("false");
+  expect(screen.queryByRole("navigation")).toBeNull();
+  fireEvent.click(menu);
+  expect(menu.getAttribute("aria-expanded")).toBe("true");
+  for (const name of ["Observer", "Intégrations", "Application"])
+    expect(screen.getByRole("region", { name })).toBeTruthy();
+  fireEvent.keyDown(screen.getByRole("button", { name: "Fermer le menu" }), {
+    key: "Escape",
+  });
+  expect(menu.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(menu);
+  fireEvent.click(menu);
   await screen.findByRole("button", { name: "Déconnexion" });
   const login = fetcher.mock.calls.find(([url]) =>
     url.endsWith("auth/sessions"),

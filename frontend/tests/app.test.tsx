@@ -111,8 +111,14 @@ it("connects AI and container views to their read-only endpoints", async () => {
     { target: { value: "test" } },
   );
   fireEvent.click(screen.getByText("Ouvrir le cockpit →"));
+  fireEvent.click(await screen.findByRole("button", { name: "Menu" }));
   fireEvent.click(await screen.findByRole("button", { name: "✧ IA locale" }));
   expect(await screen.findByText("model-local")).toBeTruthy();
+  expect(screen.queryByRole("navigation")).toBeNull();
+  expect(document.activeElement).toBe(
+    screen.getByRole("button", { name: "Menu" }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Menu" }));
   fireEvent.click(screen.getByRole("button", { name: "▣ Conteneurs" }));
   expect(await screen.findByText("container-local")).toBeTruthy();
   expect(fetcher.mock.calls.some(([url]) => url.endsWith("/containers"))).toBe(

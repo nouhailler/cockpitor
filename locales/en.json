@@ -471,5 +471,19 @@
   "Ces suggestions remplissent la question sans envoyer de données.": "These suggestions fill in the question without sending any data.",
   "Quels contrôles en lecture seule proposer pour une machine lente ?": "Which read-only checks would help diagnose a slow machine?",
   "Comment distinguer une pression mémoire d’une utilisation CPU élevée ?": "How can I distinguish memory pressure from high CPU utilization?",
-  "Explique les observations jointes, leurs limites et les vérifications utiles.": "Explain the attached observations, their limitations and useful checks."
+  "Explique les observations jointes, leurs limites et les vérifications utiles.": "Explain the attached observations, their limitations and useful checks.",
+  "Menu": "Menu",
+  "Fermer le menu": "Close menu",
+  "Paramètres système": "System settings",
+  "Version de l’application": "Application version",
+  "Date de sortie": "Release date",
+  "Non publiée (prototype)": "Unreleased (prototype)",
+  "Date de la dernière vérification": "Last check date",
+  "Vérifier maintenant": "Check now",
+  "Vérification de disponibilité en cours…": "Checking availability…",
+  "Ce contrôle vérifie la disponibilité de l’application et du stockage local. Il ne valide ni les mises à jour, ni les tests, ni les opérations système.": "This check verifies application and local storage availability. It does not validate updates, tests or system operations.",
+  "Stockage local": "Local storage",
+  "État des opérations système": "System operation status",
+  "Désactivées": "Disabled",
+  "Réponse de vérification invalide": "Invalid availability response"
 }

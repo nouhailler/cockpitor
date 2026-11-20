@@ -22,6 +22,7 @@ export const navigation = [
     group: "Application",
     entries: [
       ["Paramètres", "☷"],
+      ["Paramètres système", "⚙"],
       ["Diagnostic", "⇩"],
       ["Audit", "☰"],
       ["Actions contrôlées", "◇"],

@@ -1,7 +1,57 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api, post } from "./api";
-import { t, useLanguage, getLocale } from "./i18n";
-type ChatMessage = { role: string; content: string; context?: unknown };
+import { t, useLanguage, getLocale, formatNumber } from "./i18n";
+type SystemContext = {
+  source?: string;
+  collected_at?: string;
+  cpu_percent?: number | null;
+  memory_percent?: number | null;
+  swap_percent?: number | null;
+};
+const diagnosticQuestions = [
+  "Quels contrôles en lecture seule proposer pour une machine lente ?",
+  "Comment distinguer une pression mémoire d’une utilisation CPU élevée ?",
+  "Explique les observations jointes, leurs limites et les vérifications utiles.",
+];
+function ContextSummary({ context }: { context: SystemContext }) {
+  return (
+    <section aria-label={t("Observations système")}>
+      <p>
+        {t("Source des observations")} : {context.source || t("Indisponible")}
+      </p>
+      <p>
+        {t("Date des observations")} :{" "}
+        {context.collected_at &&
+        Number.isFinite(Date.parse(context.collected_at))
+          ? new Date(context.collected_at).toLocaleString(getLocale())
+          : t("Indisponible")}
+      </p>
+      <dl>
+        {(
+          [
+            ["Utilisation CPU", context.cpu_percent],
+            ["Utilisation RAM", context.memory_percent],
+            ["Utilisation swap", context.swap_percent],
+          ] as const
+        ).map(([label, value]) => (
+          <React.Fragment key={label}>
+            <dt>{t(label)}</dt>
+            <dd>
+              {typeof value === "number" && Number.isFinite(value)
+                ? `${formatNumber(value)} %`
+                : t("Indisponible")}
+            </dd>
+          </React.Fragment>
+        ))}
+      </dl>
+      <details>
+        <summary>{t("Données techniques des observations")}</summary>
+        <pre>{JSON.stringify(context, null, 2)}</pre>
+      </details>
+    </section>
+  );
+}
+type ChatMessage = { role: string; content: string; context?: SystemContext };
 export function AssistantView({
   token,
   csrf,
@@ -21,8 +71,9 @@ export function AssistantView({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [preview, setPreview] = useState<{
     context_id: string;
-    context: unknown;
+    context: SystemContext;
   } | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
   const [include, setInclude] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -84,7 +135,7 @@ export function AssistantView({
       const data = await post<{
         answer: string;
         thread_id: string | null;
-        context?: unknown;
+        context?: SystemContext;
       }>(
         "ai/chat",
         token,
@@ -183,14 +234,24 @@ export function AssistantView({
         {t("Conserver cette conversation localement")}
       </label>
       <button
-        disabled={busy}
+        disabled={busy || previewBusy}
         onClick={async () => {
+          setPreviewBusy(true);
+          setPreview(null);
+          setInclude(false);
           try {
-            setPreview(await post("ai/context", token, csrf));
-            setInclude(false);
-            setError("");
+            const result = await post<{
+              context_id: string;
+              context: SystemContext;
+            }>("ai/context", token, csrf);
+            if (mounted.current) {
+              setPreview(result);
+              setError("");
+            }
           } catch (e) {
-            setError((e as Error).message);
+            if (mounted.current) setError((e as Error).message);
+          } finally {
+            if (mounted.current) setPreviewBusy(false);
           }
         }}
       >
@@ -198,7 +259,12 @@ export function AssistantView({
       </button>
       {preview && (
         <>
-          <pre>{JSON.stringify(preview.context, null, 2)}</pre>
+          <ContextSummary context={preview.context} />
+          <p>
+            {t(
+              "Aperçu figé, valable au plus cinq minutes après la collecte. Actualisez-le avant un nouveau diagnostic.",
+            )}
+          </p>
           <label className="confirmation">
             <input
               type="checkbox"
@@ -218,12 +284,31 @@ export function AssistantView({
             {message.context != null && (
               <details>
                 <summary>{t("Observations jointes")}</summary>
-                <pre>{JSON.stringify(message.context, null, 2)}</pre>
+                <ContextSummary context={message.context} />
               </details>
             )}
           </article>
         ))}
       </div>
+      <fieldset disabled={busy}>
+        <legend>{t("Questions de diagnostic")}</legend>
+        <p>
+          {t(
+            "Ces suggestions remplissent la question sans envoyer de données.",
+          )}
+        </p>
+        <div className="filters">
+          {diagnosticQuestions.map((question) => (
+            <button
+              key={question}
+              type="button"
+              onClick={() => setPrompt(t(question))}
+            >
+              {t(question)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -241,7 +326,13 @@ export function AssistantView({
         />
         <div className="filters">
           <button
-            disabled={busy || !model || !prompt.trim() || (include && !preview)}
+            disabled={
+              busy ||
+              previewBusy ||
+              !model ||
+              !prompt.trim() ||
+              (include && !preview)
+            }
           >
             {busy ? t("Génération…") : t("Envoyer à Ollama local")}
           </button>

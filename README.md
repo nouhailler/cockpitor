@@ -212,6 +212,10 @@ limité à quatre disques, NUT à quatre onduleurs déjà déclarés sur le serv
 
 **Assistant IA** utilise un modèle Ollama déjà installé. Préparer l’aperçu, puis
 cocher l’inclusion pour joindre uniquement CPU/RAM/swap et leur source horodatée.
+L’aperçu présente des libellés français/anglais et des données techniques dépliables.
+Les suggestions de diagnostic remplissent la question sans envoyer de données.
+La collecte doit dater de moins de 15 secondes pour préparer un aperçu ; les
+observations jointes sont refusées après cinq minutes depuis leur collecte.
 Les questions et jusqu’à huit messages précédents sont envoyés au modèle local.
 Le bouton Annuler interrompt la requête ; cela ne garantit pas le déchargement du
 modèle dans Ollama. Les réponses sont des suggestions à vérifier, sans outils ni
@@ -277,7 +281,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **465 tests backend et 26 tests frontend
+Validation locale de cette version : **469 tests backend et 32 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.

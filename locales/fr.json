@@ -458,5 +458,18 @@
   "Révision Git identifiable": "Révision Git identifiable",
   "Sources sans modification locale": "Sources sans modification locale",
   "API moteur accessible · docker": "API moteur accessible · docker",
-  "API moteur accessible · podman": "API moteur accessible · podman"
+  "API moteur accessible · podman": "API moteur accessible · podman",
+  "Observations système": "Observations système",
+  "Source des observations": "Source des observations",
+  "Date des observations": "Date des observations",
+  "Utilisation CPU": "Utilisation CPU",
+  "Utilisation RAM": "Utilisation RAM",
+  "Utilisation swap": "Utilisation swap",
+  "Données techniques des observations": "Données techniques des observations",
+  "Aperçu figé, valable au plus cinq minutes après la collecte. Actualisez-le avant un nouveau diagnostic.": "Aperçu figé, valable au plus cinq minutes après la collecte. Actualisez-le avant un nouveau diagnostic.",
+  "Questions de diagnostic": "Questions de diagnostic",
+  "Ces suggestions remplissent la question sans envoyer de données.": "Ces suggestions remplissent la question sans envoyer de données.",
+  "Quels contrôles en lecture seule proposer pour une machine lente ?": "Quels contrôles en lecture seule proposer pour une machine lente ?",
+  "Comment distinguer une pression mémoire d’une utilisation CPU élevée ?": "Comment distinguer une pression mémoire d’une utilisation CPU élevée ?",
+  "Explique les observations jointes, leurs limites et les vérifications utiles.": "Explique les observations jointes, leurs limites et les vérifications utiles."
 }

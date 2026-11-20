@@ -100,6 +100,10 @@ class Assistant:
         if len(self.contexts) >= 32:
             raise ServiceError("AI_BUSY", "Trop de contextes IA en attente", 429)
         context = safe_context(metrics)
+        if not context["fresh"]:
+            raise ServiceError(
+                "AI_CONTEXT_EXPIRED", "Contexte expiré ; préparez un nouvel aperçu", 422
+            )
         key = secrets.token_hex(16)
         self.contexts[key] = (owner, context, now + 300)
         return {"context_id": key, "context": context, "expires_seconds": 300}
@@ -108,7 +112,12 @@ class Assistant:
         if key is None:
             return None
         value = self.contexts.get(key)
-        if not value or value[0] != owner or value[2] <= time.monotonic():
+        if (
+            not value
+            or value[0] != owner
+            or value[2] <= time.monotonic()
+            or not fresh(value[1], 300)
+        ):
             raise ServiceError(
                 "AI_CONTEXT_EXPIRED", "Contexte expiré ; préparez un nouvel aperçu", 422
             )

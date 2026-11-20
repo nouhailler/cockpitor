@@ -217,3 +217,12 @@ pas une option de l'API ou du lanceur. Son succès produit l'événement corrél
 `actions.transport_verified`, sans effet système. L'erreur client expurgée
 `ACTION_VERIFICATION_FAILED` (503) est localisée FR/EN. Aucun endpoint Unix, ticket
 ni chemin de socket n'est configurable depuis une requête web.
+
+### Fraîcheur du contexte IA
+
+POST /ai/context exige une collecte datant d’au plus 15 secondes. Lors de POST
+/ai/chat avec context_id, la date originale est contrôlée de nouveau : au plus
+300 secondes depuis la collecte, en plus de la durée de vie de l’aperçu et de son
+appartenance à la session. Une date future de plus de cinq secondes est refusée.
+Le refus utilise AI_CONTEXT_EXPIRED (422), localisé FR/EN, avant tout appel Ollama.
+Un message sans context_id reste utilisable sans joindre les métriques.

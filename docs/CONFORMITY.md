@@ -217,3 +217,14 @@ Précontrôle de prérequis en lecture seule et rapport privé FR/EN : 25 nouvea
 465 backend et 26 frontend au total. Un résultat prerequisites_met garde qualified=false
 et system_execution_enabled=false. La matrice d'actions réelles n'est ni exécutée,
 ni validée par ce résultat ; pilotes et privilèges restent à qualifier en VM jetable.
+
+## Interface bilingue et diagnostics guidés — 20 novembre 2026
+
+- Aperçu IA lisible FR/EN : source, date, CPU/RAM/swap, valeurs absentes explicites
+  et détails JSON dépliables. Suggestions de questions sans envoi automatique.
+- Contexte préparé seulement depuis une collecte fraîche (15 s) ; refus avant
+  génération après cinq minutes depuis la collecte, même si l’aperçu est plus récent.
+- Supervision : ancienneté recalculée toutes les cinq secondes sans requête
+  supplémentaire ; dates invalides/futures signalées comme anciennes.
+- 469 tests backend et 32 frontend passants ; lint, types, format et build passants.
+  Aucune opération système activée ; qualification réelle toujours en attente de VM.

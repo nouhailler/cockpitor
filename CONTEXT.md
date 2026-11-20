@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 465 tests backend et 26 tests frontend réussis localement.
+- 469 tests backend et 32 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -357,3 +357,14 @@ Les opérations sensibles restent absentes.
 - 25 tests nouveaux, 465 backend et 26 frontend, contrôles/build passants. Lire
   docs/VM_QUALIFICATION_KIT.md ; accès à une VM jetable encore nécessaire pour les
   vrais essais, avec revue des pilotes et privilèges avant start/stop/restart réel.
+
+## Interface bilingue et diagnostics guidés — 20 novembre 2026
+
+- Aperçu IA lisible FR/EN : source, date, CPU/RAM/swap, valeurs absentes explicites
+  et détails JSON dépliables. Suggestions de questions sans envoi automatique.
+- Contexte préparé seulement depuis une collecte fraîche (15 s) ; refus avant
+  génération après cinq minutes depuis la collecte, même si l’aperçu est plus récent.
+- Supervision : ancienneté recalculée toutes les cinq secondes sans requête
+  supplémentaire ; dates invalides/futures signalées comme anciennes.
+- 469 tests backend et 32 frontend passants ; lint, types, format et build passants.
+  Aucune opération système activée ; qualification réelle toujours en attente de VM.

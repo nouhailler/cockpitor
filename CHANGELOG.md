@@ -2,6 +2,17 @@
 
 ## Non publié
 
+### Interface bilingue et diagnostics guidés — 20 novembre 2026
+
+- Aperçu IA lisible FR/EN : source, date, CPU/RAM/swap, valeurs absentes explicites
+  et détails JSON dépliables. Suggestions de questions sans envoi automatique.
+- Contexte préparé seulement depuis une collecte fraîche (15 s) ; refus avant
+  génération après cinq minutes depuis la collecte, même si l’aperçu est plus récent.
+- Supervision : ancienneté recalculée toutes les cinq secondes sans requête
+  supplémentaire ; dates invalides/futures signalées comme anciennes.
+- 469 tests backend et 32 frontend passants ; lint, types, format et build passants.
+  Aucune opération système activée ; qualification réelle toujours en attente de VM.
+
 ### Kit de préparation à la qualification VM — 28 octobre 2026
 
 - Précontrôle CLI en lecture seule : VM/non-conteneur, Debian, compte non root,

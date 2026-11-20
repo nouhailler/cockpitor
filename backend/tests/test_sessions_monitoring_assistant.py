@@ -404,3 +404,42 @@ def test_cloud_model_is_refused_before_prompt_transmission(monkeypatch):
             assistant.generate("cloud-alias", [{"role": "user", "content": "PRIVATE_PROMPT"}])
         )
     assert calls == ["/api/show"]
+
+
+@pytest.mark.parametrize("age", [16, 301, -60])
+def test_assistant_refuses_stale_or_future_preview(age, monkeypatch):
+    from datetime import UTC, datetime
+
+    now = 1800000000
+    monkeypatch.setattr("app.alerts.time.time", lambda: now)
+    metrics = {"collected_at": datetime.fromtimestamp(now - age, UTC).isoformat()}
+    with pytest.raises(main.ServiceError) as exc:
+        Assistant().preview("owner", metrics)
+    assert exc.value.code == "AI_CONTEXT_EXPIRED"
+
+
+def test_context_age_checked_again_before_generation(monkeypatch):
+    from datetime import UTC, datetime
+
+    now = [1800000000]
+    monkeypatch.setattr("app.alerts.time.time", lambda: now[0])
+    metrics = {"collected_at": datetime.fromtimestamp(now[0] - 10, UTC).isoformat()}
+    advisor = Assistant()
+    preview = advisor.preview("owner", metrics)
+    now[0] += 291  # Preview lifetime is not a renewal of the sample timestamp.
+
+    async def forbidden(*args):
+        pytest.fail("Stale observations must not reach Ollama")
+
+    monkeypatch.setattr(assistant, "generate", forbidden)
+    with pytest.raises(main.ServiceError) as exc:
+        asyncio.run(
+            advisor.chat(
+                "owner",
+                Message(model="local", prompt="Explain", context_id=preview["context_id"]),
+                [],
+                "en",
+            )
+        )
+    assert exc.value.code == "AI_CONTEXT_EXPIRED"
+    assert not advisor.jobs

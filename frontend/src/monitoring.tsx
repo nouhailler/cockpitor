@@ -122,6 +122,16 @@ export function MonitoringView({ token }: { token: string }) {
   const [hours, setHours] = useState(24);
   const [error, setError] = useState("");
   const [historyError, setHistoryError] = useState("");
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 5000);
+    return () => clearInterval(timer);
+  }, []);
+  const collected = Date.parse(data?.collected_at || "");
+  const stale =
+    !Number.isFinite(collected) ||
+    now - collected > 90000 ||
+    collected - now > 5000;
   useEffect(() => {
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
@@ -187,11 +197,12 @@ export function MonitoringView({ token }: { token: string }) {
       {error && <p role="alert">{t(error)}</p>}
       {data && (
         <>
-          <p>
+          <p role="status">
             {t("Vérification :")}{" "}
-            {new Date(data.collected_at).toLocaleString(getLocale())}{" "}
-            {Date.now() - Date.parse(data.collected_at) > 90000 &&
-              t("Données anciennes")}
+            {Number.isFinite(collected)
+              ? new Date(collected).toLocaleString(getLocale())
+              : t("Indisponible")}{" "}
+            {stale && t("Données anciennes")}
           </p>
           <section className="panel">
             <h2>{t("Réseau et exposition")}</h2>

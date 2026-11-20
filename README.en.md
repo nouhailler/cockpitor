@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-465 backend tests and 26 frontend tests pass locally, alongside type checks,
+469 backend tests and 32 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -74,6 +74,10 @@ prove Internet exposure; package-cache data can be outdated.
 
 The AI assistant uses an already installed Ollama model, without tools or execution.
 Preview and explicitly include a timestamped CPU/RAM/swap context if desired.
+The preview uses French/English labels and expandable technical data. Diagnostic
+suggestions fill the question without sending data. Samples must be at most
+15 seconds old when previewed; attached observations expire five minutes after
+collection. Monitoring marks old, invalid or future timestamps as stale.
 Saving is optional and off by default: 20 conversations, 40 messages each. Up to
 eight previous messages are sent as conversation context. Secret masking is partial;
 never enter secrets. Saved conversations belong to the single local application user.

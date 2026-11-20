@@ -182,3 +182,107 @@ it("preserves gaps in persistent CPU and RAM history", () => {
   expect(path.match(/M/g)).toHaveLength(2);
   expect(document.querySelector(".memory-line")).toBeTruthy();
 });
+
+it.each(["fr", "en"] as const)(
+  "offers diagnostic questions without sending in %s",
+  async (language) => {
+    setLanguage(language);
+    const fetcher = vi.fn(async (url: string) => ({
+      ok: true,
+      json: async () =>
+        url.endsWith("ai/status")
+          ? { ollama: { models: [{ name: "local-model" }] } }
+          : { items: [] },
+    }));
+    vi.stubGlobal("fetch", fetcher);
+    render(<AssistantView token="session" csrf="csrf" />);
+    await screen.findByRole("option", { name: "local-model" });
+    const question =
+      language === "fr"
+        ? "Quels contrôles en lecture seule proposer pour une machine lente ?"
+        : "Which read-only checks would help diagnose a slow machine?";
+    fireEvent.click(screen.getByRole("button", { name: question }));
+    expect(
+      (
+        screen.getByLabelText(
+          language === "fr" ? "Votre question" : "Your question",
+        ) as HTMLTextAreaElement
+      ).value,
+    ).toBe(question);
+    expect(
+      fetcher.mock.calls.some(
+        ([url]) => url.endsWith("ai/chat") || url.endsWith("ai/context"),
+      ),
+    ).toBe(false);
+  },
+);
+
+it("shows localized observations with missing values and an explicit consent", async () => {
+  setLanguage("en");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => ({
+      ok: true,
+      json: async () => {
+        if (url.endsWith("ai/status")) return { ollama: { models: [] } };
+        if (url.endsWith("ai/context"))
+          return {
+            context_id: "b".repeat(32),
+            context: {
+              source: "system/metrics",
+              collected_at: "2026-11-20T10:00:00Z",
+              cpu_percent: 12.5,
+              memory_percent: null,
+            },
+          };
+        return { items: [] };
+      },
+    })),
+  );
+  render(<AssistantView token="session" csrf="csrf" />);
+  fireEvent.click(screen.getByText("Preview system context"));
+  await screen.findByText("CPU utilization");
+  expect(screen.getByText("12.5 %")).toBeTruthy();
+  expect(screen.getAllByText("Unavailable").length).toBe(2);
+  expect(
+    (
+      screen.getByLabelText(
+        "Include only these observations with the next message",
+      ) as HTMLInputElement
+    ).checked,
+  ).toBe(false);
+});
+
+it.each(["invalid", "2000-01-01T00:00:00Z", "2099-01-01T00:00:00Z"])(
+  "marks invalid, old or future monitoring timestamps as stale: %s",
+  async (collected_at) => {
+    setLanguage("en");
+    const unavailable = { status: "unavailable" };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => ({
+        ok: true,
+        json: async () =>
+          url.includes("trends")
+            ? { items: [] }
+            : {
+                collected_at,
+                network: {
+                  interfaces: [],
+                  listeners: [],
+                  listeners_status: "unavailable",
+                },
+                disks: unavailable,
+                gpu: unavailable,
+                updates: unavailable,
+                time: unavailable,
+                installed_services: unavailable,
+                power: { ...unavailable, items: [] },
+                smart: [],
+              },
+      })),
+    );
+    render(<MonitoringView token="session" />);
+    await screen.findByText(/Stale data/);
+  },
+);

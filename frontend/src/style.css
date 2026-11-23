@@ -574,3 +574,8 @@ aside[hidden] {
     white-space: normal;
   }
 }
+
+.fingerprint {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+}

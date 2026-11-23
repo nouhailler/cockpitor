@@ -262,3 +262,18 @@ Toutes les routes exigent une session ; POST exige origine exacte, CSRF et JSON.
 Corps limité à 64 Kio ; enveloppe importée à 32 Kio. Un plan dure 120 s, est lié à
 la session et aux réglages précédents, sans réutilisation. Aucun endpoint d’édition,
 de suppression, d’extraction d’archive ou de restauration système. Voir FILES_BACKUPS.md.
+
+## Hôtes distants SSH/SFTP
+
+GET /api/v1/remote/hosts retourne l’inventaire configuré, groupes, destination,
+empreinte publique attendue, configuration_id et dernier résultat en mémoire.
+Cette route ne contacte aucun hôte et n’expose aucune clé privée ni chemin de clé.
+POST /remote/check et /remote/list acceptent uniquement
+{host_id,configuration_id,confirmed:true}, corps <=2 Kio, session/origine/CSRF/JSON.
+/check vérifie SSH ; /list exige allow_sftp et liste uniquement remote_root.
+Réponse : checked_at, authenticated, host_key_verified, commands_executed=false,
+system_changed=false ; /list ajoute items/truncated/scope. Aucun chemin distant
+ni commande libre accepté. POST /remote/cancel annule le travail de la session.
+Codes stables : INVALID_REMOTE_REQUEST, REMOTE_HOST_CHANGED, REMOTE_HOST_KEY,
+REMOTE_CREDENTIALS, REMOTE_AUTH, REMOTE_NOT_ALLOWED, REMOTE_ROOT_CHANGED,
+REMOTE_UNAVAILABLE, REMOTE_BUSY, REMOTE_CANCELLED. Voir REMOTE_HOSTS.md.

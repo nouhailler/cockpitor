@@ -228,6 +228,10 @@ class Store:
             "session.login",
             "session.logout",
             "backups.export",
+            "remote.ssh.check",
+            "remote.sftp.list",
+            "remote.completed",
+            "remote.failed",
         }:
             raise StorageError("Action audit non autorisée")
         with self.connection() as db:

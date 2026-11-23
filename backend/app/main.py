@@ -23,6 +23,7 @@ from .files import FileBrowser
 from .integrations import ai_status, container_status
 from .monitoring import inspect
 from .preferences import Preferences
+from .remote import RemoteHosts
 from .routes import register_routes
 from .security import security
 from .services import ServiceError, Services
@@ -59,6 +60,9 @@ async def lifespan(app: FastAPI):
     app.state.store = store
     app.state.files = FileBrowser(os.environ.get("LOCALCOCKPIT_FILE_ROOTS", "[]"), store.directory)
     app.state.backups = Backups(store)
+    app.state.remote = RemoteHosts(
+        os.environ.get("LOCALCOCKPIT_REMOTE_HOSTS", "[]"), app.state.sessions, store
+    )
     app.state.preferences = Preferences()
     app.state.storage_ready = False
     app.state.storage_error = "Initialisation du stockage en cours"
@@ -160,6 +164,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        await app.state.remote.close()
         actions_task.cancel()
         await app.state.actions.close()
         inspection_task.cancel()

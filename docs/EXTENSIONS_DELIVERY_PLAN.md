@@ -9,7 +9,7 @@ connexion, tâche, installation, modification d’accès ou publication.
 | Ordre | Lot | Avancement et prochain résultat vérifiable |
 | --- | --- | --- |
 | 0 | Explorateur, sauvegardes et restauration | Premier sous-lot livré : exploration locale en lecture seule et restauration des préférences, cf. FILES_BACKUPS.md. Écritures de fichiers et sauvegardes complètes restent à faire. |
-| 1 | SSH/SFTP et multi-hôtes | À faire : inventaire explicite, permissions par hôte, vérification stricte des clés d’hôte, stockage séparé des secrets puis connexion et SFTP bornés. Tester changement de clé, révocation, cibles interdites et erreurs sur serveur isolé. Aucun hôte de test n’a encore été fourni. |
+| 1 | SSH/SFTP et multi-hôtes | Premier sous-lot livré : inventaire/groupes, SSH avec clé épinglée et liste SFTP bornée, tests sur serveur éphémère ; cf. REMOTE_HOSTS.md. Coffre, transferts, terminal et qualification OpenSSH/Debian restent à faire. Aucun hôte personnel contacté. |
 | 2 | Catalogue d’applications et recettes | À faire : catalogue versionné, ports/volumes/dépendances explicites, analyse des collisions puis plans contrôlés. Aucune recette distante/IA exécutée directement ; moteurs réels à qualifier avant installation. |
 | 3 | Tâches et procédures guidées | À faire : procédures typées, historique et exécution manuelle revue ; planification avec fuseau, heure d’été, déduplication, reprise et révocation de politique. Aucun cron ni tâche autonome créé par le développement. |
 | 4 | Réseau, pare-feu, comptes et partages | À faire au-delà des observations réseau existantes : inventaires dédiés, plans d’ACL/règles/comptes, récupération autonome contre perte d’accès puis qualification VM et essais réels isolés. |

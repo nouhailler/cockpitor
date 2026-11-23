@@ -1,4 +1,15 @@
-from . import actions, assistant, auth, backups, diagnostics, files, integrations, settings, system
+from . import (
+    actions,
+    assistant,
+    auth,
+    backups,
+    diagnostics,
+    files,
+    integrations,
+    remote,
+    settings,
+    system,
+)
 
 
 def register_routes(app):
@@ -12,5 +23,6 @@ def register_routes(app):
         diagnostics,
         files,
         backups,
+        remote,
     ):
         app.include_router(module.create_router(app))

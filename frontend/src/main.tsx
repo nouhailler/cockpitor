@@ -18,6 +18,7 @@ import { LoginView } from "./login";
 import { MonitoringView, AuditView } from "./monitoring";
 import { ActionsView } from "./actions";
 import { AssistantView } from "./assistant";
+import { RemoteView } from "./remote";
 import { FilesView } from "./files";
 import { BackupsView } from "./backups";
 import { SystemSettingsView } from "./system-settings";
@@ -563,6 +564,7 @@ export function App() {
         {page === "Services" && (
           <ServicesView token={token} refresh={refresh} />
         )}
+        {page === "Hôtes distants" && <RemoteView token={token} csrf={csrf} />}
         {page === "Fichiers" && <FilesView token={token} />}
         {page === "Sauvegardes" && (
           <BackupsView

@@ -5,6 +5,7 @@ MODULES = [
     for name, write in (
         ("system", False),
         ("files", False),
+        ("remote_hosts", True),
         ("backups", True),
         ("monitoring", False),
         ("services", False),

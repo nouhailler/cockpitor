@@ -50,7 +50,7 @@ If SQLite is unavailable, export still works and reports missing audit storage.
 
 ## 🧪 Validation and documentation
 
-514 backend tests and 44 frontend tests pass locally, alongside type checks,
+540 backend tests and 48 frontend tests pass locally, alongside type checks,
 formatting and production build. Real Docker/Podman qualification and a clean
 Debian installation test remain pending. Expiring sessions, attempt limits, monitoring probes and a local Ollama advisor are
 implemented; sensitive system actions remain disabled.
@@ -162,3 +162,13 @@ See [configuration and limits](docs/FILES_BACKUPS.md) and the
 [next extension stages](docs/EXTENSIONS_DELIVERY_PLAN.md).
 
 ![File explorer with an explicitly temporary validation folder](docs/images/files-fr.jpg)
+
+## ⇄ SSH/SFTP remote hosts
+
+**Menu → Integrations → Remote hosts** lists explicitly configured hosts by group.
+Confirm each SSH authentication check or bounded SFTP root listing. The pinned
+Ed25519 host key is verified before authentication; no default credentials, agent
+or SSH config are loaded. No terminal, commands, transfers or remote writes.
+See [configuration and qualification limits](docs/REMOTE_HOSTS.md).
+
+![Actual SFTP connection to an ephemeral local validation server](docs/images/remote-fr.jpg)

@@ -16,6 +16,7 @@ export const navigation = [
       ["IA locale", "✧"],
       ["Assistant IA", "✦"],
       ["Conteneurs", "▣"],
+      ["Hôtes distants", "⇄"],
     ],
   },
   {

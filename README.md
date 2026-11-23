@@ -56,6 +56,20 @@ Voir [la configuration et les limites](docs/FILES_BACKUPS.md) et
 
 *Capture de validation : dossier et contenu temporaires, aucun fichier personnel exposé.*
 
+## ⇄ Hôtes distants
+
+**Menu → Intégrations → Hôtes distants** : inventaire par groupe, vérification SSH
+et liste SFTP d’une racine explicitement configurée. Aucune connexion automatique,
+clé d’hôte Ed25519 vérifiée avant authentification et confirmation à chaque lecture.
+Clé cliente locale dédiée ; aucun agent ni identifiant chargé automatiquement.
+Pas de terminal, commande, transfert ou écriture distante.
+
+Voir [la configuration et les limites SSH/SFTP](docs/REMOTE_HOSTS.md).
+
+![Connexion SFTP réelle vers un serveur temporaire de validation](docs/images/remote-fr.jpg)
+
+*Banc éphémère local avec clés jetables ; aucune connexion à un serveur personnel.*
+
 ## ✨ Fonctionnalités
 
 | Module | Disponible aujourd’hui |
@@ -308,7 +322,7 @@ npm run build --prefix frontend
 npm audit --prefix frontend
 ```
 
-Validation locale de cette version : **514 tests backend et 44 tests frontend
+Validation locale de cette version : **540 tests backend et 48 tests frontend
 réussis**, contrôles de types et build passants. La CI exécute ces vérifications ;
 son état courant est consultable dans [GitHub Actions](https://github.com/nouhailler/cockpitor/actions).
 Les tests d’intégration utilisent des services simulés, sans clé externe.

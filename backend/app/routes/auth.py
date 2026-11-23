@@ -66,6 +66,11 @@ def create_router(app):
                 request.headers.get("authorization", "").removeprefix("Bearer ")
             )
         )
+        app.state.remote.cancel(
+            app.state.sessions.digest(
+                request.headers.get("authorization", "").removeprefix("Bearer ")
+            )
+        )
         app.state.sessions.revoke(request.headers.get("authorization", "").removeprefix("Bearer "))
         try:
             await app.state.actions.cleanup()

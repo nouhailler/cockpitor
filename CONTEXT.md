@@ -59,7 +59,7 @@ La version actuelle est un **prototype 0.1.0 en lecture seule**, pas le MVP Debi
 
 ## Validation connue
 
-- 514 tests backend et 44 tests frontend réussis localement.
+- 540 tests backend et 48 tests frontend réussis localement.
 - Ruff, mypy, TypeScript, Prettier et build frontend passants.
 - Audit npm sans vulnérabilité signalée lors de la préparation initiale.
 - Tableau système, recherche de processus et modèles Ollama vérifiés dans un navigateur.
@@ -413,3 +413,19 @@ Les opérations sensibles restent absentes.
   Navigateur : instance temporaire, export audité et restauration fr→en réels.
 - Voir FILES_BACKUPS.md et EXTENSIONS_DELIVERY_PLAN.md : SSH/SFTP, catalogue,
   tâches, administration et accès distant/notifications restent des lots à réaliser.
+
+## Socle multi-hôtes SSH/SFTP — 23 novembre 2026
+
+- Inventaire explicite de huit hôtes, groupes et UI FR/EN, aucune connexion automatique.
+- Clé d’hôte Ed25519 épinglée vérifiée avant authentification, clé cliente locale
+  explicitement choisie (0600), aucun agent/config SSH implicite ni mot de passe.
+- Vérification SSH et liste SFTP bornée de la racine configurée ; aucun terminal,
+  commande, transfert ou écriture. Chroot/permissions forts à imposer côté serveur.
+- Session/origine/CSRF/confirmation, audit avant réseau, délais, quotas et révocation.
+  Configuration hors base ; aucune clé privée/chemin de clé renvoyé dans l’inventaire.
+- AsyncSSH 2.24.1 et dépendances verrouillées ; base applicative v3 inchangée.
+- 540 tests backend et 48 frontend passants, dont 26 backend et quatre UI nouveaux.
+  Vrais échanges SSH/SFTP et navigateur sur serveur éphémère avec clés jetables ;
+  qualification OpenSSH/Debian et serveur personnel non réalisée.
+- Lire REMOTE_HOSTS.md. Prochain lot : catalogue versionné et recettes de conteneurs,
+  d’abord examen et plans ; aucune installation avant la qualification des actions.
